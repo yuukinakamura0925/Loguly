@@ -1,25 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    // TODO: Supabase認証を実装
-    console.log("Login attempt:", { email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    // 仮の遅延
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setError("認証機能は準備中です");
-    setIsLoading(false);
+    if (error) {
+      setError(error.message === "Invalid login credentials"
+        ? "メールアドレスまたはパスワードが正しくありません"
+        : error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    router.push("/dashboard");
   };
 
   return (
@@ -88,19 +100,19 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/reset-password"
               className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
             >
               パスワードをお忘れですか？
-            </a>
+            </Link>
           </div>
         </div>
 
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
-          <a href="/" className="hover:underline">
+          <Link href="/" className="hover:underline">
             ← トップに戻る
-          </a>
+          </Link>
         </p>
       </div>
     </div>

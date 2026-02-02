@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
@@ -11,18 +13,18 @@ export default function Home() {
         </p>
 
         <div className="flex gap-4 justify-center">
-          <a
+          <Link
             href="/login"
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             ログイン
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin"
             className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             管理者ログイン
-          </a>
+          </Link>
         </div>
       </main>
 
