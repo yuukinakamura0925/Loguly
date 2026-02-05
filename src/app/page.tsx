@@ -19,12 +19,6 @@ export default function Home() {
           >
             ログイン
           </Link>
-          <Link
-            href="/admin"
-            className="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            管理者ログイン
-          </Link>
         </div>
       </main>
 

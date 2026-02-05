@@ -33,22 +33,72 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 未認証ユーザーを保護されたルートからリダイレクト
-  const protectedRoutes = ["/dashboard", "/watch", "/admin"];
+  const pathname = request.nextUrl.pathname;
+
+  // 保護されたルート
+  const protectedRoutes = ["/dashboard", "/watch", "/admin", "/org"];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
   );
 
+  // 未認証ユーザーを保護されたルートからリダイレクト
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // 認証済みユーザーをログインページからリダイレクト
-  if (user && request.nextUrl.pathname === "/login") {
+  if (user && isProtectedRoute) {
+    // ロールを取得してアクセス制御
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const role = profile?.role;
+
+    // /admin/* は platform_admin のみ
+    if (pathname.startsWith("/admin") && role !== "platform_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // /org/* は org_admin のみ
+    if (pathname.startsWith("/org") && role !== "org_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = role === "platform_admin" ? "/admin" : "/dashboard";
+      return NextResponse.redirect(url);
+    }
+
+    // /dashboard, /watch は org_admin または member
+    if (
+      (pathname.startsWith("/dashboard") || pathname.startsWith("/watch")) &&
+      role === "platform_admin"
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // 認証済みユーザーをログインページからロールに応じてリダイレクト
+  if (user && pathname === "/login") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    if (profile?.role === "platform_admin") {
+      url.pathname = "/admin";
+    } else if (profile?.role === "org_admin") {
+      url.pathname = "/org/members";
+    } else {
+      url.pathname = "/dashboard";
+    }
     return NextResponse.redirect(url);
   }
 

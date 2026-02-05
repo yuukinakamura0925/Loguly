@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentOrg } from "@/lib/auth";
 import LogoutButton from "./logout-button";
 
 type Category = {
@@ -56,29 +57,27 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // 組織情報を取得
+  const org = await getCurrentOrg();
+
   // カテゴリ一覧を取得
-  const { data: categories, error: catError } = await supabase
+  const { data: categories } = await supabase
     .from("categories")
     .select("*")
     .order("display_order");
 
-  // 公開済み動画一覧を取得
-  const { data: videos, error: vidError } = await supabase
+  // 公開済み動画一覧を取得（RLSでライセンスのある動画のみ返る）
+  const { data: videos } = await supabase
     .from("videos")
     .select("*")
     .eq("is_published", true)
     .order("display_order");
 
   // 視聴ログを取得
-  const { data: viewLogs, error: logError } = await supabase
+  const { data: viewLogs } = await supabase
     .from("view_logs")
     .select("*")
     .eq("user_id", user.id);
-
-  // デバッグ用
-  console.log("Categories:", categories, catError);
-  console.log("Videos:", videos, vidError);
-  console.log("ViewLogs:", viewLogs, logError);
 
   // カテゴリごとの進捗を計算
   const getCategoryProgress = (categoryId: number) => {
@@ -95,7 +94,7 @@ export default async function DashboardPage() {
       <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Loguly
+            {org ? org.name : "Loguly"}
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 dark:text-gray-400">
