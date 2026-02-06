@@ -43,7 +43,6 @@ export default function EditOrganizationPage() {
   const supabase = createClient();
 
   const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
   const [error, setError] = useState("");
@@ -60,7 +59,6 @@ export default function EditOrganizationPage() {
 
     if (org) {
       setName(org.name);
-      setSlug(org.slug);
       setIsActive(org.is_active);
     }
     setMembers((mems as unknown as Member[]) || []);
@@ -127,18 +125,18 @@ export default function EditOrganizationPage() {
       <div className="mb-6">
         <Link
           href="/admin/organizations"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
+          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
         >
           <ArrowLeftIcon />
           組織一覧に戻る
         </Link>
-        <h1 className="text-2xl font-bold text-white mt-3">組織を編集</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-3">組織を編集</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 組織情報 */}
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">基本情報</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">基本情報</h2>
           <Card>
             <CardContent>
               <form action={handleSubmit} className="space-y-4">
@@ -150,16 +148,6 @@ export default function EditOrganizationPage() {
                   onChange={(e) => setName(e.target.value)}
                 />
 
-                <Input
-                  name="slug"
-                  label="スラッグ"
-                  required
-                  pattern="[a-z0-9-]+"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  className="font-mono"
-                />
-
                 <Switch
                   name="is_active"
                   checked={isActive}
@@ -168,8 +156,8 @@ export default function EditOrganizationPage() {
                 />
 
                 {error && (
-                  <div className="p-3 bg-red-900/20 border border-red-800 rounded-xl">
-                    <p className="text-sm text-red-400">{error}</p>
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-xl">
+                    <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                   </div>
                 )}
 
@@ -183,13 +171,13 @@ export default function EditOrganizationPage() {
 
         {/* メンバー管理 */}
         <div>
-          <h2 className="text-lg font-semibold text-white mb-4">メンバー</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">メンバー</h2>
 
           {/* ユーザー新規作成 */}
           <Card className="mb-4">
             <CardContent>
               <form action={handleCreateUser} className="space-y-4">
-                <div className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <PlusIcon className="w-4 h-4" />
                   ユーザーを作成して追加
                 </div>
@@ -223,13 +211,13 @@ export default function EditOrganizationPage() {
                 </div>
 
                 {createError && (
-                  <div className="p-2 bg-red-900/20 border border-red-800 rounded-lg">
-                    <p className="text-xs text-red-400">{createError}</p>
+                  <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
+                    <p className="text-xs text-red-600 dark:text-red-400">{createError}</p>
                   </div>
                 )}
                 {createSuccess && (
-                  <div className="p-2 bg-green-900/20 border border-green-800 rounded-lg">
-                    <p className="text-xs text-green-400">{createSuccess}</p>
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-lg">
+                    <p className="text-xs text-green-600 dark:text-green-400">{createSuccess}</p>
                   </div>
                 )}
 
@@ -242,7 +230,7 @@ export default function EditOrganizationPage() {
           <Card className="mb-4">
             <CardContent>
               <form action={handleAddMember} className="space-y-4">
-                <div className="text-sm font-medium text-slate-300">
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   既存ユーザーを追加
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -260,8 +248,8 @@ export default function EditOrganizationPage() {
                 </div>
 
                 {memberError && (
-                  <div className="p-2 bg-red-900/20 border border-red-800 rounded-lg">
-                    <p className="text-xs text-red-400">{memberError}</p>
+                  <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
+                    <p className="text-xs text-red-600 dark:text-red-400">{memberError}</p>
                   </div>
                 )}
 
@@ -283,7 +271,7 @@ export default function EditOrganizationPage() {
               {members.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell>
-                    <div className="text-white text-sm font-medium">
+                    <div className="text-slate-900 dark:text-white text-sm font-medium">
                       {m.profiles?.display_name}
                     </div>
                     <div className="text-slate-500 text-xs">
@@ -298,7 +286,7 @@ export default function EditOrganizationPage() {
                   <TableCell className="text-right">
                     <button
                       onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
                       title="削除"
                     >
                       <TrashIcon />

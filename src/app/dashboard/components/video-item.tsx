@@ -20,7 +20,7 @@ const statusConfig = {
   pending: {
     text: "未視聴",
     variant: "default" as const,
-    iconBg: "bg-slate-800",
+    iconBg: "bg-slate-200 dark:bg-slate-800",
     icon: (
       <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -57,7 +57,7 @@ export function VideoItem({ id, title, description, duration, status, progress }
   return (
     <Link
       href={`/watch/${id}`}
-      className="flex items-center gap-4 px-6 py-4 hover:bg-slate-800/50 transition-colors group"
+      className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
     >
       {/* Status Icon */}
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
@@ -66,7 +66,7 @@ export function VideoItem({ id, title, description, duration, status, progress }
 
       {/* Video Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="text-white font-medium group-hover:text-blue-400 transition-colors">
+        <h3 className="text-slate-900 dark:text-white font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
           {title}
         </h3>
         {description && (
@@ -87,7 +87,7 @@ export function VideoItem({ id, title, description, duration, status, progress }
       </div>
 
       {/* Arrow */}
-      <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-slate-400 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
       </svg>
     </Link>

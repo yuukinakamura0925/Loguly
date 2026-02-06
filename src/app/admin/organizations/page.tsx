@@ -40,7 +40,6 @@ export default async function OrganizationsPage() {
         <TableHeader>
           <TableRow>
             <TableHead>組織名</TableHead>
-            <TableHead>スラッグ</TableHead>
             <TableHead>メンバー数</TableHead>
             <TableHead>ステータス</TableHead>
             <TableHead className="text-right w-32">操作</TableHead>
@@ -52,14 +51,11 @@ export default async function OrganizationsPage() {
 
             return (
               <TableRow key={org.id}>
-                <TableCell className="text-white font-medium">
+                <TableCell className="text-slate-900 dark:text-white font-medium">
                   {org.name}
                 </TableCell>
-                <TableCell className="font-mono text-sm text-slate-500">
-                  {org.slug}
-                </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                     <UsersIcon className="w-4 h-4" />
                     {memberCount}
                   </div>
@@ -73,7 +69,7 @@ export default async function OrganizationsPage() {
                   <div className="flex justify-end gap-1">
                     <Link
                       href={`/admin/organizations/${org.id}`}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                       title="編集"
                     >
                       <PencilIcon />
@@ -86,7 +82,7 @@ export default async function OrganizationsPage() {
                     >
                       <button
                         type="submit"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
                         title="削除"
                       >
                         <TrashIcon />
@@ -98,7 +94,7 @@ export default async function OrganizationsPage() {
             );
           })}
           {(!organizations || organizations.length === 0) && (
-            <TableEmpty colSpan={5} message="組織がまだ登録されていません" />
+            <TableEmpty colSpan={4} message="組織がまだ登録されていません" />
           )}
         </TableBody>
       </Table>

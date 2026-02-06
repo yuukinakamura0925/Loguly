@@ -54,15 +54,15 @@ export default async function AdminDashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">ダッシュボード</h1>
-        <p className="text-slate-400 mt-1">システム全体の概要</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ダッシュボード</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">システム全体の概要</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="bg-slate-900 rounded-2xl p-6 border border-slate-800 hover:border-slate-700 transition-colors group"
+            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors group"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} bg-opacity-10`}>
@@ -71,8 +71,8 @@ export default async function AdminDashboardPage() {
                 </span>
               </div>
             </div>
-            <div className="text-4xl font-bold text-white mb-1">{stat.value}</div>
-            <div className="text-sm text-slate-400">{stat.label}</div>
+            <div className="text-4xl font-bold text-slate-900 dark:text-white mb-1">{stat.value}</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
           </div>
         ))}
       </div>

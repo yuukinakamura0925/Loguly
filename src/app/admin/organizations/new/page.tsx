@@ -11,13 +11,6 @@ export default function NewOrganizationPage() {
   const router = useRouter();
   const [error, setError] = useState("");
 
-  function toSlug(name: string) {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9fff]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
   async function handleSubmit(formData: FormData) {
     setError("");
     const result = await createOrganization(formData);
@@ -49,23 +42,6 @@ export default function NewOrganizationPage() {
               label="組織名"
               required
               placeholder="株式会社○○"
-              onChange={(e) => {
-                const slugInput = document.querySelector<HTMLInputElement>(
-                  'input[name="slug"]'
-                );
-                if (slugInput) {
-                  slugInput.value = toSlug(e.target.value);
-                }
-              }}
-            />
-
-            <Input
-              name="slug"
-              label="スラッグ（URL識別子）"
-              required
-              pattern="[a-z0-9-]+"
-              placeholder="example-corp"
-              className="font-mono"
             />
 
             {error && (

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/auth";
 import { getProfileById, listCategories, listPublishedVideos, getViewLogsByUser } from "@/lib/db";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import LogoutButton from "./logout-button";
 import { ProgressOverview } from "./components/progress-overview";
 import { CategorySection } from "./components/category-section";
@@ -55,18 +56,21 @@ export default async function DashboardPage() {
   const completedVideos = viewLogs?.filter((log) => log.completed).length || 0;
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-10">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Logo size="sm" showText={false} />
             <div>
-              <h1 className="text-lg font-bold text-white">{org ? org.name : "Loguly"}</h1>
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white">{org ? org.name : "Loguly"}</h1>
               <p className="text-xs text-slate-500">{profile?.display_name || user.email}</p>
             </div>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LogoutButton />
+          </div>
         </div>
       </header>
 

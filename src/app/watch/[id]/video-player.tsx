@@ -197,15 +197,15 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
       </div>
 
       {/* カスタムプログレスバー */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-transparent">
+        <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(video.duration)}</span>
         </div>
-        <div className="relative h-2 bg-gray-700 rounded-full overflow-hidden">
+        <div className="relative h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
           {/* 視聴可能範囲 */}
           <div
-            className="absolute h-full bg-gray-600"
+            className="absolute h-full bg-slate-300 dark:bg-slate-600"
             style={{ width: `${maxProgressPercent}%` }}
           />
           {/* 現在位置 */}
@@ -214,34 +214,34 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
+        <div className="flex items-center justify-between text-xs text-slate-500 mt-2">
           <span>視聴済み: {formatTime(maxWatchedSeconds)}</span>
           <span>{Math.round(maxProgressPercent)}% 完了</span>
         </div>
       </div>
 
       {/* 動画情報 */}
-      <div className="bg-gray-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-transparent">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-sm text-blue-400">{video.categoryName}</span>
-            <h2 className="text-xl font-bold text-white mt-1">{video.title}</h2>
+            <span className="text-sm text-blue-500 dark:text-blue-400">{video.categoryName}</span>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-1">{video.title}</h2>
             {video.description && (
-              <p className="text-gray-400 mt-2">{video.description}</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-2">{video.description}</p>
             )}
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">
               {Math.round(maxProgressPercent)}%
             </div>
-            <div className="text-sm text-gray-400">視聴進捗</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">視聴進捗</div>
           </div>
         </div>
       </div>
 
       {/* デバッグ情報（開発中のみ表示） */}
       {process.env.NODE_ENV === "development" && (
-        <div className="bg-gray-800 rounded-lg p-4 text-xs text-gray-500 font-mono">
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 text-xs text-slate-500 font-mono border border-slate-200 dark:border-transparent">
           <div>currentTime: {currentTime.toFixed(1)}</div>
           <div>maxWatchedSeconds: {maxWatchedSeconds.toFixed(1)}</div>
           <div>completed: {completed.toString()}</div>

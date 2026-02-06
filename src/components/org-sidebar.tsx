@@ -38,8 +38,8 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 min-h-screen">
-      <div className="p-5 border-b border-slate-800">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 min-h-screen">
+      <div className="p-5 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +47,7 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
             </svg>
           </div>
           <div>
-            <div className="text-lg font-bold text-white truncate max-w-[160px]">{orgName}</div>
+            <div className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-[160px]">{orgName}</div>
             <div className="text-xs text-slate-500">組織管理</div>
           </div>
         </div>
@@ -61,11 +61,11 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-white border border-emerald-500/30"
-                  : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+                  ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-slate-900 dark:text-white border border-emerald-500/30"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <span className={isActive ? "text-emerald-400" : ""}>{item.icon}</span>
+              <span className={isActive ? "text-emerald-500" : ""}>{item.icon}</span>
               {item.label}
             </Link>
           );

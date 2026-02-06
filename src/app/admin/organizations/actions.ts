@@ -15,12 +15,20 @@ import {
   deleteOrgMember,
 } from "@/lib/db";
 
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || `org-${Date.now()}`;
+}
+
 export async function createOrganization(formData: FormData) {
   await requireRole("platform_admin");
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
-  const slug = formData.get("slug") as string;
+  const slug = generateSlug(name);
 
   const { error } = await insertOrganization(supabase, { name, slug });
 
@@ -37,10 +45,9 @@ export async function updateOrganization(id: string, formData: FormData) {
   const supabase = await createClient();
 
   const name = formData.get("name") as string;
-  const slug = formData.get("slug") as string;
   const isActive = formData.get("is_active") === "true";
 
-  const { error } = await dbUpdateOrganization(supabase, id, { name, slug, is_active: isActive });
+  const { error } = await dbUpdateOrganization(supabase, id, { name, is_active: isActive });
 
   if (error) {
     return { error: error.message };

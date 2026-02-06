@@ -66,24 +66,24 @@ export default async function ProgressPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">視聴進捗</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">視聴進捗</h1>
 
       {videos.length === 0 ? (
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center text-gray-500">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500">
           ライセンスのある動画がありません
         </div>
       ) : (
-        <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-x-auto">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 sticky left-0 bg-gray-800 min-w-[180px]">
+              <tr className="border-b border-slate-200 dark:border-slate-700">
+                <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-800 min-w-[180px]">
                   メンバー
                 </th>
                 {videos.map((v) => (
                   <th
                     key={v.id}
-                    className="text-center px-3 py-3 text-sm font-medium text-gray-400 min-w-[100px]"
+                    className="text-center px-3 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 min-w-[100px]"
                   >
                     <div className="truncate max-w-[100px]" title={v.title}>
                       {v.title}
@@ -96,13 +96,13 @@ export default async function ProgressPage() {
               {progressData.map((member) => (
                 <tr
                   key={member.user_id}
-                  className="border-b border-gray-700 last:border-b-0"
+                  className="border-b border-slate-200 dark:border-slate-700 last:border-b-0"
                 >
-                  <td className="px-4 py-3 sticky left-0 bg-gray-800">
-                    <div className="text-white text-sm">
+                  <td className="px-4 py-3 sticky left-0 bg-white dark:bg-slate-800">
+                    <div className="text-slate-900 dark:text-white text-sm">
                       {member.display_name}
                     </div>
-                    <div className="text-gray-500 text-xs">{member.email}</div>
+                    <div className="text-slate-500 text-xs">{member.email}</div>
                   </td>
                   {member.videos.map((v) => {
                     const percent =
@@ -114,15 +114,15 @@ export default async function ProgressPage() {
                     return (
                       <td key={v.video_id} className="px-3 py-3 text-center">
                         {v.completed ? (
-                          <span className="text-green-400 text-sm font-medium">
+                          <span className="text-green-600 dark:text-green-400 text-sm font-medium">
                             完了
                           </span>
                         ) : v.max_watched_seconds > 0 ? (
-                          <span className="text-yellow-400 text-sm">
+                          <span className="text-yellow-600 dark:text-yellow-400 text-sm">
                             {percent}%
                           </span>
                         ) : (
-                          <span className="text-gray-600 text-sm">-</span>
+                          <span className="text-slate-400 dark:text-slate-600 text-sm">-</span>
                         )}
                       </td>
                     );
@@ -133,7 +133,7 @@ export default async function ProgressPage() {
                 <tr>
                   <td
                     colSpan={videos.length + 1}
-                    className="px-4 py-8 text-center text-gray-500"
+                    className="px-4 py-8 text-center text-slate-500"
                   >
                     メンバーがいません
                   </td>

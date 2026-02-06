@@ -6,7 +6,7 @@ interface TableProps extends HTMLAttributes<HTMLTableElement> {
 
 export function Table({ className = "", children, ...props }: TableProps) {
   return (
-    <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
       <table className={`w-full ${className}`} {...props}>
         {children}
       </table>
@@ -20,7 +20,7 @@ interface TableHeaderProps extends HTMLAttributes<HTMLTableSectionElement> {
 
 export function TableHeader({ className = "", children, ...props }: TableHeaderProps) {
   return (
-    <thead className={`bg-slate-800/50 ${className}`} {...props}>
+    <thead className={`bg-slate-100 dark:bg-slate-800/50 ${className}`} {...props}>
       {children}
     </thead>
   );
@@ -32,7 +32,7 @@ interface TableBodyProps extends HTMLAttributes<HTMLTableSectionElement> {
 
 export function TableBody({ className = "", children, ...props }: TableBodyProps) {
   return (
-    <tbody className={`divide-y divide-slate-800 ${className}`} {...props}>
+    <tbody className={`divide-y divide-slate-200 dark:divide-slate-800 ${className}`} {...props}>
       {children}
     </tbody>
   );
@@ -44,7 +44,7 @@ interface TableRowProps extends HTMLAttributes<HTMLTableRowElement> {
 
 export function TableRow({ className = "", children, ...props }: TableRowProps) {
   return (
-    <tr className={`hover:bg-slate-800/30 transition-colors ${className}`} {...props}>
+    <tr className={`hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors ${className}`} {...props}>
       {children}
     </tr>
   );
@@ -57,7 +57,7 @@ interface TableHeadProps extends ThHTMLAttributes<HTMLTableCellElement> {
 export function TableHead({ className = "", children, ...props }: TableHeadProps) {
   return (
     <th
-      className={`px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider ${className}`}
+      className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}
       {...props}
     >
       {children}
@@ -71,7 +71,7 @@ interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
 
 export function TableCell({ className = "", children, ...props }: TableCellProps) {
   return (
-    <td className={`px-4 py-4 text-slate-300 ${className}`} {...props}>
+    <td className={`px-4 py-4 text-slate-700 dark:text-slate-300 ${className}`} {...props}>
       {children}
     </td>
   );

@@ -32,16 +32,16 @@ export default async function WatchPage({ params }: Props) {
   const { data: viewLog } = await getViewLog(supabase, user.id, videoId);
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <header className="bg-gray-800 border-b border-gray-700">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link
             href="/dashboard"
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             &larr; 動画一覧に戻る
           </Link>
-          <h1 className="text-lg font-medium text-white">
+          <h1 className="text-lg font-medium text-slate-900 dark:text-white">
             {video.title}
           </h1>
           <div className="w-24" />

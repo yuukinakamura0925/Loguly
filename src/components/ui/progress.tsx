@@ -26,7 +26,7 @@ export function Progress({
 
   return (
     <div
-      className={`w-full bg-slate-800 rounded-full overflow-hidden ${sizeStyles[size]} ${className}`}
+      className={`w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden ${sizeStyles[size]} ${className}`}
       {...props}
     >
       <div

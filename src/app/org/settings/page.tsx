@@ -56,17 +56,17 @@ export default function OrgSettingsPage() {
   }
 
   if (loading) {
-    return <div className="text-gray-400">読み込み中...</div>;
+    return <div className="text-slate-600 dark:text-slate-400">読み込み中...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">組織設定</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">組織設定</h1>
 
       <div className="max-w-lg space-y-6">
         <form action={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               組織名
             </label>
             <input
@@ -74,31 +74,31 @@ export default function OrgSettingsPage() {
               required
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               スラッグ
             </label>
             <input
               value={slug}
               disabled
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-400 font-mono"
+              className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400 font-mono"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               スラッグは変更できません
             </p>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-900/30 border border-red-800 rounded-lg">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
           {success && (
-            <div className="p-3 bg-green-900/30 border border-green-800 rounded-lg">
-              <p className="text-sm text-green-400">更新しました</p>
+            <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-800 rounded-lg">
+              <p className="text-sm text-green-600 dark:text-green-400">更新しました</p>
             </div>
           )}
 
@@ -111,17 +111,17 @@ export default function OrgSettingsPage() {
         </form>
 
         <div>
-          <h2 className="text-lg font-semibold text-white mb-3">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
             利用可能なライセンス
           </h2>
-          <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left px-4 py-2 text-sm text-gray-400">
+                <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
+                  <th className="text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-400">
                     動画
                   </th>
-                  <th className="text-left px-4 py-2 text-sm text-gray-400">
+                  <th className="text-left px-4 py-2 text-sm text-slate-600 dark:text-slate-400">
                     有効期限
                   </th>
                 </tr>
@@ -130,12 +130,12 @@ export default function OrgSettingsPage() {
                 {licenses.map((lic, i) => (
                   <tr
                     key={i}
-                    className="border-b border-gray-700 last:border-b-0"
+                    className="border-b border-slate-200 dark:border-slate-700 last:border-b-0"
                   >
-                    <td className="px-4 py-2 text-white text-sm">
+                    <td className="px-4 py-2 text-slate-900 dark:text-white text-sm">
                       {(lic.videos as unknown as { title: string })?.title}
                     </td>
-                    <td className="px-4 py-2 text-gray-400 text-sm">
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400 text-sm">
                       {lic.expires_at
                         ? new Date(lic.expires_at).toLocaleDateString("ja-JP")
                         : "なし"}
@@ -146,7 +146,7 @@ export default function OrgSettingsPage() {
                   <tr>
                     <td
                       colSpan={2}
-                      className="px-4 py-4 text-center text-gray-500 text-sm"
+                      className="px-4 py-4 text-center text-slate-500 text-sm"
                     >
                       ライセンスが割り当てられていません
                     </td>
