@@ -4,6 +4,23 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listLicensesWithDetails, listOrganizationNames, listVideoNames } from "@/lib/db";
 import { assignLicense, revokeLicense } from "./actions";
+import {
+  Button,
+  Input,
+  Select,
+  Card,
+  CardContent,
+  Badge,
+  PageHeader,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableEmpty,
+} from "@/components/ui";
+import { PlusIcon, TrashIcon } from "@/components/icons";
 
 type License = {
   id: string;
@@ -64,150 +81,114 @@ export default function LicensesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">ライセンス管理</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-        >
-          {showForm ? "キャンセル" : "ライセンスを割当"}
-        </button>
-      </div>
+      <PageHeader
+        title="ライセンス管理"
+        description="組織への動画ライセンス割り当てを管理します"
+        action={
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            variant={showForm ? "secondary" : "primary"}
+          >
+            {showForm ? (
+              "キャンセル"
+            ) : (
+              <>
+                <PlusIcon />
+                ライセンスを割当
+              </>
+            )}
+          </Button>
+        }
+      />
 
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg">
-          <p className="text-sm text-red-400">{error}</p>
-        </div>
+        <Card className="mb-6 border-red-800 bg-red-900/20">
+          <CardContent className="py-3">
+            <p className="text-sm text-red-400">{error}</p>
+          </CardContent>
+        </Card>
       )}
 
       {showForm && (
-        <form
-          action={handleAssign}
-          className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700 space-y-3"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">組織</label>
-              <select
-                name="organization_id"
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              >
-                <option value="">選択してください</option>
-                {orgs.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">動画</label>
-              <select
-                name="video_id"
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              >
-                <option value="">選択してください</option>
-                {videos.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">
-              有効期限（任意）
-            </label>
-            <input
-              name="expires_at"
-              type="date"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-          >
-            割当
-          </button>
-        </form>
+        <Card className="mb-6">
+          <CardContent>
+            <form action={handleAssign} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Select name="organization_id" label="組織" required>
+                  <option value="">選択してください</option>
+                  {orgs.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))}
+                </Select>
+                <Select name="video_id" label="動画" required>
+                  <option value="">選択してください</option>
+                  {videos.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.title}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Input
+                name="expires_at"
+                label="有効期限（任意）"
+                type="date"
+              />
+              <div className="pt-2">
+                <Button type="submit">割当</Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                組織
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                動画
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                有効期限
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                ステータス
-              </th>
-              <th className="text-right px-4 py-3 text-sm font-medium text-gray-400">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {licenses.map((lic) => (
-              <tr
-                key={lic.id}
-                className="border-b border-gray-700 last:border-b-0"
-              >
-                <td className="px-4 py-3 text-white">
-                  {lic.organizations?.name}
-                </td>
-                <td className="px-4 py-3 text-gray-300">
-                  {lic.videos?.title}
-                </td>
-                <td className="px-4 py-3 text-gray-400 text-sm">
-                  {lic.expires_at
-                    ? new Date(lic.expires_at).toLocaleDateString("ja-JP")
-                    : "なし"}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      lic.is_active
-                        ? "bg-green-900 text-green-300"
-                        : "bg-red-900 text-red-300"
-                    }`}
-                  >
-                    {lic.is_active ? "有効" : "無効"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleRevoke(lic.id)}
-                    className="text-red-400 hover:text-red-300 text-sm"
-                  >
-                    削除
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {licenses.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-gray-500"
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>組織</TableHead>
+            <TableHead>動画</TableHead>
+            <TableHead>有効期限</TableHead>
+            <TableHead>ステータス</TableHead>
+            <TableHead className="text-right w-24">操作</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {licenses.map((lic) => (
+            <TableRow key={lic.id}>
+              <TableCell className="text-white font-medium">
+                {lic.organizations?.name}
+              </TableCell>
+              <TableCell className="text-slate-300">
+                {lic.videos?.title}
+              </TableCell>
+              <TableCell className="text-slate-400 text-sm">
+                {lic.expires_at
+                  ? new Date(lic.expires_at).toLocaleDateString("ja-JP")
+                  : "なし"}
+              </TableCell>
+              <TableCell>
+                <Badge variant={lic.is_active ? "success" : "danger"}>
+                  {lic.is_active ? "有効" : "無効"}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <button
+                  onClick={() => handleRevoke(lic.id)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  title="削除"
                 >
-                  ライセンスがまだ割り当てられていません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  <TrashIcon />
+                </button>
+              </TableCell>
+            </TableRow>
+          ))}
+          {licenses.length === 0 && (
+            <TableEmpty colSpan={5} message="ライセンスがまだ割り当てられていません" />
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

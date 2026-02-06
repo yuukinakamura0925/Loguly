@@ -8,6 +8,22 @@ import {
   updateCategory,
   deleteCategory,
 } from "./actions";
+import {
+  Button,
+  Input,
+  Card,
+  CardContent,
+  PageHeader,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableEmpty,
+  IconButton,
+} from "@/components/ui";
+import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon } from "@/components/icons";
 
 type Category = {
   id: number;
@@ -54,6 +70,7 @@ export default function CategoriesPage() {
   }
 
   async function handleDelete(id: number) {
+    if (!confirm("このカテゴリを削除してもよろしいですか？")) return;
     setError("");
     const result = await deleteCategory(id);
     if (result.error) {
@@ -65,150 +82,139 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">カテゴリ管理</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-        >
-          {showForm ? "キャンセル" : "カテゴリを追加"}
-        </button>
-      </div>
+      <PageHeader
+        title="カテゴリ管理"
+        description="動画のカテゴリを管理します"
+        action={
+          <Button onClick={() => setShowForm(!showForm)} variant={showForm ? "secondary" : "primary"}>
+            {showForm ? (
+              <>
+                <XIcon />
+                キャンセル
+              </>
+            ) : (
+              <>
+                <PlusIcon />
+                カテゴリを追加
+              </>
+            )}
+          </Button>
+        }
+      />
 
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg">
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
           <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
       {showForm && (
-        <form
-          action={handleCreate}
-          className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700 flex gap-3 items-end"
-        >
-          <div className="flex-1">
-            <label className="block text-sm text-gray-400 mb-1">
-              カテゴリ名
-            </label>
-            <input
-              name="name"
-              required
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-            />
-          </div>
-          <div className="w-24">
-            <label className="block text-sm text-gray-400 mb-1">表示順</label>
-            <input
-              name="display_order"
-              type="number"
-              defaultValue={0}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-          >
-            追加
-          </button>
-        </form>
+        <Card className="mb-6">
+          <CardContent>
+            <form action={handleCreate} className="flex gap-4 items-end">
+              <div className="flex-1">
+                <Input
+                  name="name"
+                  label="カテゴリ名"
+                  placeholder="例: セキュリティ研修"
+                  required
+                />
+              </div>
+              <div className="w-32">
+                <Input
+                  name="display_order"
+                  label="表示順"
+                  type="number"
+                  defaultValue={0}
+                />
+              </div>
+              <Button type="submit" className="mb-0.5">
+                <CheckIcon />
+                追加
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                表示順
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                カテゴリ名
-              </th>
-              <th className="text-right px-4 py-3 text-sm font-medium text-gray-400">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <tr
-                key={cat.id}
-                className="border-b border-gray-700 last:border-b-0"
-              >
-                {editingId === cat.id ? (
-                  <td colSpan={3} className="px-4 py-3">
-                    <form
-                      action={(formData) => handleUpdate(cat.id, formData)}
-                      className="flex gap-3 items-end"
-                    >
-                      <div className="w-24">
-                        <input
-                          name="display_order"
-                          type="number"
-                          defaultValue={cat.display_order}
-                          className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <input
-                          name="name"
-                          required
-                          defaultValue={cat.name}
-                          className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white text-sm"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        className="text-green-400 hover:text-green-300 text-sm"
-                      >
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-24">表示順</TableHead>
+            <TableHead>カテゴリ名</TableHead>
+            <TableHead className="w-32 text-right">操作</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {categories.map((cat) => (
+            <TableRow key={cat.id}>
+              {editingId === cat.id ? (
+                <TableCell colSpan={3} className="py-3">
+                  <form
+                    action={(formData) => handleUpdate(cat.id, formData)}
+                    className="flex gap-4 items-center"
+                  >
+                    <input
+                      name="display_order"
+                      type="number"
+                      defaultValue={cat.display_order}
+                      className="w-24 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    />
+                    <input
+                      name="name"
+                      required
+                      defaultValue={cat.name}
+                      className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm">
+                        <CheckIcon />
                         保存
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setEditingId(null)}
-                        className="text-gray-400 hover:text-gray-300 text-sm"
                       >
+                        <XIcon />
                         キャンセル
-                      </button>
-                    </form>
-                  </td>
-                ) : (
-                  <>
-                    <td className="px-4 py-3 text-gray-400 w-20">
-                      {cat.display_order}
-                    </td>
-                    <td className="px-4 py-3 text-white">{cat.name}</td>
-                    <td className="px-4 py-3 text-right">
-                      <button
+                      </Button>
+                    </div>
+                  </form>
+                </TableCell>
+              ) : (
+                <>
+                  <TableCell className="text-slate-500 font-mono">
+                    {cat.display_order}
+                  </TableCell>
+                  <TableCell className="text-white font-medium">
+                    {cat.name}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      <IconButton
+                        icon={<PencilIcon />}
+                        label="編集"
                         onClick={() => setEditingId(cat.id)}
-                        className="text-blue-400 hover:text-blue-300 text-sm mr-3"
-                      >
-                        編集
-                      </button>
-                      <button
+                      />
+                      <IconButton
+                        icon={<TrashIcon />}
+                        label="削除"
+                        variant="danger"
                         onClick={() => handleDelete(cat.id)}
-                        className="text-red-400 hover:text-red-300 text-sm"
-                      >
-                        削除
-                      </button>
-                    </td>
-                  </>
-                )}
-              </tr>
-            ))}
-            {categories.length === 0 && (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="px-4 py-8 text-center text-gray-500"
-                >
-                  カテゴリがまだ登録されていません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                      />
+                    </div>
+                  </TableCell>
+                </>
+              )}
+            </TableRow>
+          ))}
+          {categories.length === 0 && (
+            <TableEmpty colSpan={3} message="カテゴリがまだ登録されていません" />
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
