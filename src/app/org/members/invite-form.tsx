@@ -6,6 +6,13 @@ import { createInvitation } from "./actions";
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(inviteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   async function handleSubmit(formData: FormData) {
     setError("");
@@ -20,7 +27,13 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
 
   if (inviteUrl) {
     return (
-      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3 relative">
+        {/* コピー完了トースト */}
+        {copied && (
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm rounded-lg shadow-lg animate-fade-in">
+            コピーしました
+          </div>
+        )}
         <div className="text-green-600 dark:text-green-400 text-sm font-medium">
           招待を作成しました
         </div>
@@ -36,10 +49,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
             <button
-              onClick={() => navigator.clipboard.writeText(inviteUrl)}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+              onClick={handleCopy}
+              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                copied
+                  ? "bg-green-600 text-white"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
-              コピー
+              {copied ? "✓" : "コピー"}
             </button>
           </div>
         </div>

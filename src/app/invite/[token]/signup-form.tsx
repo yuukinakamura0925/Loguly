@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { acceptInvitation } from "./actions";
 
 export default function SignupForm({
   email,
@@ -11,13 +11,13 @@ export default function SignupForm({
   email: string;
   token: string;
 }) {
-  const router = useRouter();
   const supabase = createClient();
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +35,7 @@ export default function SignupForm({
 
     setIsLoading(true);
 
+    // 1. ユーザー登録
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -46,28 +47,64 @@ export default function SignupForm({
     });
 
     if (signUpError) {
-      // 既にアカウントがある場合はログインを試みる
       if (signUpError.message.includes("already registered")) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) {
-          setError(
-            "このメールアドレスは既に登録されています。正しいパスワードでログインしてください。"
-          );
-          setIsLoading(false);
-          return;
-        }
+        setError(
+          "このメールアドレスは既に登録されています。ログインページからログインしてください。"
+        );
       } else {
         setError(signUpError.message);
-        setIsLoading(false);
-        return;
       }
+      setIsLoading(false);
+      return;
     }
 
-    router.push("/dashboard");
+    // 2. 招待を受諾（組織メンバーに追加）
+    const result = await acceptInvitation(token, email);
+
+    if (result.error) {
+      setError(result.error);
+      setIsLoading(false);
+      return;
+    }
+
+    // 成功
+    setSuccess(true);
+    setIsLoading(false);
+  }
+
+  if (success) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
+          <svg
+            className="w-8 h-8 text-green-600 dark:text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+          登録完了
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          確認メールを送信しました。
+          <br />
+          メール内のリンクをクリックして
+          <br />
+          アカウントを有効化してください。
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-500">
+          有効化後、ログインページからログインできます。
+        </p>
+      </div>
+    );
   }
 
   return (

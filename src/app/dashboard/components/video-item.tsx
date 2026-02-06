@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui";
 
 interface VideoItemProps {
   id: number;
@@ -16,80 +15,98 @@ function formatDuration(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-const statusConfig = {
-  pending: {
-    text: "未視聴",
-    variant: "default" as const,
-    iconBg: "bg-slate-200 dark:bg-slate-800",
-    icon: (
-      <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  "in-progress": {
-    text: "",
-    variant: "warning" as const,
-    iconBg: "bg-amber-500/20",
-    icon: (
-      <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-      </svg>
-    ),
-  },
-  completed: {
-    text: "完了",
-    variant: "success" as const,
-    iconBg: "bg-emerald-500/20",
-    icon: (
-      <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    ),
-  },
-};
-
 export function VideoItem({ id, title, description, duration, status, progress }: VideoItemProps) {
-  const config = statusConfig[status];
-  const displayText = status === "in-progress" ? `${progress}%` : config.text;
+  const isCompleted = status === "completed";
+  const isInProgress = status === "in-progress";
 
   return (
     <Link
       href={`/watch/${id}`}
-      className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
     >
-      {/* Status Icon */}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
-        {config.icon}
-      </div>
+      <div className="flex gap-4">
+        {/* サムネイルプレースホルダー */}
+        <div className={`relative w-32 h-20 rounded-lg flex-shrink-0 overflow-hidden ${
+          isCompleted
+            ? "bg-gradient-to-br from-emerald-500/20 to-emerald-600/20"
+            : "bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800"
+        }`}>
+          {/* 再生アイコン */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isCompleted ? (
+              <div className="w-10 h-10 rounded-full bg-emerald-500/90 flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-slate-700 dark:text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            )}
+          </div>
+          {/* 時間バッジ */}
+          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/70 rounded text-xs text-white font-medium">
+            {formatDuration(duration)}
+          </div>
+        </div>
 
-      {/* Video Info */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-slate-900 dark:text-white font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-slate-500 text-sm mt-0.5 truncate">
-            {description}
-          </p>
-        )}
-      </div>
+        {/* コンテンツ */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className={`font-medium leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${
+              isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
+            }`}>
+              {title}
+            </h3>
+            {/* ステータスバッジ */}
+            {isCompleted && (
+              <span className="flex-shrink-0 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded">
+                完了
+              </span>
+            )}
+          </div>
 
-      {/* Duration & Status */}
-      <div className="flex items-center gap-4 flex-shrink-0">
-        <span className="text-slate-500 text-sm">
-          {formatDuration(duration)}
-        </span>
-        <Badge variant={config.variant}>
-          {displayText}
-        </Badge>
-      </div>
+          {description && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+              {description}
+            </p>
+          )}
 
-      {/* Arrow */}
-      <svg className="w-5 h-5 text-slate-400 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
+          {/* プログレスバー */}
+          {!isCompleted && (
+            <div className="mt-2 flex items-center gap-2">
+              <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    isInProgress ? "bg-blue-500" : "bg-slate-300 dark:bg-slate-600"
+                  }`}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <span className={`text-xs font-medium flex-shrink-0 ${
+                isInProgress ? "text-blue-600 dark:text-blue-400" : "text-slate-400"
+              }`}>
+                {isInProgress ? `${progress}%` : "未視聴"}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* 矢印 */}
+        <div className="flex items-center flex-shrink-0">
+          <svg
+            className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 group-hover:translate-x-1 transition-all"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
     </Link>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
@@ -5,18 +6,15 @@ import {
   listLicensedVideosForOrg,
   getViewLogsByUsers,
 } from "@/lib/db";
+import { CheckCircleIcon, ChevronRightIcon } from "@/components/icons";
 
 type MemberProgress = {
   user_id: string;
   display_name: string;
   email: string;
-  videos: {
-    video_id: number;
-    title: string;
-    duration: number;
-    max_watched_seconds: number;
-    completed: boolean;
-  }[];
+  completedCount: number;
+  totalCount: number;
+  watchedPercent: number; // 実際の視聴進捗（%）
 };
 
 export default async function ProgressPage() {
@@ -31,13 +29,14 @@ export default async function ProgressPage() {
 
   const videos =
     licenses
-      ?.map((l) => l.videos as unknown as { id: number; title: string; duration: number; display_order: number })
-      .filter(Boolean)
-      .sort((a, b) => a.display_order - b.display_order) || [];
+      ?.map((l) => l.videos as unknown as { id: number; duration: number })
+      .filter(Boolean) || [];
 
   const memberIds = members?.map((m) => m.user_id) || [];
-
   const { data: viewLogs } = await getViewLogsByUsers(supabase, memberIds);
+
+  // 全動画の合計時間
+  const totalDuration = videos.reduce((acc, v) => acc + (v.duration || 0), 0);
 
   const progressData: MemberProgress[] =
     members?.map((m) => {
@@ -45,103 +44,162 @@ export default async function ProgressPage() {
         display_name: string;
         email: string;
       };
+
+      // この人の視聴ログ
+      const memberLogs = viewLogs?.filter((l) => l.user_id === m.user_id) || [];
+
+      // 完了数
+      const completedCount = videos.filter((v) =>
+        memberLogs.some((l) => l.video_id === v.id && l.completed)
+      ).length;
+
+      // 視聴済み秒数の合計（各動画のdurationを超えないようにする）
+      let totalWatched = 0;
+      for (const video of videos) {
+        const log = memberLogs.find((l) => l.video_id === video.id);
+        if (log) {
+          totalWatched += Math.min(log.max_watched_seconds, video.duration || 0);
+        }
+      }
+
+      // 視聴進捗率（全動画の合計時間に対する視聴済み時間の割合）
+      const watchedPercent = totalDuration > 0
+        ? Math.round((totalWatched / totalDuration) * 100)
+        : 0;
+
       return {
         user_id: m.user_id,
         display_name: profile?.display_name || "",
         email: profile?.email || "",
-        videos: videos.map((v) => {
-          const log = viewLogs?.find(
-            (l) => l.user_id === m.user_id && l.video_id === v.id
-          );
-          return {
-            video_id: v.id,
-            title: v.title,
-            duration: v.duration,
-            max_watched_seconds: log?.max_watched_seconds || 0,
-            completed: log?.completed || false,
-          };
-        }),
+        completedCount,
+        totalCount: videos.length,
+        watchedPercent,
       };
     }) || [];
+
+  // 統計
+  const totalMembers = progressData.length;
+  const totalVideos = videos.length;
+  const avgProgress = progressData.length > 0
+    ? Math.round(progressData.reduce((acc, m) => acc + m.watchedPercent, 0) / progressData.length)
+    : 0;
+  const fullyCompletedMembers = progressData.filter((m) => m.completedCount === m.totalCount && m.totalCount > 0).length;
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">視聴進捗</h1>
 
       {videos.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500">
           ライセンスのある動画がありません
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 sticky left-0 bg-slate-50 dark:bg-slate-800 min-w-[180px]">
-                  メンバー
-                </th>
-                {videos.map((v) => (
-                  <th
-                    key={v.id}
-                    className="text-center px-3 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 min-w-[100px]"
+        <>
+          {/* 統計サマリー */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">{totalMembers}</div>
+              <div className="text-sm text-slate-500">メンバー</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white">{totalVideos}</div>
+              <div className="text-sm text-slate-500">動画数</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fullyCompletedMembers}</div>
+              <div className="text-sm text-slate-500">全完了者</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{avgProgress}%</div>
+              <div className="text-sm text-slate-500">平均進捗</div>
+            </div>
+          </div>
+
+          {/* メンバー一覧 */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+              <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">メンバー別進捗</h2>
+            </div>
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              {progressData.map((member) => {
+                const isFullyCompleted = member.completedCount === member.totalCount && member.totalCount > 0;
+
+                return (
+                  <Link
+                    key={member.user_id}
+                    href={`/org/progress/${member.user_id}`}
+                    className={`flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                      isFullyCompleted ? "bg-emerald-50/50 dark:bg-emerald-900/10" : ""
+                    }`}
                   >
-                    <div className="truncate max-w-[100px]" title={v.title}>
-                      {v.title}
+                    {/* アバター */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                      isFullyCompleted
+                        ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
+                        : "bg-gradient-to-br from-slate-400 to-slate-500"
+                    }`}>
+                      {member.display_name?.charAt(0) || "?"}
                     </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {progressData.map((member) => (
-                <tr
-                  key={member.user_id}
-                  className="border-b border-slate-200 dark:border-slate-700 last:border-b-0"
-                >
-                  <td className="px-4 py-3 sticky left-0 bg-white dark:bg-slate-800">
-                    <div className="text-slate-900 dark:text-white text-sm">
-                      {member.display_name}
-                    </div>
-                    <div className="text-slate-500 text-xs">{member.email}</div>
-                  </td>
-                  {member.videos.map((v) => {
-                    const percent =
-                      v.duration > 0
-                        ? Math.round(
-                            (v.max_watched_seconds / v.duration) * 100
-                          )
-                        : 0;
-                    return (
-                      <td key={v.video_id} className="px-3 py-3 text-center">
-                        {v.completed ? (
-                          <span className="text-green-600 dark:text-green-400 text-sm font-medium">
-                            完了
-                          </span>
-                        ) : v.max_watched_seconds > 0 ? (
-                          <span className="text-yellow-600 dark:text-yellow-400 text-sm">
-                            {percent}%
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-600 text-sm">-</span>
+
+                    {/* 名前・メール */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-900 dark:text-white font-medium truncate">
+                          {member.display_name}
+                        </span>
+                        {isFullyCompleted && (
+                          <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                         )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+                      </div>
+                      <div className="text-slate-500 text-sm truncate">{member.email}</div>
+                    </div>
+
+                    {/* 進捗 */}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div className={`text-lg font-bold ${
+                          isFullyCompleted
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : member.watchedPercent > 0
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-slate-400"
+                        }`}>
+                          {member.watchedPercent}%
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {member.completedCount}/{member.totalCount} 完了
+                        </div>
+                      </div>
+
+                      {/* プログレスバー */}
+                      <div className="w-24 hidden sm:block">
+                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              isFullyCompleted
+                                ? "bg-emerald-500"
+                                : member.watchedPercent > 0
+                                  ? "bg-blue-500"
+                                  : "bg-slate-300 dark:bg-slate-600"
+                            }`}
+                            style={{ width: `${member.watchedPercent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+                    </div>
+                  </Link>
+                );
+              })}
               {progressData.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={videos.length + 1}
-                    className="px-4 py-8 text-center text-slate-500"
-                  >
-                    メンバーがいません
-                  </td>
-                </tr>
+                <div className="px-4 py-8 text-center text-slate-500">
+                  メンバーがいません
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

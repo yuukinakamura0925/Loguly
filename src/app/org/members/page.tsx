@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
+import { ChevronRightIcon } from "@/components/icons";
 
 type Member = {
   user_id: string;
@@ -128,11 +130,16 @@ export default function MembersPage() {
             {members.map((m) => (
               <tr
                 key={m.user_id}
-                className="border-b border-slate-200 dark:border-slate-700 last:border-b-0"
+                className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
-                <td className="px-4 py-3 text-slate-900 dark:text-white">
-                  {(m.profiles as unknown as { display_name: string })
-                    ?.display_name}
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/org/progress/${m.user_id}`}
+                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    {(m.profiles as unknown as { display_name: string })?.display_name}
+                    <ChevronRightIcon className="w-4 h-4 text-slate-400" />
+                  </Link>
                 </td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}

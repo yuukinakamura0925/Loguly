@@ -10,7 +10,7 @@ export function listLicensesWithDetails(client: TypedClient) {
 export function listActiveLicensesForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("expires_at, videos(title)")
+    .select("expires_at, videos(title, display_order, categories(name, display_order))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }
@@ -18,7 +18,7 @@ export function listActiveLicensesForOrg(client: TypedClient, organizationId: st
 export function listLicensedVideosForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id, videos(id, title, duration, display_order)")
+    .select("video_id, videos(id, title, duration, display_order, categories(name))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }

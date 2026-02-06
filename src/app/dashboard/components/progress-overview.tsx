@@ -1,12 +1,14 @@
 import { Progress } from "@/components/ui";
 
 interface ProgressOverviewProps {
+  watchedSeconds: number;
+  totalSeconds: number;
   completedVideos: number;
   totalVideos: number;
 }
 
-export function ProgressOverview({ completedVideos, totalVideos }: ProgressOverviewProps) {
-  const percentage = totalVideos > 0 ? Math.round((completedVideos / totalVideos) * 100) : 0;
+export function ProgressOverview({ watchedSeconds, totalSeconds, completedVideos, totalVideos }: ProgressOverviewProps) {
+  const percentage = totalSeconds > 0 ? Math.round((watchedSeconds / totalSeconds) * 100) : 0;
 
   return (
     <div className="bg-gradient-to-br from-white to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">

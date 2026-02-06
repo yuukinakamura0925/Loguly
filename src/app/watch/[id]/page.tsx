@@ -1,7 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getPublishedVideoById, getViewLog } from "@/lib/db";
+import { getPublishedVideoById, getViewLog, getProfileRole, listPublishedVideosByCategory } from "@/lib/db";
 import VideoPlayer from "./video-player";
+import VideoNavigation from "./video-navigation";
 import Link from "next/link";
 
 type Props = {
@@ -23,6 +24,15 @@ export default async function WatchPage({ params }: Props) {
     redirect("/login");
   }
 
+  // member以外はアクセス不可
+  const { data: profile } = await getProfileRole(supabase, user.id);
+  if (profile?.role === "platform_admin") {
+    redirect("/admin");
+  }
+  if (profile?.role === "org_admin") {
+    redirect("/org/members");
+  }
+
   const { data: video, error: videoError } = await getPublishedVideoById(supabase, videoId);
 
   if (videoError || !video) {
@@ -30,6 +40,22 @@ export default async function WatchPage({ params }: Props) {
   }
 
   const { data: viewLog } = await getViewLog(supabase, user.id, videoId);
+
+  // 同じカテゴリの動画を取得して前後を特定
+  const { data: categoryVideos } = await listPublishedVideosByCategory(supabase, video.category_id);
+
+  let prevVideo = null;
+  let nextVideo = null;
+
+  if (categoryVideos && categoryVideos.length > 1) {
+    const currentIndex = categoryVideos.findIndex(v => v.id === videoId);
+    if (currentIndex > 0) {
+      prevVideo = categoryVideos[currentIndex - 1];
+    }
+    if (currentIndex < categoryVideos.length - 1) {
+      nextVideo = categoryVideos[currentIndex + 1];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900">
@@ -41,7 +67,7 @@ export default async function WatchPage({ params }: Props) {
           >
             &larr; 動画一覧に戻る
           </Link>
-          <h1 className="text-lg font-medium text-slate-900 dark:text-white">
+          <h1 className="text-lg font-medium text-slate-900 dark:text-white hidden sm:block">
             {video.title}
           </h1>
           <div className="w-24" />
@@ -56,7 +82,7 @@ export default async function WatchPage({ params }: Props) {
             description: video.description,
             duration: video.duration,
             cfVideoId: video.cf_video_id,
-            categoryName: video.categories?.name,
+            categoryName: video.categories!.name,
           }}
           initialProgress={{
             maxWatchedSeconds: viewLog?.max_watched_seconds || 0,
@@ -64,6 +90,15 @@ export default async function WatchPage({ params }: Props) {
           }}
           userId={user.id}
         />
+
+        {/* 前後の動画ナビゲーション */}
+        {(prevVideo || nextVideo) && (
+          <VideoNavigation
+            categoryName={video.categories!.name}
+            prevVideo={prevVideo ? { id: prevVideo.id, title: prevVideo.title } : null}
+            nextVideo={nextVideo ? { id: nextVideo.id, title: nextVideo.title } : null}
+          />
+        )}
       </main>
     </div>
   );

@@ -70,6 +70,15 @@ export function listVideosByCategory(client: TypedClient, categoryId: number) {
     .order("display_order");
 }
 
+export function listPublishedVideosByCategory(client: TypedClient, categoryId: number) {
+  return client
+    .from("videos")
+    .select("id, title, display_order")
+    .eq("category_id", categoryId)
+    .eq("is_published", true)
+    .order("display_order");
+}
+
 export function updateVideoOrder(client: TypedClient, id: number, displayOrder: number) {
   return client.from("videos").update({ display_order: displayOrder }).eq("id", id);
 }
