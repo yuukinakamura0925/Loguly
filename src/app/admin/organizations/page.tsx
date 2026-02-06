@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { listOrganizations } from "@/lib/db";
+import { searchOrganizations, countOrganizations } from "@/lib/db";
 import { deleteOrganization } from "./actions";
 import {
   Button,
@@ -13,13 +13,34 @@ import {
   TableHead,
   TableCell,
   TableEmpty,
+  SearchInput,
+  Pagination,
 } from "@/components/ui";
 import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@/components/icons";
 
-export default async function OrganizationsPage() {
+const PER_PAGE = 10;
+
+export default async function OrganizationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const params = await searchParams;
+  const search = params.q || "";
+  const page = parseInt(params.page || "1", 10);
+
   const supabase = await createClient();
 
-  const { data: organizations } = await listOrganizations(supabase);
+  const [{ data: organizations }, { count }] = await Promise.all([
+    searchOrganizations(supabase, { search, page, perPage: PER_PAGE }),
+    countOrganizations(supabase, search),
+  ]);
+
+  const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
+
+  // Build search params for pagination
+  const paginationParams: Record<string, string> = {};
+  if (search) paginationParams.q = search;
 
   return (
     <div>
@@ -35,6 +56,10 @@ export default async function OrganizationsPage() {
           </Link>
         }
       />
+
+      <div className="mb-6">
+        <SearchInput placeholder="組織名で検索..." paramName="q" className="max-w-sm" />
+      </div>
 
       <Table>
         <TableHeader>
@@ -94,10 +119,24 @@ export default async function OrganizationsPage() {
             );
           })}
           {(!organizations || organizations.length === 0) && (
-            <TableEmpty colSpan={4} message="組織がまだ登録されていません" />
+            <TableEmpty
+              colSpan={4}
+              message={search ? "検索結果がありません" : "組織がまだ登録されていません"}
+            />
           )}
         </TableBody>
       </Table>
+
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            baseUrl="/admin/organizations"
+            searchParams={paginationParams}
+          />
+        </div>
+      )}
     </div>
   );
 }

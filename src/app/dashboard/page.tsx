@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/auth";
 import { getProfileById, listCategories, listPublishedVideos, getViewLogsByUser } from "@/lib/db";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SettingsIcon } from "@/components/icons";
 import LogoutButton from "./logout-button";
 import { ProgressOverview } from "./components/progress-overview";
 import { CategorySection } from "./components/category-section";
@@ -93,6 +95,13 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/settings"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              title="設定"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </Link>
             <ThemeToggle />
             <LogoutButton />
           </div>

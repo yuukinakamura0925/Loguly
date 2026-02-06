@@ -15,3 +15,11 @@ export function getProfileByEmail(client: TypedClient, email: string) {
 export function updateProfileRole(client: TypedClient, userId: string, role: string) {
   return client.from("profiles").update({ role }).eq("id", userId);
 }
+
+export function updateProfile(
+  client: TypedClient,
+  userId: string,
+  data: { display_name?: string; email?: string }
+) {
+  return client.from("profiles").update(data).eq("id", userId);
+}
