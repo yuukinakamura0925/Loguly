@@ -2,6 +2,19 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { listOrganizations } from "@/lib/db";
 import { deleteOrganization } from "./actions";
+import {
+  Button,
+  Badge,
+  PageHeader,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableEmpty,
+} from "@/components/ui";
+import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@/components/icons";
 
 export default async function OrganizationsPage() {
   const supabase = await createClient();
@@ -10,99 +23,81 @@ export default async function OrganizationsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">組織管理</h1>
-        <Link
-          href="/admin/organizations/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-        >
-          組織を作成
-        </Link>
-      </div>
+      <PageHeader
+        title="組織管理"
+        description="登録されている組織を管理します"
+        action={
+          <Link href="/admin/organizations/new">
+            <Button>
+              <PlusIcon />
+              組織を作成
+            </Button>
+          </Link>
+        }
+      />
 
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                組織名
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                スラッグ
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                メンバー数
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                ステータス
-              </th>
-              <th className="text-right px-4 py-3 text-sm font-medium text-gray-400">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {organizations?.map((org) => (
-              <tr
-                key={org.id}
-                className="border-b border-gray-700 last:border-b-0"
-              >
-                <td className="px-4 py-3 text-white">{org.name}</td>
-                <td className="px-4 py-3 text-gray-400 font-mono text-sm">
-                  {org.slug}
-                </td>
-                <td className="px-4 py-3 text-gray-400">
-                  {(org.organization_members as { count: number }[])?.[0]
-                    ?.count ?? 0}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      org.is_active
-                        ? "bg-green-900 text-green-300"
-                        : "bg-red-900 text-red-300"
-                    }`}
-                  >
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>組織名</TableHead>
+            <TableHead>メンバー数</TableHead>
+            <TableHead>ステータス</TableHead>
+            <TableHead className="text-right w-32">操作</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {organizations?.map((org) => {
+            const memberCount = (org.organization_members as { count: number }[])?.[0]?.count ?? 0;
+
+            return (
+              <TableRow key={org.id}>
+                <TableCell className="text-slate-900 dark:text-white font-medium">
+                  {org.name}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                    <UsersIcon className="w-4 h-4" />
+                    {memberCount}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={org.is_active ? "success" : "danger"}>
                     {org.is_active ? "有効" : "無効"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/admin/organizations/${org.id}`}
-                    className="text-blue-400 hover:text-blue-300 text-sm mr-3"
-                  >
-                    編集
-                  </Link>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await deleteOrganization(org.id);
-                    }}
-                    className="inline"
-                  >
-                    <button
-                      type="submit"
-                      className="text-red-400 hover:text-red-300 text-sm"
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Link
+                      href={`/admin/organizations/${org.id}`}
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                      title="編集"
                     >
-                      削除
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-            {(!organizations || organizations.length === 0) && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-gray-500"
-                >
-                  組織がまだ登録されていません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                      <PencilIcon />
+                    </Link>
+                    <form
+                      action={async () => {
+                        "use server";
+                        await deleteOrganization(org.id);
+                      }}
+                    >
+                      <button
+                        type="submit"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        title="削除"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </form>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+          {(!organizations || organizations.length === 0) && (
+            <TableEmpty colSpan={4} message="組織がまだ登録されていません" />
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

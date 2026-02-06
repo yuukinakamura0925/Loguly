@@ -2,13 +2,13 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-white dark:bg-slate-950">
       <main className="max-w-2xl text-center">
-        <h1 className="text-4xl font-bold mb-4">Loguly</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+        <h1 className="text-4xl font-bold mb-4 text-slate-900 dark:text-white">Loguly</h1>
+        <p className="text-xl text-slate-600 dark:text-slate-400 mb-8">
           動画視聴ログ管理システム
         </p>
-        <p className="text-gray-500 dark:text-gray-500 mb-12">
+        <p className="text-slate-500 mb-12">
           スキップ不可の動画プレイヤーで確実な視聴完了を保証
         </p>
 
@@ -22,7 +22,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="mt-16 text-sm text-gray-400">
+      <footer className="mt-16 text-sm text-slate-400">
         &copy; 2026 Loguly
       </footer>
     </div>

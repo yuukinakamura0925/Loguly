@@ -7,6 +7,8 @@ import {
   upsertLicense,
   updateLicense as dbUpdateLicense,
   deleteLicense,
+  deleteLicensesByOrgAndVideos,
+  insertLicensesBulk,
 } from "@/lib/db";
 
 export async function assignLicense(formData: FormData) {
@@ -48,6 +50,40 @@ export async function revokeLicense(id: string) {
   const { error } = await deleteLicense(supabase, id);
 
   if (error) return { error: error.message };
+
+  revalidatePath("/admin/licenses");
+  return { success: true };
+}
+
+export async function updateOrgLicenses(
+  organizationId: string,
+  selectedVideoIds: number[],
+  allVideoIds: number[]
+) {
+  await requireRole("platform_admin");
+  const supabase = await createClient();
+
+  // Remove licenses for unchecked videos
+  const uncheckedIds = allVideoIds.filter((id) => !selectedVideoIds.includes(id));
+  if (uncheckedIds.length > 0) {
+    const { error: deleteError } = await deleteLicensesByOrgAndVideos(
+      supabase,
+      organizationId,
+      uncheckedIds
+    );
+    if (deleteError) return { error: deleteError.message };
+  }
+
+  // Add licenses for checked videos
+  if (selectedVideoIds.length > 0) {
+    const licenses = selectedVideoIds.map((videoId) => ({
+      organization_id: organizationId,
+      video_id: videoId,
+      is_active: true,
+    }));
+    const { error: insertError } = await insertLicensesBulk(supabase, licenses);
+    if (insertError) return { error: insertError.message };
+  }
 
   revalidatePath("/admin/licenses");
   return { success: true };

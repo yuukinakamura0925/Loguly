@@ -20,19 +20,19 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
 
   if (inviteUrl) {
     return (
-      <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700 space-y-3">
-        <div className="text-green-400 text-sm font-medium">
+      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="text-green-600 dark:text-green-400 text-sm font-medium">
           招待を作成しました
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
             招待リンク（メールで送信してください）
           </label>
           <div className="flex gap-2">
             <input
               readOnly
               value={inviteUrl}
-              className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm font-mono"
+              className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm font-mono"
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
             <button
@@ -45,7 +45,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
         </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white text-sm"
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm"
         >
           閉じる
         </button>
@@ -56,26 +56,26 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
   return (
     <form
       action={handleSubmit}
-      className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700 space-y-3"
+      className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3"
     >
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
             メールアドレス
           </label>
           <input
             name="email"
             type="email"
             required
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
+            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
             placeholder="user@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-400 mb-1">ロール</label>
+          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">ロール</label>
           <select
             name="role"
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
+            className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
           >
             <option value="member">メンバー</option>
             <option value="org_admin">組織管理者</option>
@@ -84,8 +84,8 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-900/30 border border-red-800 rounded-lg">
-          <p className="text-sm text-red-400">{error}</p>
+        <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </div>
       )}
 
@@ -99,7 +99,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 text-sm"
+          className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-white rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 text-sm"
         >
           キャンセル
         </button>

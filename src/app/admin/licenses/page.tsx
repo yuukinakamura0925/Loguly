@@ -2,211 +2,396 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { listLicensesWithDetails, listOrganizationNames, listVideoNames } from "@/lib/db";
-import { assignLicense, revokeLicense } from "./actions";
+import {
+  listOrganizations,
+  listVideosWithCategory,
+  listCategories,
+  listLicenseVideoIdsForOrg,
+} from "@/lib/db";
+import { updateOrgLicenses } from "./actions";
+import {
+  Button,
+  Card,
+  CardContent,
+  Badge,
+  PageHeader,
+  Input,
+} from "@/components/ui";
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  BuildingIcon,
+  VideoIcon,
+  FolderIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from "@/components/icons";
 
-type License = {
+type Org = {
   id: string;
-  organization_id: string;
-  video_id: number;
-  expires_at: string | null;
+  name: string;
   is_active: boolean;
-  organizations: { name: string };
-  videos: { title: string };
+  organization_members: { count: number }[];
 };
 
-type Org = { id: string; name: string };
-type Video = { id: number; title: string };
+type Category = {
+  id: number;
+  name: string;
+  display_order: number;
+};
+
+type Video = {
+  id: number;
+  title: string;
+  category_id: number;
+  display_order: number;
+};
 
 export default function LicensesPage() {
   const supabase = createClient();
-  const [licenses, setLicenses] = useState<License[]>([]);
   const [orgs, setOrgs] = useState<Org[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<Org | null>(null);
+  const [selectedVideoIds, setSelectedVideoIds] = useState<Set<number>>(new Set());
+  const [originalVideoIds, setOriginalVideoIds] = useState<Set<number>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const load = useCallback(async () => {
-    const [{ data: lics }, { data: os }, { data: vs }] = await Promise.all([
-      listLicensesWithDetails(supabase),
-      listOrganizationNames(supabase),
-      listVideoNames(supabase),
+  const loadOrgs = useCallback(async () => {
+    const { data } = await listOrganizations(supabase);
+    setOrgs((data as Org[]) || []);
+  }, [supabase]);
+
+  const loadData = useCallback(async () => {
+    const [{ data: cats }, { data: vids }] = await Promise.all([
+      listCategories(supabase),
+      listVideosWithCategory(supabase),
     ]);
-    setLicenses((lics as License[]) || []);
-    setOrgs((os as Org[]) || []);
-    setVideos((vs as Video[]) || []);
+    setCategories((cats as Category[]) || []);
+    setVideos((vids as Video[]) || []);
   }, [supabase]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadOrgs();
+    loadData();
+  }, [loadOrgs, loadData]);
 
-  async function handleAssign(formData: FormData) {
+  async function selectOrg(org: Org) {
+    setSelectedOrg(org);
     setError("");
-    const result = await assignLicense(formData);
+    setSuccess("");
+
+    // Load current licenses for this org
+    const { data } = await listLicenseVideoIdsForOrg(supabase, org.id);
+    const ids = new Set((data || []).map((l) => l.video_id));
+    setSelectedVideoIds(ids);
+    setOriginalVideoIds(new Set(ids));
+    // Expand all categories by default
+    setExpandedCategories(new Set(categories.map((c) => c.id)));
+  }
+
+  function toggleCategory(categoryId: number) {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }
+
+  function toggleVideo(videoId: number) {
+    setSelectedVideoIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(videoId)) {
+        next.delete(videoId);
+      } else {
+        next.add(videoId);
+      }
+      return next;
+    });
+  }
+
+  function getVideosInCategory(categoryId: number) {
+    return videos.filter((v) => v.category_id === categoryId);
+  }
+
+  function isCategoryFullySelected(categoryId: number) {
+    const categoryVideos = getVideosInCategory(categoryId);
+    return categoryVideos.length > 0 && categoryVideos.every((v) => selectedVideoIds.has(v.id));
+  }
+
+  function isCategoryPartiallySelected(categoryId: number) {
+    const categoryVideos = getVideosInCategory(categoryId);
+    const selectedCount = categoryVideos.filter((v) => selectedVideoIds.has(v.id)).length;
+    return selectedCount > 0 && selectedCount < categoryVideos.length;
+  }
+
+  function toggleCategoryVideos(categoryId: number) {
+    const categoryVideos = getVideosInCategory(categoryId);
+    const allSelected = isCategoryFullySelected(categoryId);
+
+    setSelectedVideoIds((prev) => {
+      const next = new Set(prev);
+      categoryVideos.forEach((v) => {
+        if (allSelected) {
+          next.delete(v.id);
+        } else {
+          next.add(v.id);
+        }
+      });
+      return next;
+    });
+  }
+
+  async function handleSave() {
+    if (!selectedOrg) return;
+
+    setSaving(true);
+    setError("");
+    setSuccess("");
+
+    const result = await updateOrgLicenses(
+      selectedOrg.id,
+      Array.from(selectedVideoIds),
+      videos.map((v) => v.id)
+    );
+
+    setSaving(false);
+
     if (result.error) {
       setError(result.error);
     } else {
-      setShowForm(false);
-      load();
+      setSuccess("ライセンスを更新しました");
+      setOriginalVideoIds(new Set(selectedVideoIds));
     }
   }
 
-  async function handleRevoke(id: string) {
-    setError("");
-    const result = await revokeLicense(id);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      load();
-    }
+  const hasChanges =
+    selectedVideoIds.size !== originalVideoIds.size ||
+    Array.from(selectedVideoIds).some((id) => !originalVideoIds.has(id));
+
+  const filteredOrgs = orgs.filter((org) =>
+    org.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Org selection view
+  if (!selectedOrg) {
+    return (
+      <div>
+        <PageHeader
+          title="ライセンス管理"
+          description="組織を選択して動画ライセンスを一括設定します"
+        />
+
+        <div className="mb-6">
+          <Input
+            placeholder="組織名で検索..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredOrgs.map((org) => {
+            const memberCount = org.organization_members?.[0]?.count ?? 0;
+
+            return (
+              <Card
+                key={org.id}
+                className="cursor-pointer hover:border-blue-500 transition-colors"
+                onClick={() => selectOrg(org)}
+              >
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-slate-200 dark:bg-slate-800 rounded-lg">
+                        <BuildingIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-900 dark:text-white">{org.name}</div>
+                        <div className="text-sm text-slate-500">{memberCount} メンバー</div>
+                      </div>
+                    </div>
+                    <Badge variant={org.is_active ? "success" : "danger"}>
+                      {org.is_active ? "有効" : "無効"}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {filteredOrgs.length === 0 && (
+          <div className="text-center py-12 text-slate-500">
+            {search ? "検索結果がありません" : "組織がまだ登録されていません"}
+          </div>
+        )}
+      </div>
+    );
   }
 
+  // Video license assignment view with category folders
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white">ライセンス管理</h1>
+      <div className="mb-6">
         <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          onClick={() => {
+            setSelectedOrg(null);
+            setSearch("");
+          }}
+          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
         >
-          {showForm ? "キャンセル" : "ライセンスを割当"}
+          <ArrowLeftIcon />
+          組織一覧に戻る
         </button>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-3">{selectedOrg.name}</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">カテゴリを開いて動画を選択してください</p>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg">
-          <p className="text-sm text-red-400">{error}</p>
-        </div>
+        <Card className="mb-6 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <CardContent className="py-3">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </CardContent>
+        </Card>
       )}
 
-      {showForm && (
-        <form
-          action={handleAssign}
-          className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700 space-y-3"
+      {success && (
+        <Card className="mb-6 border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+          <CardContent className="py-3">
+            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card className="mb-6">
+        <CardContent>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              {selectedVideoIds.size} / {videos.length} 動画を選択中
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {categories.map((category) => {
+              const categoryVideos = getVideosInCategory(category.id);
+              const isExpanded = expandedCategories.has(category.id);
+              const isFullySelected = isCategoryFullySelected(category.id);
+              const isPartiallySelected = isCategoryPartiallySelected(category.id);
+              const selectedCount = categoryVideos.filter((v) => selectedVideoIds.has(v.id)).length;
+
+              if (categoryVideos.length === 0) return null;
+
+              return (
+                <div key={category.id} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                  {/* Category header */}
+                  <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
+                    <button
+                      onClick={() => toggleCategoryVideos(category.id)}
+                      className={`
+                        flex items-center justify-center w-10 h-10 flex-shrink-0
+                        ${isFullySelected ? "text-blue-500 dark:text-blue-400" : "text-slate-500"}
+                      `}
+                    >
+                      <div
+                        className={`
+                          w-5 h-5 rounded flex items-center justify-center
+                          ${isFullySelected ? "bg-blue-600" : isPartiallySelected ? "bg-blue-600/50" : "bg-slate-300 dark:bg-slate-700"}
+                        `}
+                      >
+                        {(isFullySelected || isPartiallySelected) && (
+                          <CheckIcon className="w-3 h-3 text-white" />
+                        )}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => toggleCategory(category.id)}
+                      className="flex-1 flex items-center gap-3 py-3 pr-4 text-left"
+                    >
+                      <FolderIcon className={`w-5 h-5 ${isFullySelected ? "text-blue-500 dark:text-blue-400" : "text-yellow-500"}`} />
+                      <span className="font-medium text-slate-900 dark:text-white flex-1">{category.name}</span>
+                      <span className="text-sm text-slate-500">
+                        {selectedCount}/{categoryVideos.length}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                      ) : (
+                        <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Videos in category */}
+                  {isExpanded && (
+                    <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
+                      {categoryVideos.map((video) => {
+                        const isSelected = selectedVideoIds.has(video.id);
+
+                        return (
+                          <button
+                            key={video.id}
+                            onClick={() => toggleVideo(video.id)}
+                            className={`
+                              flex items-center gap-3 w-full px-4 py-2.5 text-left
+                              border-b border-slate-200 dark:border-slate-800 last:border-b-0
+                              transition-colors
+                              ${isSelected ? "bg-blue-50 dark:bg-blue-600/10" : "hover:bg-slate-100 dark:hover:bg-slate-800/50"}
+                            `}
+                          >
+                            <div className="w-10 flex justify-center">
+                              <div
+                                className={`
+                                  w-4 h-4 rounded flex items-center justify-center
+                                  ${isSelected ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}
+                                `}
+                              >
+                                {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
+                              </div>
+                            </div>
+                            <VideoIcon className={`w-4 h-4 ${isSelected ? "text-blue-500 dark:text-blue-400" : "text-slate-500"}`} />
+                            <span className={isSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}>
+                              {video.title}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {categories.length === 0 && (
+            <div className="text-center py-8 text-slate-500">
+              カテゴリがまだ登録されていません
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex gap-3">
+        <Button onClick={handleSave} disabled={!hasChanges || saving}>
+          {saving ? "保存中..." : "保存"}
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setSelectedOrg(null);
+            setSearch("");
+          }}
         >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">組織</label>
-              <select
-                name="organization_id"
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              >
-                <option value="">選択してください</option>
-                {orgs.map((org) => (
-                  <option key={org.id} value={org.id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">動画</label>
-              <select
-                name="video_id"
-                required
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              >
-                <option value="">選択してください</option>
-                {videos.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-400 mb-1">
-              有効期限（任意）
-            </label>
-            <input
-              name="expires_at"
-              type="date"
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-          >
-            割当
-          </button>
-        </form>
-      )}
-
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                組織
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                動画
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                有効期限
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                ステータス
-              </th>
-              <th className="text-right px-4 py-3 text-sm font-medium text-gray-400">
-                操作
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {licenses.map((lic) => (
-              <tr
-                key={lic.id}
-                className="border-b border-gray-700 last:border-b-0"
-              >
-                <td className="px-4 py-3 text-white">
-                  {lic.organizations?.name}
-                </td>
-                <td className="px-4 py-3 text-gray-300">
-                  {lic.videos?.title}
-                </td>
-                <td className="px-4 py-3 text-gray-400 text-sm">
-                  {lic.expires_at
-                    ? new Date(lic.expires_at).toLocaleDateString("ja-JP")
-                    : "なし"}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      lic.is_active
-                        ? "bg-green-900 text-green-300"
-                        : "bg-red-900 text-red-300"
-                    }`}
-                  >
-                    {lic.is_active ? "有効" : "無効"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleRevoke(lic.id)}
-                    className="text-red-400 hover:text-red-300 text-sm"
-                  >
-                    削除
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {licenses.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-gray-500"
-                >
-                  ライセンスがまだ割り当てられていません
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          キャンセル
+        </Button>
       </div>
     </div>
   );

@@ -47,3 +47,32 @@ export function deleteLicense(client: TypedClient, id: string) {
 export function countLicenses(client: TypedClient) {
   return client.from("organization_licenses").select("*", { count: "exact", head: true });
 }
+
+export function listLicenseVideoIdsForOrg(client: TypedClient, organizationId: string) {
+  return client
+    .from("organization_licenses")
+    .select("video_id")
+    .eq("organization_id", organizationId)
+    .eq("is_active", true);
+}
+
+export function deleteLicensesByOrgAndVideos(
+  client: TypedClient,
+  organizationId: string,
+  videoIds: number[]
+) {
+  return client
+    .from("organization_licenses")
+    .delete()
+    .eq("organization_id", organizationId)
+    .in("video_id", videoIds);
+}
+
+export function insertLicensesBulk(
+  client: TypedClient,
+  licenses: { organization_id: string; video_id: number; is_active: boolean }[]
+) {
+  return client
+    .from("organization_licenses")
+    .upsert(licenses, { onConflict: "organization_id,video_id" });
+}
