@@ -1,0 +1,83 @@
+import Link from "next/link";
+
+type VideoLink = {
+  id: number;
+  title: string;
+} | null;
+
+type Props = {
+  categoryName: string;
+  prevVideo: VideoLink;
+  nextVideo: VideoLink;
+};
+
+export default function VideoNavigation({ categoryName, prevVideo, nextVideo }: Props) {
+  return (
+    <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-transparent">
+      <div className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+        {categoryName}の動画
+      </div>
+      <div className="flex justify-between items-center gap-4">
+        {/* 前の動画 */}
+        <div className="flex-1">
+          {prevVideo ? (
+            <Link
+              href={`/watch/${prevVideo.id}`}
+              className="group flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <svg
+                className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <div className="min-w-0">
+                <div className="text-xs text-slate-500 dark:text-slate-400">前の動画</div>
+                <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  {prevVideo.title}
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 opacity-50">
+              <div className="text-xs text-slate-400">前の動画</div>
+              <div className="text-sm text-slate-400">なし</div>
+            </div>
+          )}
+        </div>
+
+        {/* 次の動画 */}
+        <div className="flex-1">
+          {nextVideo ? (
+            <Link
+              href={`/watch/${nextVideo.id}`}
+              className="group flex items-center justify-end gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-right"
+            >
+              <div className="min-w-0">
+                <div className="text-xs text-slate-500 dark:text-slate-400">次の動画</div>
+                <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  {nextVideo.title}
+                </div>
+              </div>
+              <svg
+                className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ) : (
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 opacity-50 text-right">
+              <div className="text-xs text-slate-400">次の動画</div>
+              <div className="text-sm text-slate-400">なし</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

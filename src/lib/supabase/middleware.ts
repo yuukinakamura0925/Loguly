@@ -36,11 +36,12 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // 保護されたルート
-  const protectedRoutes = ["/dashboard", "/watch", "/admin", "/org"];
+  // 保護されたルート（/admin-loginは除外）
+  const protectedRoutes = ["/dashboard", "/watch", "/org"];
+  const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin-login";
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route)
-  );
+  ) || isAdminRoute;
 
   // 未認証ユーザーを保護されたルートからリダイレクト
   if (!user && isProtectedRoute) {
@@ -81,7 +82,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 認証済みユーザーをログインページからロールに応じてリダイレクト
-  if (user && pathname === "/login") {
+  if (user && (pathname === "/login" || pathname === "/admin-login")) {
     const { data: profile } = await getProfileRole(supabase, user.id);
 
     const url = request.nextUrl.clone();

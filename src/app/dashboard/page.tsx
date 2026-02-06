@@ -38,19 +38,44 @@ export default async function DashboardPage() {
   }
 
   const { data: profile } = await getProfileById(supabase, user.id);
+
+  // member以外はアクセス不可
+  if (profile?.role === "platform_admin") {
+    redirect("/admin");
+  }
+  if (profile?.role === "org_admin") {
+    redirect("/org/members");
+  }
   const org = await getCurrentOrg();
   const { data: categories } = await listCategories(supabase);
   const { data: videos } = await listPublishedVideos(supabase);
   const { data: viewLogs } = await getViewLogsByUser(supabase, user.id);
 
+  // カテゴリ別の進捗率（視聴時間ベース）
   const getCategoryProgress = (categoryId: number) => {
     const categoryVideos = videos?.filter((v) => v.category_id === categoryId) || [];
     if (categoryVideos.length === 0) return 0;
-    const completed = categoryVideos.filter((v) =>
-      viewLogs?.find((log) => log.video_id === v.id && log.completed)
-    ).length;
-    return Math.round((completed / categoryVideos.length) * 100);
+
+    const totalDuration = categoryVideos.reduce((acc, v) => acc + v.duration, 0);
+    let watchedSeconds = 0;
+    for (const video of categoryVideos) {
+      const log = viewLogs?.find((l) => l.video_id === video.id);
+      if (log) {
+        watchedSeconds += Math.min(log.max_watched_seconds, video.duration);
+      }
+    }
+    return totalDuration > 0 ? Math.round((watchedSeconds / totalDuration) * 100) : 0;
   };
+
+  // 全体の進捗（視聴時間ベース）
+  const totalSeconds = videos?.reduce((acc, v) => acc + v.duration, 0) || 0;
+  let watchedSeconds = 0;
+  for (const video of videos || []) {
+    const log = viewLogs?.find((l) => l.video_id === video.id);
+    if (log) {
+      watchedSeconds += Math.min(log.max_watched_seconds, video.duration);
+    }
+  }
 
   const totalVideos = videos?.length || 0;
   const completedVideos = viewLogs?.filter((log) => log.completed).length || 0;
@@ -78,6 +103,8 @@ export default async function DashboardPage() {
         {/* Progress Overview */}
         <div className="mb-8">
           <ProgressOverview
+            watchedSeconds={watchedSeconds}
+            totalSeconds={totalSeconds}
             completedVideos={completedVideos}
             totalVideos={totalVideos}
           />

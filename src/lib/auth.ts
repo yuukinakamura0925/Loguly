@@ -1,6 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getProfileById, getMembershipWithOrg } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  getProfileById,
+  getMembershipWithOrg,
+  findPendingInvitationByEmail,
+  insertOrgMember,
+  deleteInvitation,
+} from "@/lib/db";
 import type { Profile, Organization, Role } from "@/types/database";
 
 export async function getCurrentUser() {
@@ -32,7 +39,36 @@ export async function getCurrentOrg(): Promise<Organization | null> {
 
   if (!user) return null;
 
-  const { data: membership } = await getMembershipWithOrg(supabase, user.id);
+  let { data: membership } = await getMembershipWithOrg(supabase, user.id);
+
+  // メンバーシップがない場合、保留中の招待を確認して自動受諾
+  if (!membership && user.email) {
+    // adminクライアントを使用（RLSをバイパス）
+    const adminClient = createAdminClient();
+
+    const { data: invitation } = await findPendingInvitationByEmail(
+      adminClient,
+      user.email
+    );
+
+    if (invitation) {
+      // organization_membersに追加
+      const { error: memberError } = await insertOrgMember(adminClient, {
+        organization_id: invitation.organization_id,
+        user_id: user.id,
+        role: invitation.role,
+      });
+
+      if (!memberError) {
+        // 招待を削除
+        await deleteInvitation(adminClient, invitation.id);
+
+        // メンバーシップを再取得
+        const result = await getMembershipWithOrg(supabase, user.id);
+        membership = result.data;
+      }
+    }
+  }
 
   if (!membership) return null;
 

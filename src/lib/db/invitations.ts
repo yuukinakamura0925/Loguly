@@ -52,3 +52,13 @@ export function insertInvitation(
 export function deleteInvitation(client: TypedClient, id: string) {
   return client.from("invitations").delete().eq("id", id);
 }
+
+export function findPendingInvitationByEmail(client: TypedClient, email: string) {
+  return client
+    .from("invitations")
+    .select("id, organization_id, role")
+    .eq("email", email)
+    .is("accepted_at", null)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+}
