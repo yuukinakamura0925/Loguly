@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { upsertViewLog } from "@/lib/db";
 
 type VideoData = {
   id: number;
@@ -48,17 +49,13 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
 
     lastSavedRef.current = seconds;
 
-    const { error } = await supabase
-      .from("view_logs")
-      .upsert({
-        user_id: userId,
-        video_id: video.id,
-        max_watched_seconds: Math.floor(seconds),
-        completed: isCompleted,
-        completed_at: isCompleted ? new Date().toISOString() : null,
-      }, {
-        onConflict: "user_id,video_id",
-      });
+    const { error } = await upsertViewLog(supabase, {
+      user_id: userId,
+      video_id: video.id,
+      max_watched_seconds: Math.floor(seconds),
+      completed: isCompleted,
+      completed_at: isCompleted ? new Date().toISOString() : null,
+    });
 
     if (error) {
       console.error("Failed to save progress:", error.message, error.code, error.details);

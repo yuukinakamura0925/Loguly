@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getProfileRole } from "@/lib/db";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -50,11 +51,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isProtectedRoute) {
     // ロールを取得してアクセス制御
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const { data: profile } = await getProfileRole(supabase, user.id);
 
     const role = profile?.role;
 
@@ -85,11 +82,7 @@ export async function updateSession(request: NextRequest) {
 
   // 認証済みユーザーをログインページからロールに応じてリダイレクト
   if (user && pathname === "/login") {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const { data: profile } = await getProfileRole(supabase, user.id);
 
     const url = request.nextUrl.clone();
     if (profile?.role === "platform_admin") {

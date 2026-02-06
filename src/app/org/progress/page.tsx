@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
+import {
+  listOrgMemberProfiles,
+  listLicensedVideosForOrg,
+  getViewLogsByUsers,
+} from "@/lib/db";
 
 type MemberProgress = {
   user_id: string;
@@ -21,19 +26,8 @@ export default async function ProgressPage() {
 
   const supabase = await createClient();
 
-  // 組織メンバーを取得
-  const { data: members } = await supabase
-    .from("organization_members")
-    .select("user_id, profiles(display_name, email)")
-    .eq("organization_id", org.id)
-    .order("joined_at");
-
-  // ライセンスのある動画を取得
-  const { data: licenses } = await supabase
-    .from("organization_licenses")
-    .select("video_id, videos(id, title, duration, display_order)")
-    .eq("organization_id", org.id)
-    .eq("is_active", true);
+  const { data: members } = await listOrgMemberProfiles(supabase, org.id);
+  const { data: licenses } = await listLicensedVideosForOrg(supabase, org.id);
 
   const videos =
     licenses
@@ -41,16 +35,10 @@ export default async function ProgressPage() {
       .filter(Boolean)
       .sort((a, b) => a.display_order - b.display_order) || [];
 
-  // メンバーのuser_idリスト
   const memberIds = members?.map((m) => m.user_id) || [];
 
-  // 視聴ログを取得
-  const { data: viewLogs } = await supabase
-    .from("view_logs")
-    .select("user_id, video_id, max_watched_seconds, completed")
-    .in("user_id", memberIds.length > 0 ? memberIds : ["none"]);
+  const { data: viewLogs } = await getViewLogsByUsers(supabase, memberIds);
 
-  // マトリクスデータを組み立て
   const progressData: MemberProgress[] =
     members?.map((m) => {
       const profile = m.profiles as unknown as {

@@ -1,4 +1,4 @@
-.PHONY: dev build lint setup db-push db-status db-repair db-new-migration
+.PHONY: dev build lint setup db-push db-seed db-reset db-status db-repair db-new-migration db-login db-link
 
 # ========================================
 # 開発
@@ -28,6 +28,15 @@ setup:
 
 db-push:
 	npx supabase db push
+
+db-seed:
+	node scripts/db-execute.mjs supabase/seed.sql
+
+db-reset:
+	node scripts/db-execute.mjs supabase/reset.sql
+	npx supabase db push
+	node scripts/create-admin.mjs
+	node scripts/db-execute.mjs supabase/seed.sql
 
 db-status:
 	npx supabase migration list

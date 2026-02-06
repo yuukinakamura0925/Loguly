@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
 
@@ -32,28 +33,13 @@ export default function MembersPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: membership } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .single();
+    const { data: membership } = await getMembershipByUserId(supabase, user.id);
 
     if (!membership) return;
 
     const [{ data: mems }, { data: invs }] = await Promise.all([
-      supabase
-        .from("organization_members")
-        .select("user_id, role, joined_at, profiles(display_name, email)")
-        .eq("organization_id", membership.organization_id)
-        .order("joined_at"),
-      supabase
-        .from("invitations")
-        .select("id, email, role, expires_at")
-        .eq("organization_id", membership.organization_id)
-        .is("accepted_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .order("created_at", { ascending: false }),
+      listOrgMembersWithJoinDate(supabase, membership.organization_id),
+      listPendingInvitations(supabase, membership.organization_id),
     ]);
 
     setMembers((mems as unknown as Member[]) || []);

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
+import { updateOrganization } from "@/lib/db";
 
 export async function updateOrgSettings(formData: FormData) {
   await requireRole("org_admin");
@@ -12,10 +13,7 @@ export async function updateOrgSettings(formData: FormData) {
   const supabase = await createClient();
   const name = formData.get("name") as string;
 
-  const { error } = await supabase
-    .from("organizations")
-    .update({ name })
-    .eq("id", org.id);
+  const { error } = await updateOrganization(supabase, org.id, { name });
 
   if (error) return { error: error.message };
 

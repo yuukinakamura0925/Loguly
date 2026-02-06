@@ -4,6 +4,13 @@ import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg, getCurrentUser } from "@/lib/auth";
+import {
+  findMemberByEmail,
+  findPendingInvitation,
+  insertInvitation,
+  deleteOrgMember,
+  deleteInvitation,
+} from "@/lib/db";
 
 export async function createInvitation(formData: FormData) {
   await requireRole("org_admin");
@@ -16,27 +23,14 @@ export async function createInvitation(formData: FormData) {
   const role = (formData.get("role") as string) || "member";
 
   // 既にメンバーか確認
-  const { data: existingMember } = await supabase
-    .from("organization_members")
-    .select("id, profiles!inner(email)")
-    .eq("organization_id", org.id)
-    .eq("profiles.email", email)
-    .limit(1)
-    .maybeSingle();
+  const { data: existingMember } = await findMemberByEmail(supabase, org.id, email);
 
   if (existingMember) {
     return { error: "このメールアドレスは既にメンバーです" };
   }
 
   // 未使用の招待が既にあるか確認
-  const { data: existingInvite } = await supabase
-    .from("invitations")
-    .select("id")
-    .eq("organization_id", org.id)
-    .eq("email", email)
-    .is("accepted_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .maybeSingle();
+  const { data: existingInvite } = await findPendingInvitation(supabase, org.id, email);
 
   if (existingInvite) {
     return { error: "このメールアドレスには既に招待を送信済みです" };
@@ -46,7 +40,7 @@ export async function createInvitation(formData: FormData) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
 
-  const { error } = await supabase.from("invitations").insert({
+  const { error } = await insertInvitation(supabase, {
     organization_id: org.id,
     email,
     role,
@@ -77,11 +71,7 @@ export async function removeMember(userId: string) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("organization_members")
-    .delete()
-    .eq("organization_id", org.id)
-    .eq("user_id", userId);
+  const { error } = await deleteOrgMember(supabase, org.id, userId);
 
   if (error) return { error: error.message };
 
@@ -93,10 +83,7 @@ export async function cancelInvitation(invitationId: string) {
   await requireRole("org_admin");
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("invitations")
-    .delete()
-    .eq("id", invitationId);
+  const { error } = await deleteInvitation(supabase, invitationId);
 
   if (error) return { error: error.message };
 

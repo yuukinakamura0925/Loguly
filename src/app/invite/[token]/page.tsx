@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getValidInvitationByToken } from "@/lib/db";
 import SignupForm from "./signup-form";
 
 type Props = {
@@ -10,14 +11,7 @@ export default async function InvitePage({ params }: Props) {
   const { token } = await params;
   const supabase = await createClient();
 
-  // 招待を検証
-  const { data: invitation } = await supabase
-    .from("invitations")
-    .select("*, organizations(name)")
-    .eq("token", token)
-    .is("accepted_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .single();
+  const { data: invitation } = await getValidInvitationByToken(supabase, token);
 
   if (!invitation) {
     notFound();

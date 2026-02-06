@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getProfileRole } from "@/lib/db";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -31,7 +32,16 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // ロールに応じてリダイレクト先を決定
+    const { data: profile } = await getProfileRole(supabase, data.user.id);
+
+    if (profile?.role === "platform_admin") {
+      router.push("/admin");
+    } else if (profile?.role === "org_admin") {
+      router.push("/org/members");
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   return (

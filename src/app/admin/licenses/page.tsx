@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { listLicensesWithDetails, listOrganizationNames, listVideoNames } from "@/lib/db";
 import { assignLicense, revokeLicense } from "./actions";
 
 type License = {
   id: string;
   organization_id: string;
   video_id: number;
-  max_viewers: number;
   expires_at: string | null;
   is_active: boolean;
   organizations: { name: string };
@@ -28,12 +28,9 @@ export default function LicensesPage() {
 
   const load = useCallback(async () => {
     const [{ data: lics }, { data: os }, { data: vs }] = await Promise.all([
-      supabase
-        .from("organization_licenses")
-        .select("*, organizations(name), videos(title)")
-        .order("created_at", { ascending: false }),
-      supabase.from("organizations").select("id, name").order("name"),
-      supabase.from("videos").select("id, title").order("title"),
+      listLicensesWithDetails(supabase),
+      listOrganizationNames(supabase),
+      listVideoNames(supabase),
     ]);
     setLicenses((lics as License[]) || []);
     setOrgs((os as Org[]) || []);
@@ -120,29 +117,15 @@ export default function LicensesPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">
-                視聴人数上限（0=無制限）
-              </label>
-              <input
-                name="max_viewers"
-                type="number"
-                min={0}
-                defaultValue={0}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">
-                有効期限（任意）
-              </label>
-              <input
-                name="expires_at"
-                type="date"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
-              />
-            </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-1">
+              有効期限（任意）
+            </label>
+            <input
+              name="expires_at"
+              type="date"
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm"
+            />
           </div>
           <button
             type="submit"
@@ -162,9 +145,6 @@ export default function LicensesPage() {
               </th>
               <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
                 動画
-              </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
-                上限
               </th>
               <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">
                 有効期限
@@ -188,9 +168,6 @@ export default function LicensesPage() {
                 </td>
                 <td className="px-4 py-3 text-gray-300">
                   {lic.videos?.title}
-                </td>
-                <td className="px-4 py-3 text-gray-400">
-                  {lic.max_viewers === 0 ? "無制限" : `${lic.max_viewers}人`}
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-sm">
                   {lic.expires_at
@@ -221,7 +198,7 @@ export default function LicensesPage() {
             {licenses.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="px-4 py-8 text-center text-gray-500"
                 >
                   ライセンスがまだ割り当てられていません

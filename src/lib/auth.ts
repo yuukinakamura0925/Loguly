@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getProfileById, getMembershipWithOrg } from "@/lib/db";
 import type { Profile, Organization, Role } from "@/types/database";
 
 export async function getCurrentUser() {
@@ -18,11 +19,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
   if (!user) return null;
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const { data } = await getProfileById(supabase, user.id);
 
   return data as Profile | null;
 }
@@ -35,12 +32,7 @@ export async function getCurrentOrg(): Promise<Organization | null> {
 
   if (!user) return null;
 
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("organization_id, organizations(*)")
-    .eq("user_id", user.id)
-    .limit(1)
-    .single();
+  const { data: membership } = await getMembershipWithOrg(supabase, user.id);
 
   if (!membership) return null;
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getMembershipByUserId, getOrganizationById, listActiveLicensesForOrg } from "@/lib/db";
 import { updateOrgSettings } from "./actions";
 
 export default function OrgSettingsPage() {
@@ -9,7 +10,7 @@ export default function OrgSettingsPage() {
   const [orgName, setOrgName] = useState("");
   const [slug, setSlug] = useState("");
   const [licenses, setLicenses] = useState<
-    { videos: { title: string }; max_viewers: number; expires_at: string | null }[]
+    { videos: { title: string }; expires_at: string | null }[]
   >([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -21,26 +22,13 @@ export default function OrgSettingsPage() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: membership } = await supabase
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .single();
+    const { data: membership } = await getMembershipByUserId(supabase, user.id);
 
     if (!membership) return;
 
     const [{ data: org }, { data: lics }] = await Promise.all([
-      supabase
-        .from("organizations")
-        .select("*")
-        .eq("id", membership.organization_id)
-        .single(),
-      supabase
-        .from("organization_licenses")
-        .select("max_viewers, expires_at, videos(title)")
-        .eq("organization_id", membership.organization_id)
-        .eq("is_active", true),
+      getOrganizationById(supabase, membership.organization_id),
+      listActiveLicensesForOrg(supabase, membership.organization_id),
     ]);
 
     if (org) {
@@ -134,9 +122,6 @@ export default function OrgSettingsPage() {
                     動画
                   </th>
                   <th className="text-left px-4 py-2 text-sm text-gray-400">
-                    上限
-                  </th>
-                  <th className="text-left px-4 py-2 text-sm text-gray-400">
                     有効期限
                   </th>
                 </tr>
@@ -151,11 +136,6 @@ export default function OrgSettingsPage() {
                       {(lic.videos as unknown as { title: string })?.title}
                     </td>
                     <td className="px-4 py-2 text-gray-400 text-sm">
-                      {lic.max_viewers === 0
-                        ? "無制限"
-                        : `${lic.max_viewers}人`}
-                    </td>
-                    <td className="px-4 py-2 text-gray-400 text-sm">
                       {lic.expires_at
                         ? new Date(lic.expires_at).toLocaleDateString("ja-JP")
                         : "なし"}
@@ -165,7 +145,7 @@ export default function OrgSettingsPage() {
                 {licenses.length === 0 && (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={2}
                       className="px-4 py-4 text-center text-gray-500 text-sm"
                     >
                       ライセンスが割り当てられていません

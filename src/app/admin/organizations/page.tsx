@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { listOrganizations } from "@/lib/db";
 import { deleteOrganization } from "./actions";
 
 export default async function OrganizationsPage() {
   const supabase = await createClient();
 
-  const { data: organizations } = await supabase
-    .from("organizations")
-    .select("*, organization_members(count)")
-    .order("created_at", { ascending: false });
+  const { data: organizations } = await listOrganizations(supabase);
 
   return (
     <div>

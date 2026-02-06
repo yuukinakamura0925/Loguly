@@ -1,4 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  countOrganizations,
+  countVideos,
+  countCategories,
+  countLicenses,
+} from "@/lib/db";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -9,12 +15,10 @@ export default async function AdminDashboardPage() {
     { count: categoryCount },
     { count: licenseCount },
   ] = await Promise.all([
-    supabase.from("organizations").select("*", { count: "exact", head: true }),
-    supabase.from("videos").select("*", { count: "exact", head: true }),
-    supabase.from("categories").select("*", { count: "exact", head: true }),
-    supabase
-      .from("organization_licenses")
-      .select("*", { count: "exact", head: true }),
+    countOrganizations(supabase),
+    countVideos(supabase),
+    countCategories(supabase),
+    countLicenses(supabase),
   ]);
 
   const stats = [

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { listCategories } from "@/lib/db";
 import {
   createCategory,
   updateCategory,
@@ -22,10 +23,7 @@ export default function CategoriesPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    const { data } = await supabase
-      .from("categories")
-      .select("*")
-      .order("display_order");
+    const { data } = await listCategories(supabase);
     setCategories((data as Category[]) || []);
   }, [supabase]);
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { listVideosWithCategory, listCategoryNames } from "@/lib/db";
 import { createVideo, updateVideo, deleteVideo } from "./actions";
 
 type Video = {
@@ -37,11 +38,8 @@ export default function VideosPage() {
 
   const load = useCallback(async () => {
     const [{ data: vids }, { data: cats }] = await Promise.all([
-      supabase
-        .from("videos")
-        .select("*, categories(name)")
-        .order("display_order"),
-      supabase.from("categories").select("id, name").order("display_order"),
+      listVideosWithCategory(supabase),
+      listCategoryNames(supabase),
     ]);
     setVideos((vids as Video[]) || []);
     setCategories((cats as Category[]) || []);

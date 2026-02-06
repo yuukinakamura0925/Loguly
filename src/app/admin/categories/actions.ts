@@ -3,6 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
+import {
+  insertCategory,
+  updateCategory as dbUpdateCategory,
+  deleteCategory as dbDeleteCategory,
+} from "@/lib/db";
 
 export async function createCategory(formData: FormData) {
   await requireRole("platform_admin");
@@ -11,9 +16,7 @@ export async function createCategory(formData: FormData) {
   const name = formData.get("name") as string;
   const displayOrder = parseInt(formData.get("display_order") as string) || 0;
 
-  const { error } = await supabase
-    .from("categories")
-    .insert({ name, display_order: displayOrder });
+  const { error } = await insertCategory(supabase, { name, display_order: displayOrder });
 
   if (error) return { error: error.message };
 
@@ -28,10 +31,7 @@ export async function updateCategory(id: number, formData: FormData) {
   const name = formData.get("name") as string;
   const displayOrder = parseInt(formData.get("display_order") as string) || 0;
 
-  const { error } = await supabase
-    .from("categories")
-    .update({ name, display_order: displayOrder })
-    .eq("id", id);
+  const { error } = await dbUpdateCategory(supabase, id, { name, display_order: displayOrder });
 
   if (error) return { error: error.message };
 
@@ -43,7 +43,7 @@ export async function deleteCategory(id: number) {
   await requireRole("platform_admin");
   const supabase = await createClient();
 
-  const { error } = await supabase.from("categories").delete().eq("id", id);
+  const { error } = await dbDeleteCategory(supabase, id);
 
   if (error) return { error: error.message };
 

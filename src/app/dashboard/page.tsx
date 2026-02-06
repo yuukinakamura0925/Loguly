@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/auth";
+import { getProfileById, listCategories, listPublishedVideos, getViewLogsByUser } from "@/lib/db";
 import LogoutButton from "./logout-button";
 
 type Category = {
@@ -50,36 +51,12 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // プロフィール情報を取得
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  // 組織情報を取得
+  const { data: profile } = await getProfileById(supabase, user.id);
   const org = await getCurrentOrg();
+  const { data: categories } = await listCategories(supabase);
+  const { data: videos } = await listPublishedVideos(supabase);
+  const { data: viewLogs } = await getViewLogsByUser(supabase, user.id);
 
-  // カテゴリ一覧を取得
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("display_order");
-
-  // 公開済み動画一覧を取得（RLSでライセンスのある動画のみ返る）
-  const { data: videos } = await supabase
-    .from("videos")
-    .select("*")
-    .eq("is_published", true)
-    .order("display_order");
-
-  // 視聴ログを取得
-  const { data: viewLogs } = await supabase
-    .from("view_logs")
-    .select("*")
-    .eq("user_id", user.id);
-
-  // カテゴリごとの進捗を計算
   const getCategoryProgress = (categoryId: number) => {
     const categoryVideos = videos?.filter((v) => v.category_id === categoryId) || [];
     if (categoryVideos.length === 0) return 0;

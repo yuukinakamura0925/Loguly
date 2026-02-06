@@ -35,7 +35,6 @@ export type OrganizationLicense = {
   id: string;
   organization_id: string;
   video_id: number;
-  max_viewers: number;
   expires_at: string | null;
   is_active: boolean;
   created_at: string;
