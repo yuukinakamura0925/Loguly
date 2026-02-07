@@ -32,6 +32,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
+  FilmIcon,
 } from "@/components/icons";
 
 type Video = {
@@ -336,13 +337,22 @@ export default function VideosPage() {
 
                   {/* Actions */}
                   <div className="flex gap-1">
+                    <a
+                      href={`/editor/${video.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                      title="エディタ（新しいタブで開く）"
+                    >
+                      <FilmIcon className="w-4 h-4" />
+                    </a>
                     <button
                       onClick={() => {
                         setEditingId(video.id);
                         setShowForm(false);
                       }}
                       className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                      title="編集"
+                      title="設定"
                     >
                       <PencilIcon />
                     </button>
