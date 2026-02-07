@@ -9,3 +9,5 @@ export { Progress } from "./progress";
 export { IconButton } from "./icon-button";
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableEmpty } from "./table";
 export { PageHeader } from "./page-header";
+export { SearchInput } from "./search-input";
+export { Pagination } from "./pagination";

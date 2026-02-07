@@ -28,6 +28,7 @@ export default function MembersPage() {
   const [invites, setInvites] = useState<PendingInvite[]>([]);
   const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     const {
@@ -99,11 +100,45 @@ export default function MembersPage() {
         />
       )}
 
+      {/* 検索 */}
+      <div className="mb-4">
+        <div className="relative max-w-sm">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="名前・メールで検索..."
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+        </div>
+      </div>
+
       {/* メンバー一覧 */}
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
         <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            メンバー ({members.length})
+            メンバー ({members.filter((m) => {
+              if (!search) return true;
+              const profile = m.profiles as unknown as { display_name: string; email: string };
+              const q = search.toLowerCase();
+              return (
+                profile?.display_name?.toLowerCase().includes(q) ||
+                profile?.email?.toLowerCase().includes(q)
+              );
+            }).length})
           </h2>
         </div>
         <table className="w-full">
@@ -127,7 +162,15 @@ export default function MembersPage() {
             </tr>
           </thead>
           <tbody>
-            {members.map((m) => (
+            {members.filter((m) => {
+              if (!search) return true;
+              const profile = m.profiles as unknown as { display_name: string; email: string };
+              const q = search.toLowerCase();
+              return (
+                profile?.display_name?.toLowerCase().includes(q) ||
+                profile?.email?.toLowerCase().includes(q)
+              );
+            }).map((m) => (
               <tr
                 key={m.user_id}
                 className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"

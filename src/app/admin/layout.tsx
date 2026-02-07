@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import AdminSidebar from "@/components/admin-sidebar";
 import LogoutButton from "@/app/dashboard/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SettingsIcon } from "@/components/icons";
 
 export default async function AdminLayout({
   children,
@@ -11,10 +13,10 @@ export default async function AdminLayout({
   const profile = await requireRole("platform_admin");
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
+    <div className="h-screen bg-slate-100 dark:bg-slate-950 flex overflow-hidden">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col">
-        <header className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
               {profile.display_name?.charAt(0) || "A"}
@@ -25,6 +27,13 @@ export default async function AdminLayout({
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/settings"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              title="アカウント設定"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </Link>
             <ThemeToggle />
             <LogoutButton />
           </div>

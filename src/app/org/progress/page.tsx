@@ -6,6 +6,7 @@ import {
   listLicensedVideosForOrg,
   getViewLogsByUsers,
 } from "@/lib/db";
+import { SearchInput } from "@/components/ui";
 import { CheckCircleIcon, ChevronRightIcon } from "@/components/icons";
 
 type MemberProgress = {
@@ -17,7 +18,13 @@ type MemberProgress = {
   watchedPercent: number; // 実際の視聴進捗（%）
 };
 
-export default async function ProgressPage() {
+export default async function ProgressPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const params = await searchParams;
+  const search = params.q?.toLowerCase() || "";
   await requireRole("org_admin");
   const org = await getCurrentOrg();
   if (!org) return null;
@@ -38,7 +45,7 @@ export default async function ProgressPage() {
   // 全動画の合計時間
   const totalDuration = videos.reduce((acc, v) => acc + (v.duration || 0), 0);
 
-  const progressData: MemberProgress[] =
+  const allProgressData: MemberProgress[] =
     members?.map((m) => {
       const profile = m.profiles as unknown as {
         display_name: string;
@@ -77,13 +84,22 @@ export default async function ProgressPage() {
       };
     }) || [];
 
-  // 統計
-  const totalMembers = progressData.length;
+  // 検索フィルタ
+  const progressData = search
+    ? allProgressData.filter(
+        (m) =>
+          m.display_name.toLowerCase().includes(search) ||
+          m.email.toLowerCase().includes(search)
+      )
+    : allProgressData;
+
+  // 統計（検索フィルタ前の全データで計算）
+  const totalMembers = allProgressData.length;
   const totalVideos = videos.length;
-  const avgProgress = progressData.length > 0
-    ? Math.round(progressData.reduce((acc, m) => acc + m.watchedPercent, 0) / progressData.length)
+  const avgProgress = allProgressData.length > 0
+    ? Math.round(allProgressData.reduce((acc, m) => acc + m.watchedPercent, 0) / allProgressData.length)
     : 0;
-  const fullyCompletedMembers = progressData.filter((m) => m.completedCount === m.totalCount && m.totalCount > 0).length;
+  const fullyCompletedMembers = allProgressData.filter((m) => m.completedCount === m.totalCount && m.totalCount > 0).length;
 
   return (
     <div>
@@ -115,10 +131,17 @@ export default async function ProgressPage() {
             </div>
           </div>
 
+          {/* 検索 */}
+          <div className="mb-4">
+            <SearchInput placeholder="名前・メールで検索..." paramName="q" className="max-w-sm" />
+          </div>
+
           {/* メンバー一覧 */}
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">メンバー別進捗</h2>
+              <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                メンバー別進捗 {search && `(${progressData.length}件)`}
+              </h2>
             </div>
             <div className="divide-y divide-slate-200 dark:divide-slate-700">
               {progressData.map((member) => {
@@ -194,7 +217,7 @@ export default async function ProgressPage() {
               })}
               {progressData.length === 0 && (
                 <div className="px-4 py-8 text-center text-slate-500">
-                  メンバーがいません
+                  {search ? "検索結果がありません" : "メンバーがいません"}
                 </div>
               )}
             </div>
