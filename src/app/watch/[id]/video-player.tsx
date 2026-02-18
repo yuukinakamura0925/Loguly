@@ -62,7 +62,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
     }
   }, [supabase, userId, video.id]);
 
-  // Heartbeat: 5秒ごとに進捗を保存
+  // Heartbeat: 30秒ごとに進捗を保存（一時停止・タブ離脱時は即時保存）
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -70,7 +70,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
       if (maxWatchedSeconds > lastSavedRef.current) {
         saveProgress(maxWatchedSeconds, completed);
       }
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [isPlaying, maxWatchedSeconds, completed, saveProgress]);
