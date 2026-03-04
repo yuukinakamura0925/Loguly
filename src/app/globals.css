@@ -71,11 +71,10 @@ body {
   transition-duration: 150ms;
 }
 
-/* フォーカスリング: デジタル庁デザインシステム準拠 */
+/* フォーカスリング */
 *:focus-visible {
-  outline: 4px solid black;
-  outline-offset: 0.125rem;
-  box-shadow: 0 0 0 0.125rem var(--color-da-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--color-da-blue-900);
 }
 
 /* Toast animation */
