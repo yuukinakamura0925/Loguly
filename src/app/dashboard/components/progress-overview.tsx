@@ -11,7 +11,7 @@ export function ProgressOverview({ watchedSeconds, totalSeconds, completedVideos
   const percentage = totalSeconds > 0 ? Math.round((watchedSeconds / totalSeconds) * 100) : 0;
 
   return (
-    <div className="bg-gradient-to-br from-white to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-slate-900 dark:text-white font-semibold">学習進捗</h2>

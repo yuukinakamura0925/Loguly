@@ -122,11 +122,11 @@ export default async function ProgressPage({
               <div className="text-sm text-slate-500">動画数</div>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{fullyCompletedMembers}</div>
+              <div className="text-2xl font-bold text-da-success dark:text-emerald-400">{fullyCompletedMembers}</div>
               <div className="text-sm text-slate-500">全完了者</div>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{avgProgress}%</div>
+              <div className="text-2xl font-bold text-da-blue-900 dark:text-da-blue-300">{avgProgress}%</div>
               <div className="text-sm text-slate-500">平均進捗</div>
             </div>
           </div>
@@ -152,14 +152,14 @@ export default async function ProgressPage({
                     key={member.user_id}
                     href={`/org/progress/${member.user_id}`}
                     className={`flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
-                      isFullyCompleted ? "bg-emerald-50/50 dark:bg-emerald-900/10" : ""
+                      isFullyCompleted ? "bg-emerald-50 dark:bg-emerald-900/10" : ""
                     }`}
                   >
                     {/* アバター */}
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
                       isFullyCompleted
-                        ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
-                        : "bg-gradient-to-br from-slate-400 to-slate-500"
+                        ? "bg-da-blue-900 text-white"
+                        : "bg-slate-500 dark:bg-slate-600"
                     }`}>
                       {member.display_name?.charAt(0) || "?"}
                     </div>
@@ -171,7 +171,7 @@ export default async function ProgressPage({
                           {member.display_name}
                         </span>
                         {isFullyCompleted && (
-                          <CheckCircleIcon className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                          <CheckCircleIcon className="w-4 h-4 text-da-success flex-shrink-0" />
                         )}
                       </div>
                       <div className="text-slate-500 text-sm truncate">{member.email}</div>
@@ -182,9 +182,9 @@ export default async function ProgressPage({
                       <div className="text-right">
                         <div className={`text-lg font-bold ${
                           isFullyCompleted
-                            ? "text-emerald-600 dark:text-emerald-400"
+                            ? "text-da-success dark:text-emerald-400"
                             : member.watchedPercent > 0
-                              ? "text-blue-600 dark:text-blue-400"
+                              ? "text-da-blue-900 dark:text-da-blue-300"
                               : "text-slate-400"
                         }`}>
                           {member.watchedPercent}%
@@ -200,9 +200,9 @@ export default async function ProgressPage({
                           <div
                             className={`h-full rounded-full transition-all ${
                               isFullyCompleted
-                                ? "bg-emerald-500"
+                                ? "bg-da-success"
                                 : member.watchedPercent > 0
-                                  ? "bg-blue-500"
+                                  ? "bg-da-blue-900"
                                   : "bg-slate-300 dark:bg-slate-600"
                             }`}
                             style={{ width: `${member.watchedPercent}%` }}

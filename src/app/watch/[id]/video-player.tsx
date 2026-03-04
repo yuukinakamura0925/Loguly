@@ -62,7 +62,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
     }
   }, [supabase, userId, video.id]);
 
-  // Heartbeat: 5秒ごとに進捗を保存
+  // Heartbeat: 30秒ごとに進捗を保存（一時停止・タブ離脱時は即時保存）
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -70,7 +70,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
       if (maxWatchedSeconds > lastSavedRef.current) {
         saveProgress(maxWatchedSeconds, completed);
       }
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [isPlaying, maxWatchedSeconds, completed, saveProgress]);
@@ -183,14 +183,14 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
 
         {/* スキップ警告 */}
         {showSkipWarning && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-da-error text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
             未視聴の部分はスキップできません
           </div>
         )}
 
         {/* 完了バッジ */}
         {completed && (
-          <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+          <div className="absolute top-4 right-4 bg-da-success text-white px-3 py-1 rounded-full text-sm">
             ✓ 視聴完了
           </div>
         )}
@@ -210,7 +210,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
           />
           {/* 現在位置 */}
           <div
-            className="absolute h-full bg-blue-500"
+            className="absolute h-full bg-da-blue-900"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -224,7 +224,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
       <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-transparent">
         <div className="flex items-start justify-between">
           <div>
-            <span className="text-sm text-blue-500 dark:text-blue-400">{video.categoryName}</span>
+            <span className="text-sm text-da-blue-900 dark:text-da-blue-300">{video.categoryName}</span>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-1">{video.title}</h2>
             {video.description && (
               <p className="text-slate-600 dark:text-slate-400 mt-2">{video.description}</p>

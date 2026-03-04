@@ -26,12 +26,12 @@ export default function NewOrganizationPage() {
       <div className="mb-6">
         <Link
           href="/admin/organizations"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm transition-colors"
         >
           <ArrowLeftIcon />
           組織一覧に戻る
         </Link>
-        <h1 className="text-2xl font-bold text-white mt-3">組織を作成</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-3">組織を作成</h1>
       </div>
 
       <Card>
@@ -45,8 +45,8 @@ export default function NewOrganizationPage() {
             />
 
             {error && (
-              <div className="p-3 bg-red-900/20 border border-red-800 rounded-xl">
-                <p className="text-sm text-red-400">{error}</p>
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-xl">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               </div>
             )}
 

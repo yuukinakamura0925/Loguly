@@ -82,8 +82,8 @@ export function Pagination({
             href={getPageUrl(page)}
             className={`px-3 py-2 rounded-lg transition-colors ${
               page === currentPage
-                ? "bg-blue-600 text-white"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                ? "bg-da-blue-900 text-white"
+                : "text-da-gray-800 dark:text-slate-400 hover:bg-da-blue-50 dark:hover:bg-slate-800"
             }`}
           >
             {page}

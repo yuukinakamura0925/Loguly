@@ -165,7 +165,7 @@ export default function SettingsPage() {
                 type="email"
                 value={profile?.email || ""}
                 disabled
-                className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400"
+                className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400"
               />
             </div>
             <div>
@@ -176,13 +176,13 @@ export default function SettingsPage() {
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             {profileMessage && (
               <div className={`p-3 rounded-lg text-sm ${
                 profileMessage.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                  ? "bg-emerald-50 dark:bg-emerald-900/30 text-da-success dark:text-emerald-400"
                   : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
               }`}>
                 {profileMessage.text}
@@ -190,7 +190,7 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
             >
               更新
             </button>
@@ -209,7 +209,7 @@ export default function SettingsPage() {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -220,7 +220,7 @@ export default function SettingsPage() {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
               <p className="text-xs text-slate-500 mt-1">8文字以上</p>
             </div>
@@ -232,13 +232,13 @@ export default function SettingsPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             {passwordMessage && (
               <div className={`p-3 rounded-lg text-sm ${
                 passwordMessage.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                  ? "bg-emerald-50 dark:bg-emerald-900/30 text-da-success dark:text-emerald-400"
                   : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
               }`}>
                 {passwordMessage.text}
@@ -246,7 +246,7 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
             >
               パスワードを変更
             </button>
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -276,13 +276,13 @@ export default function SettingsPage() {
                 type="password"
                 value={emailPassword}
                 onChange={(e) => setEmailPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             {emailMessage && (
               <div className={`p-3 rounded-lg text-sm ${
                 emailMessage.type === "success"
-                  ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                  ? "bg-emerald-50 dark:bg-emerald-900/30 text-da-success dark:text-emerald-400"
                   : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
               }`}>
                 {emailMessage.text}
@@ -290,7 +290,7 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
             >
               メールアドレスを変更
             </button>
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                   type="password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -325,13 +325,13 @@ export default function SettingsPage() {
                   value={deleteConfirmation}
                   onChange={(e) => setDeleteConfirmation(e.target.value)}
                   placeholder="削除する"
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               {deleteMessage && (
                 <div className={`p-3 rounded-lg text-sm ${
                   deleteMessage.type === "success"
-                    ? "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                    ? "bg-emerald-50 dark:bg-emerald-900/30 text-da-success dark:text-emerald-400"
                     : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                 }`}>
                   {deleteMessage.text}

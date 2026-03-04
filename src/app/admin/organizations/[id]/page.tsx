@@ -216,8 +216,8 @@ export default function EditOrganizationPage() {
                   </div>
                 )}
                 {createSuccess && (
-                  <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-lg">
-                    <p className="text-xs text-green-600 dark:text-green-400">{createSuccess}</p>
+                  <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-800 rounded-lg">
+                    <p className="text-xs text-da-success dark:text-emerald-400">{createSuccess}</p>
                   </div>
                 )}
 
@@ -286,7 +286,7 @@ export default function EditOrganizationPage() {
                   <TableCell className="text-right">
                     <button
                       onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                       title="削除"
                     >
                       <TrashIcon />

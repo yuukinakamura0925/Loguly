@@ -61,11 +61,12 @@ export default async function OrganizationsPage({
         <SearchInput placeholder="組織名で検索..." paramName="q" className="max-w-sm" />
       </div>
 
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>組織名</TableHead>
-            <TableHead>メンバー数</TableHead>
+            <TableHead className="hidden sm:table-cell">メンバー数</TableHead>
             <TableHead>ステータス</TableHead>
             <TableHead className="text-right w-32">操作</TableHead>
           </TableRow>
@@ -79,7 +80,7 @@ export default async function OrganizationsPage({
                 <TableCell className="text-slate-900 dark:text-white font-medium">
                   {org.name}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                     <UsersIcon className="w-4 h-4" />
                     {memberCount}
@@ -107,7 +108,7 @@ export default async function OrganizationsPage({
                     >
                       <button
                         type="submit"
-                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                         title="削除"
                       >
                         <TrashIcon />
@@ -126,6 +127,7 @@ export default async function OrganizationsPage({
           )}
         </TableBody>
       </Table>
+      </div>
 
       {totalPages > 1 && (
         <div className="mt-6">

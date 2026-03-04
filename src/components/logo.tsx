@@ -14,7 +14,7 @@ export function Logo({ size = "md", showText = true }: LogoProps) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className={`${styles.icon} bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25`}>
+      <div className={`${styles.icon} bg-da-blue-900 rounded-2xl flex items-center justify-center`}>
         <svg className={`${styles.svg} text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

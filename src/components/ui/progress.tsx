@@ -32,8 +32,8 @@ export function Progress({
       <div
         className={`h-full rounded-full transition-all duration-500 ${
           variant === "success" || isComplete
-            ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-            : "bg-gradient-to-r from-blue-500 to-indigo-500"
+            ? "bg-da-success"
+            : "bg-da-blue-900"
         }`}
         style={{ width: `${percentage}%` }}
       />

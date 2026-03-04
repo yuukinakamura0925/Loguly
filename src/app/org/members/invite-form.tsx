@@ -34,7 +34,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
             コピーしました
           </div>
         )}
-        <div className="text-green-600 dark:text-green-400 text-sm font-medium">
+        <div className="text-slate-900 dark:text-white text-sm font-medium">
           招待を作成しました
         </div>
         <div>
@@ -52,8 +52,8 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
               onClick={handleCopy}
               className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                 copied
-                  ? "bg-green-600 text-white"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
+                  ? "bg-da-blue-1200 text-white"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
               }`}
             >
               {copied ? "✓" : "コピー"}
@@ -109,7 +109,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline text-sm"
         >
           招待を送信
         </button>

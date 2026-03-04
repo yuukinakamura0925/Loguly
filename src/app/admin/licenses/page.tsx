@@ -205,7 +205,7 @@ export default function LicensesPage() {
             return (
               <Card
                 key={org.id}
-                className="cursor-pointer hover:border-blue-500 transition-colors"
+                className="cursor-pointer hover:border-da-blue-900 transition-colors"
                 onClick={() => selectOrg(org)}
               >
                 <CardContent className="py-4">
@@ -265,9 +265,9 @@ export default function LicensesPage() {
       )}
 
       {success && (
-        <Card className="mb-6 border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+        <Card className="mb-6 border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20">
           <CardContent className="py-3">
-            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+            <p className="text-sm text-da-success dark:text-emerald-400">{success}</p>
           </CardContent>
         </Card>
       )}
@@ -298,13 +298,13 @@ export default function LicensesPage() {
                       onClick={() => toggleCategoryVideos(category.id)}
                       className={`
                         flex items-center justify-center w-10 h-10 flex-shrink-0
-                        ${isFullySelected ? "text-blue-500 dark:text-blue-400" : "text-slate-500"}
+                        ${isFullySelected ? "text-da-blue-900 dark:text-da-blue-300" : "text-slate-500"}
                       `}
                     >
                       <div
                         className={`
                           w-5 h-5 rounded flex items-center justify-center
-                          ${isFullySelected ? "bg-blue-600" : isPartiallySelected ? "bg-blue-600/50" : "bg-slate-300 dark:bg-slate-700"}
+                          ${isFullySelected ? "bg-da-blue-900" : isPartiallySelected ? "bg-da-blue-900/50" : "bg-slate-300 dark:bg-slate-700"}
                         `}
                       >
                         {(isFullySelected || isPartiallySelected) && (
@@ -317,7 +317,7 @@ export default function LicensesPage() {
                       onClick={() => toggleCategory(category.id)}
                       className="flex-1 flex items-center gap-3 py-3 pr-4 text-left"
                     >
-                      <FolderIcon className={`w-5 h-5 ${isFullySelected ? "text-blue-500 dark:text-blue-400" : "text-yellow-500"}`} />
+                      <FolderIcon className={`w-5 h-5 ${isFullySelected ? "text-da-blue-900 dark:text-da-blue-300" : "text-da-gray-600"}`} />
                       <span className="font-medium text-slate-900 dark:text-white flex-1">{category.name}</span>
                       <span className="text-sm text-slate-500">
                         {selectedCount}/{categoryVideos.length}
@@ -344,20 +344,20 @@ export default function LicensesPage() {
                               flex items-center gap-3 w-full px-4 py-2.5 text-left
                               border-b border-slate-200 dark:border-slate-800 last:border-b-0
                               transition-colors
-                              ${isSelected ? "bg-blue-50 dark:bg-blue-600/10" : "hover:bg-slate-100 dark:hover:bg-slate-800/50"}
+                              ${isSelected ? "bg-da-blue-50 dark:bg-da-blue-900/10" : "hover:bg-slate-100 dark:hover:bg-slate-800/50"}
                             `}
                           >
                             <div className="w-10 flex justify-center">
                               <div
                                 className={`
                                   w-4 h-4 rounded flex items-center justify-center
-                                  ${isSelected ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"}
+                                  ${isSelected ? "bg-da-blue-900" : "bg-slate-300 dark:bg-slate-700"}
                                 `}
                               >
                                 {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
                               </div>
                             </div>
-                            <VideoIcon className={`w-4 h-4 ${isSelected ? "text-blue-500 dark:text-blue-400" : "text-slate-500"}`} />
+                            <VideoIcon className={`w-4 h-4 ${isSelected ? "text-da-blue-900 dark:text-da-blue-300" : "text-slate-500"}`} />
                             <span className={isSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}>
                               {video.title}
                             </span>

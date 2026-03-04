@@ -6,7 +6,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getProfileRole } from "@/lib/db";
 import { Button, Input, Card, CardContent } from "@/components/ui";
-import { Logo } from "@/components/logo";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -57,35 +56,28 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-da-gray-900 p-4">
+      <div className="w-full max-w-md">
         {/* Admin Badge */}
         <div className="flex justify-center mb-6">
-          <span className="px-4 py-1.5 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm font-medium">
+          <span className="px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-full text-slate-300 text-sm font-medium">
             管理者専用
           </span>
         </div>
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-            <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center">
+            <svg className="w-10 h-10 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-white tracking-tight mt-4">Loguly Admin</h1>
-          <p className="text-purple-300/70 mt-2">プラットフォーム・組織管理者</p>
+          <p className="text-slate-500 mt-2">プラットフォーム・組織管理者</p>
         </div>
 
         {/* Login Card */}
-        <Card className="bg-slate-900/70 backdrop-blur-xl border-purple-500/20">
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
@@ -109,15 +101,15 @@ export default function AdminLoginPage() {
               />
 
               {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <p className="text-sm text-red-400">{error}</p>
+                <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-da-error/20 rounded-xl">
+                  <p className="text-sm text-da-error">{error}</p>
                 </div>
               )}
 
               <Button
                 type="submit"
                 isLoading={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 shadow-lg shadow-purple-500/25"
+                className="w-full"
                 size="lg"
               >
                 管理者ログイン
@@ -125,21 +117,21 @@ export default function AdminLoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <Link href="/reset-password" className="text-sm text-slate-400 hover:text-purple-400 transition-colors">
+              <Link href="/reset-password" className="text-sm text-slate-500 hover:text-da-blue-300 transition-colors">
                 パスワードをお忘れですか？
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-purple-300/50 mt-8 space-y-2">
+        <div className="text-center text-sm text-slate-500 mt-8 space-y-2">
           <p>
-            <Link href="/login" className="hover:text-purple-300 transition-colors">
+            <Link href="/login" className="hover:text-slate-300 transition-colors">
               メンバーログインはこちら
             </Link>
           </p>
           <p>
-            <Link href="/" className="hover:text-purple-300 transition-colors">
+            <Link href="/" className="hover:text-slate-300 transition-colors">
               ← トップに戻る
             </Link>
           </p>

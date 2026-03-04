@@ -79,7 +79,7 @@ export default function MembersPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">メンバー管理</h1>
         <button
           onClick={() => setShowInvite(!showInvite)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors text-sm"
         >
           {showInvite ? "キャンセル" : "メンバーを招待"}
         </button>
@@ -121,7 +121,7 @@ export default function MembersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="名前・メールで検索..."
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 transition-all"
           />
         </div>
       </div>
@@ -141,19 +141,20 @@ export default function MembersPage() {
             }).length})
           </h2>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
               <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 名前
               </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <th className="hidden sm:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 メール
               </th>
               <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 ロール
               </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <th className="hidden md:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 参加日
               </th>
               <th className="text-right px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -178,27 +179,27 @@ export default function MembersPage() {
                 <td className="px-4 py-3">
                   <Link
                     href={`/org/progress/${m.user_id}`}
-                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
                   >
                     {(m.profiles as unknown as { display_name: string })?.display_name}
                     <ChevronRightIcon className="w-4 h-4 text-slate-400" />
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 rounded text-xs ${
                       m.role === "org_admin"
-                        ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                        ? "bg-da-blue-50 dark:bg-da-blue-900/30 text-da-blue-900 dark:text-da-blue-300"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
                     }`}
                   >
                     {m.role === "org_admin" ? "管理者" : "メンバー"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                <td className="hidden md:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {new Date(m.joined_at).toLocaleDateString("ja-JP")}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -213,6 +214,7 @@ export default function MembersPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 保留中の招待 */}
@@ -223,6 +225,7 @@ export default function MembersPage() {
               保留中の招待 ({invites.length})
             </h2>
           </div>
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
@@ -232,7 +235,7 @@ export default function MembersPage() {
                 <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                   ロール
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+                <th className="hidden sm:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                   有効期限
                 </th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -250,7 +253,7 @@ export default function MembersPage() {
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                     {inv.role === "org_admin" ? "管理者" : "メンバー"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                  <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                     {new Date(inv.expires_at).toLocaleDateString("ja-JP")}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -265,6 +268,7 @@ export default function MembersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

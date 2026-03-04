@@ -137,10 +137,11 @@ export default function CategoriesPage() {
         </Card>
       )}
 
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-24">表示順</TableHead>
+            <TableHead className="hidden sm:table-cell w-24">表示順</TableHead>
             <TableHead>カテゴリ名</TableHead>
             <TableHead className="w-32 text-right">操作</TableHead>
           </TableRow>
@@ -158,13 +159,13 @@ export default function CategoriesPage() {
                       name="display_order"
                       type="number"
                       defaultValue={cat.display_order}
-                      className="w-24 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-24 px-3 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 hover:border-black rounded-lg text-slate-900 dark:text-white text-sm"
                     />
                     <input
                       name="name"
                       required
                       defaultValue={cat.name}
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 hover:border-black rounded-lg text-slate-900 dark:text-white text-sm"
                     />
                     <div className="flex gap-2">
                       <Button type="submit" size="sm">
@@ -185,7 +186,7 @@ export default function CategoriesPage() {
                 </TableCell>
               ) : (
                 <>
-                  <TableCell className="text-slate-500 font-mono">
+                  <TableCell className="hidden sm:table-cell text-slate-500 font-mono">
                     {cat.display_order}
                   </TableCell>
                   <TableCell className="text-slate-900 dark:text-white font-medium">
@@ -215,6 +216,7 @@ export default function CategoriesPage() {
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

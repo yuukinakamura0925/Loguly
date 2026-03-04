@@ -28,14 +28,14 @@ export function VideoItem({ id, title, description, duration, status, progress }
         {/* サムネイルプレースホルダー */}
         <div className={`relative w-32 h-20 rounded-lg flex-shrink-0 overflow-hidden ${
           isCompleted
-            ? "bg-gradient-to-br from-emerald-500/20 to-emerald-600/20"
-            : "bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800"
+            ? "bg-slate-200 dark:bg-slate-700"
+            : "bg-slate-200 dark:bg-slate-800"
         }`}>
           {/* 再生アイコン */}
           <div className="absolute inset-0 flex items-center justify-center">
             {isCompleted ? (
-              <div className="w-10 h-10 rounded-full bg-emerald-500/90 flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <div className="w-10 h-10 rounded-full bg-slate-900/90 dark:bg-slate-100/90 flex items-center justify-center">
+                <svg className="w-5 h-5 text-white dark:text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -56,14 +56,14 @@ export function VideoItem({ id, title, description, duration, status, progress }
         {/* コンテンツ */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-start justify-between gap-2">
-            <h3 className={`font-medium leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors ${
+            <h3 className={`font-medium leading-snug group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors ${
               isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
             }`}>
               {title}
             </h3>
             {/* ステータスバッジ */}
             {isCompleted && (
-              <span className="flex-shrink-0 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded">
+              <span className="flex-shrink-0 px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded">
                 完了
               </span>
             )}
@@ -81,13 +81,13 @@ export function VideoItem({ id, title, description, duration, status, progress }
               <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    isInProgress ? "bg-blue-500" : "bg-slate-300 dark:bg-slate-600"
+                    isInProgress ? "bg-slate-500 dark:bg-slate-400" : "bg-slate-300 dark:bg-slate-600"
                   }`}
                   style={{ width: `${progress}%` }}
                 />
               </div>
               <span className={`text-xs font-medium flex-shrink-0 ${
-                isInProgress ? "text-blue-600 dark:text-blue-400" : "text-slate-400"
+                isInProgress ? "text-slate-700 dark:text-slate-300" : "text-slate-400"
               }`}>
                 {isInProgress ? `${progress}%` : "未視聴"}
               </span>
