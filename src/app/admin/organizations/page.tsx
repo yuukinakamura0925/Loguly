@@ -61,11 +61,12 @@ export default async function OrganizationsPage({
         <SearchInput placeholder="組織名で検索..." paramName="q" className="max-w-sm" />
       </div>
 
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>組織名</TableHead>
-            <TableHead>メンバー数</TableHead>
+            <TableHead className="hidden sm:table-cell">メンバー数</TableHead>
             <TableHead>ステータス</TableHead>
             <TableHead className="text-right w-32">操作</TableHead>
           </TableRow>
@@ -79,7 +80,7 @@ export default async function OrganizationsPage({
                 <TableCell className="text-slate-900 dark:text-white font-medium">
                   {org.name}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                     <UsersIcon className="w-4 h-4" />
                     {memberCount}
@@ -126,6 +127,7 @@ export default async function OrganizationsPage({
           )}
         </TableBody>
       </Table>
+      </div>
 
       {totalPages > 1 && (
         <div className="mt-6">

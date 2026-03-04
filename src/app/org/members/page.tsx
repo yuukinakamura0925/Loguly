@@ -141,19 +141,20 @@ export default function MembersPage() {
             }).length})
           </h2>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
               <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 名前
               </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <th className="hidden sm:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 メール
               </th>
               <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 ロール
               </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <th className="hidden md:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 参加日
               </th>
               <th className="text-right px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -184,7 +185,7 @@ export default function MembersPage() {
                     <ChevronRightIcon className="w-4 h-4 text-slate-400" />
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}
                 </td>
                 <td className="px-4 py-3">
@@ -198,7 +199,7 @@ export default function MembersPage() {
                     {m.role === "org_admin" ? "管理者" : "メンバー"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                <td className="hidden md:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {new Date(m.joined_at).toLocaleDateString("ja-JP")}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -213,6 +214,7 @@ export default function MembersPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 保留中の招待 */}
@@ -223,6 +225,7 @@ export default function MembersPage() {
               保留中の招待 ({invites.length})
             </h2>
           </div>
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
@@ -232,7 +235,7 @@ export default function MembersPage() {
                 <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                   ロール
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
+                <th className="hidden sm:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                   有効期限
                 </th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -250,7 +253,7 @@ export default function MembersPage() {
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                     {inv.role === "org_admin" ? "管理者" : "メンバー"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
+                  <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                     {new Date(inv.expires_at).toLocaleDateString("ja-JP")}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -265,6 +268,7 @@ export default function MembersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

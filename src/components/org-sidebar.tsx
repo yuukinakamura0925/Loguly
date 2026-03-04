@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
+export const orgNavItems = [
   {
     href: "/org/members",
     label: "メンバー管理",
@@ -38,7 +38,7 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 min-h-screen">
+    <aside className="hidden lg:block w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 min-h-screen">
       <div className="p-5 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-da-blue-900 rounded-xl flex items-center justify-center">
@@ -53,7 +53,7 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
         </div>
       </div>
       <nav className="p-3 space-y-1">
-        {navItems.map((item) => {
+        {orgNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
             <Link

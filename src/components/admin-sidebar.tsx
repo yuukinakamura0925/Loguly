@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const navItems = [
+export const adminNavItems = [
   {
     href: "/admin",
     label: "ダッシュボード",
@@ -55,7 +55,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-full flex-shrink-0 overflow-y-auto">
+    <aside className="hidden lg:block w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 h-full flex-shrink-0 overflow-y-auto">
       <div className="p-5 border-b border-slate-200 dark:border-slate-800">
         <Link href="/admin" className="flex items-center gap-3">
           <div className="w-9 h-9 bg-da-blue-900 rounded-xl flex items-center justify-center">
@@ -71,7 +71,7 @@ export default function AdminSidebar() {
         </Link>
       </div>
       <nav className="p-3 space-y-1">
-        {navItems.map((item) => {
+        {adminNavItems.map((item) => {
           const isActive =
             item.href === "/admin"
               ? pathname === "/admin"

@@ -137,10 +137,11 @@ export default function CategoriesPage() {
         </Card>
       )}
 
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-24">表示順</TableHead>
+            <TableHead className="hidden sm:table-cell w-24">表示順</TableHead>
             <TableHead>カテゴリ名</TableHead>
             <TableHead className="w-32 text-right">操作</TableHead>
           </TableRow>
@@ -185,7 +186,7 @@ export default function CategoriesPage() {
                 </TableCell>
               ) : (
                 <>
-                  <TableCell className="text-slate-500 font-mono">
+                  <TableCell className="hidden sm:table-cell text-slate-500 font-mono">
                     {cat.display_order}
                   </TableCell>
                   <TableCell className="text-slate-900 dark:text-white font-medium">
@@ -215,6 +216,7 @@ export default function CategoriesPage() {
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }
