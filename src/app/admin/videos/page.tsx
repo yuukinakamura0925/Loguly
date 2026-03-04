@@ -374,6 +374,9 @@ export default function VideosPage() {
   );
 }
 
+const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
+
 function VideoForm({
   categories,
   videos,
@@ -391,8 +394,12 @@ function VideoForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     video?.category_id ?? null
   );
+  const [uploadedVideoId, setUploadedVideoId] = useState(video?.cf_video_id || "");
+  const [detectedDuration, setDetectedDuration] = useState(video?.duration || 0);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Calculate next display_order for selected category
   const getNextDisplayOrder = (categoryId: number) => {
     const categoryVideos = videos.filter((v) => v.category_id === categoryId);
     if (categoryVideos.length === 0) return 1;
@@ -410,10 +417,108 @@ function VideoForm({
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+
+    if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      setUploadError("MP4、MOV、WebM形式のみアップロード可能です");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError("ファイルサイズは2GB以下にしてください");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // duration自動検出:
+    // 非表示の<video>要素を作ってファイルを読み込み、メタデータからdurationを取得。
+    // これによりdurationフィールドを手入力する必要がなくなる。
+    const videoEl = document.createElement("video");
+    videoEl.preload = "metadata";
+    videoEl.onloadedmetadata = () => {
+      setDetectedDuration(Math.floor(videoEl.duration));
+      URL.revokeObjectURL(videoEl.src); // メモリリーク防止
+    };
+    videoEl.src = URL.createObjectURL(file);
+  };
+
+  /**
+   * アップロード処理（2段階）
+   *
+   * 1. Next.js API Route にファイル名を送って、署名付きアップロードURLを取得
+   * 2. そのURLにブラウザから直接動画ファイルをPUT（サーバーを経由しない）
+   *
+   * fetch() ではなく XMLHttpRequest を使う理由:
+   * fetch() には upload.onprogress に相当するAPIがないため、
+   * アップロード進捗（%）を取得するには XMLHttpRequest が必要。
+   */
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setUploadError("");
+    setUploadProgress(0);
+
+    try {
+      // Step 1: サーバーから署名付きURLを取得
+      const urlRes = await fetch("/api/videos/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: selectedFile.name }),
+      });
+
+      if (!urlRes.ok) {
+        throw new Error("アップロードURLの取得に失敗しました");
+      }
+
+      const { videoId, uploadUrl } = await urlRes.json();
+
+      // Step 2: 署名付きURLに動画ファイルを直接PUT
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`アップロードに失敗しました (${xhr.status})`));
+          }
+        };
+        xhr.onerror = () => reject(new Error("ネットワークエラーが発生しました"));
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", selectedFile.type);
+        xhr.send(selectedFile); // ← ファイルをR2/Streamに直接送信
+      });
+
+      // アップロード成功: videoIdをhidden inputにセット → フォーム送信時にDBに保存される
+      setUploadedVideoId(videoId);
+      setUploadProgress(null);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "アップロードに失敗しました");
+      setUploadProgress(null);
+    }
+  };
+
+  const isUploading = uploadProgress !== null;
+  const hasVideo = !!uploadedVideoId;
+
   return (
     <Card className="mb-6">
       <CardContent>
         <form action={onSubmit} className="space-y-4">
+          <input type="hidden" name="cf_video_id" value={uploadedVideoId} />
+          <input type="hidden" name="duration" value={detectedDuration} />
+
           <div className="grid grid-cols-2 gap-4">
             <Input
               name="title"
@@ -446,15 +551,73 @@ function VideoForm({
             placeholder="動画の説明（任意）"
           />
 
+          {/* 動画ファイルアップロード */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              動画ファイル {!video && <span className="text-red-500">*</span>}
+            </label>
+
+            {hasVideo && !selectedFile ? (
+              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <svg className="w-5 h-5 text-da-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {video ? "アップロード済み" : "アップロード完了"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedFile(null); setUploadedVideoId(""); }}
+                  className="ml-auto text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                >
+                  変更
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm"
+                  onChange={handleFileSelect}
+                  disabled={isUploading}
+                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-900 file:text-white hover:file:bg-slate-800 dark:file:bg-slate-700 dark:hover:file:bg-slate-600 file:cursor-pointer"
+                />
+
+                {selectedFile && !isUploading && !uploadedVideoId && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm text-slate-500">
+                      {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)}MB)
+                      {detectedDuration > 0 && ` · ${Math.floor(detectedDuration / 60)}:${(detectedDuration % 60).toString().padStart(2, "0")}`}
+                    </div>
+                    <Button type="button" onClick={handleUpload} variant="secondary">
+                      アップロード
+                    </Button>
+                  </div>
+                )}
+
+                {isUploading && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">アップロード中...</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-da-blue-900 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {uploadError && (
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              name="cf_video_id"
-              label="Cloudflare Video ID"
-              required
-              defaultValue={video?.cf_video_id}
-              placeholder="abc123..."
-              className="font-mono"
-            />
             <Input
               name="display_order"
               label="表示順"
@@ -464,6 +627,16 @@ function VideoForm({
               value={displayOrder}
               onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
             />
+            {detectedDuration > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  再生時間
+                </label>
+                <div className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  {Math.floor(detectedDuration / 60)}:{(detectedDuration % 60).toString().padStart(2, "0")}
+                </div>
+              </div>
+            )}
           </div>
 
           <Switch
@@ -474,7 +647,7 @@ function VideoForm({
           />
 
           <div className="flex gap-2 pt-2">
-            <Button type="submit">
+            <Button type="submit" disabled={!video && !uploadedVideoId}>
               {video ? "更新" : "追加"}
             </Button>
             <Button type="button" variant="secondary" onClick={onCancel}>

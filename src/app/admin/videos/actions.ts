@@ -14,6 +14,7 @@ import {
   updateCategory as dbUpdateCategory,
   deleteCategory as dbDeleteCategory,
 } from "@/lib/db";
+import { getVideoStorage } from "@/lib/video-storage";
 
 export async function createVideo(formData: FormData) {
   await requireRole("platform_admin");
@@ -24,6 +25,7 @@ export async function createVideo(formData: FormData) {
     title: formData.get("title") as string,
     description: (formData.get("description") as string) || null,
     cf_video_id: formData.get("cf_video_id") as string,
+    duration: parseInt(formData.get("duration") as string) || 0,
     display_order: parseInt(formData.get("display_order") as string) || 0,
     is_published: formData.get("is_published") === "true",
   });
@@ -56,6 +58,17 @@ export async function updateVideo(id: number, formData: FormData) {
 export async function deleteVideo(id: number) {
   await requireRole("platform_admin");
   const supabase = await createClient();
+
+  // ストレージから動画ファイルを削除
+  const { data: video } = await getVideoById(supabase, id);
+  if (video?.cf_video_id) {
+    try {
+      const storage = getVideoStorage();
+      await storage.deleteVideo(video.cf_video_id);
+    } catch (err) {
+      console.error("Failed to delete video from storage:", err);
+    }
+  }
 
   const { error } = await dbDeleteVideo(supabase, id);
 
