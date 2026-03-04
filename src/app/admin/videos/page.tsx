@@ -7,7 +7,8 @@ import {
   createVideo,
   updateVideo,
   deleteVideo,
-  moveVideo,
+  reorderVideos,
+  reorderCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -28,7 +29,6 @@ import {
   PencilIcon,
   TrashIcon,
   ClockIcon,
-  ChevronUpIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
@@ -67,6 +67,7 @@ export default function VideosPage() {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -92,14 +93,57 @@ export default function VideosPage() {
     }
   }
 
-  async function handleMove(id: number, direction: "up" | "down") {
+  const [dragVideoId, setDragVideoId] = useState<number | null>(null);
+  const [dragOverVideoId, setDragOverVideoId] = useState<number | null>(null);
+  const [dragCategoryId, setDragCategoryId] = useState<number | null>(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(null);
+
+  async function handleDrop(categoryId: number, targetVideoId: number) {
+    if (dragVideoId === null || dragVideoId === targetVideoId) return;
     setError("");
-    const result = await moveVideo(id, direction);
+
+    const categoryVids = videos
+      .filter((v) => v.category_id === categoryId)
+      .sort((a, b) => a.display_order - b.display_order);
+
+    const orderedIds = categoryVids.map((v) => v.id);
+    const fromIndex = orderedIds.indexOf(dragVideoId);
+    const toIndex = orderedIds.indexOf(targetVideoId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragVideoId);
+
+    const result = await reorderVideos(categoryId, orderedIds);
     if (result.error) {
       setError(result.error);
     } else {
       load();
     }
+    setDragVideoId(null);
+    setDragOverVideoId(null);
+  }
+
+  async function handleDropCategory(targetCategoryId: number) {
+    if (dragCategoryId === null || dragCategoryId === targetCategoryId) return;
+    setError("");
+
+    const orderedIds = categories.map((c) => c.id);
+    const fromIndex = orderedIds.indexOf(dragCategoryId);
+    const toIndex = orderedIds.indexOf(targetCategoryId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragCategoryId);
+
+    const result = await reorderCategories(orderedIds);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      load();
+    }
+    setDragCategoryId(null);
+    setDragOverCategoryId(null);
   }
 
   async function handleDeleteCategory(id: number) {
@@ -243,8 +287,33 @@ export default function VideosPage() {
         {videosByCategory.map(({ category, videos: categoryVideos }) => {
           const isExpanded = expandedCategories.has(category.id);
           return (
-          <Card key={category.id}>
+          <Card
+            key={category.id}
+            draggable
+            onDragStart={(e) => { e.stopPropagation(); setDragCategoryId(category.id); }}
+            onDragEnd={() => { setDragCategoryId(null); setDragOverCategoryId(null); }}
+            onDragOver={(e) => { e.preventDefault(); if (!dragVideoId) setDragOverCategoryId(category.id); }}
+            onDrop={(e) => { e.preventDefault(); if (!dragVideoId) handleDropCategory(category.id); }}
+            className={`${
+              dragOverCategoryId === category.id && dragCategoryId !== category.id && !dragVideoId
+                ? "ring-2 ring-da-blue-900"
+                : dragCategoryId === category.id
+                  ? "opacity-50"
+                  : ""
+            }`}
+          >
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
+              {/* Category drag handle */}
+              <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="9" cy="6" r="1.5" />
+                  <circle cx="15" cy="6" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" />
+                  <circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="18" r="1.5" />
+                  <circle cx="15" cy="18" r="1.5" />
+                </svg>
+              </div>
               <button
                 onClick={() => toggleCategory(category.id)}
                 className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors"
@@ -287,38 +356,63 @@ export default function VideosPage() {
                   このカテゴリには動画がありません
                 </div>
               )}
-              {categoryVideos.map((video, index) => (
+              {categoryVideos.map((video) => (
                 <div
                   key={video.id}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                  draggable
+                  onDragStart={() => setDragVideoId(video.id)}
+                  onDragEnd={() => { setDragVideoId(null); setDragOverVideoId(null); }}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverVideoId(video.id); }}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(category.id, video.id); }}
+                  className={`flex items-center gap-4 px-4 py-3 transition-colors cursor-grab active:cursor-grabbing ${
+                    dragOverVideoId === video.id && dragVideoId !== video.id
+                      ? "bg-slate-100 dark:bg-slate-800/60 border-t-2 border-da-blue-900"
+                      : dragVideoId === video.id
+                        ? "opacity-50 bg-slate-50 dark:bg-slate-800/30"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                  }`}
                 >
-                  {/* Reorder buttons */}
-                  <div className="flex flex-col gap-0.5">
-                    <button
-                      onClick={() => handleMove(video.id, "up")}
-                      disabled={index === 0}
-                      className={`p-1 rounded transition-all ${
-                        index === 0
-                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                      title="上へ"
-                    >
-                      <ChevronUpIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleMove(video.id, "down")}
-                      disabled={index === categoryVideos.length - 1}
-                      className={`p-1 rounded transition-all ${
-                        index === categoryVideos.length - 1
-                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                      title="下へ"
-                    >
-                      <ChevronDownIcon className="w-4 h-4" />
-                    </button>
+                  {/* Drag handle */}
+                  <div className="flex-shrink-0 text-slate-400 dark:text-slate-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="9" cy="6" r="1.5" />
+                      <circle cx="15" cy="6" r="1.5" />
+                      <circle cx="9" cy="12" r="1.5" />
+                      <circle cx="15" cy="12" r="1.5" />
+                      <circle cx="9" cy="18" r="1.5" />
+                      <circle cx="15" cy="18" r="1.5" />
+                    </svg>
                   </div>
+
+                  {/* Video thumbnail */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (video.cf_video_id) setPreviewVideoId(video.cf_video_id); }}
+                    className="relative w-24 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 group"
+                  >
+                    {video.cf_video_id && process.env.NEXT_PUBLIC_VIDEO_BASE_URL ? (
+                      <>
+                        <video
+                          src={`${process.env.NEXT_PUBLIC_VIDEO_BASE_URL}/${video.cf_video_id}`}
+                          preload="metadata"
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
+                          <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
 
                   {/* Video info */}
                   <div className="flex-1 min-w-0">
@@ -335,7 +429,7 @@ export default function VideosPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-1">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
                         setEditingId(video.id);
@@ -370,6 +464,32 @@ export default function VideosPage() {
           </Card>
         )}
       </div>
+
+      {/* Preview modal */}
+      {previewVideoId && process.env.NEXT_PUBLIC_VIDEO_BASE_URL && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setPreviewVideoId(null)}
+        >
+          <div
+            className="relative w-full max-w-3xl mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewVideoId(null)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white text-sm"
+            >
+              閉じる
+            </button>
+            <video
+              src={`${process.env.NEXT_PUBLIC_VIDEO_BASE_URL}/${previewVideoId}`}
+              controls
+              autoPlay
+              className="w-full rounded-xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   listVideosByCategory,
   updateVideoOrder,
   insertCategory,
+  updateCategoryOrder,
   updateCategory as dbUpdateCategory,
   deleteCategory as dbDeleteCategory,
 } from "@/lib/db";
@@ -112,6 +113,33 @@ export async function moveVideo(videoId: number, direction: "up" | "down") {
 
   const { error: err2 } = await updateVideoOrder(supabase, targetVideo.id, currentVideo.display_order);
   if (err2) return { error: err2.message };
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function reorderVideos(categoryId: number, orderedVideoIds: number[]) {
+  await requireRole("platform_admin");
+  const supabase = await createClient();
+
+  // 渡された順番通りに display_order を1から振り直す
+  for (let i = 0; i < orderedVideoIds.length; i++) {
+    const { error } = await updateVideoOrder(supabase, orderedVideoIds[i], i + 1);
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function reorderCategories(orderedCategoryIds: number[]) {
+  await requireRole("platform_admin");
+  const supabase = await createClient();
+
+  for (let i = 0; i < orderedCategoryIds.length; i++) {
+    const { error } = await updateCategoryOrder(supabase, orderedCategoryIds[i], i + 1);
+    if (error) return { error: error.message };
+  }
 
   revalidatePath("/admin/videos");
   return { success: true };
