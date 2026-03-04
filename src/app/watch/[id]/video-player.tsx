@@ -20,6 +20,7 @@ type Progress = {
 
 type Props = {
   video: VideoData;
+  videoUrl: string;
   initialProgress: Progress;
   userId: string;
 };
@@ -30,7 +31,7 @@ function formatTime(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-export default function VideoPlayer({ video, initialProgress, userId }: Props) {
+export default function VideoPlayer({ video, videoUrl, initialProgress, userId }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(initialProgress.maxWatchedSeconds);
@@ -173,11 +174,7 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
           controls
           playsInline
         >
-          {/* テスト用のサンプル動画 */}
-          <source
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            type="video/mp4"
-          />
+          <source src={videoUrl} type="video/mp4" />
           お使いのブラウザは動画再生に対応していません。
         </video>
 

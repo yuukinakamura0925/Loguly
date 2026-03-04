@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPublishedVideoById, getViewLog, getProfileRole, listPublishedVideosByCategory } from "@/lib/db";
+import { getVideoStorage } from "@/lib/video-storage";
 import VideoPlayer from "./video-player";
 import VideoNavigation from "./video-navigation";
 import Link from "next/link";
@@ -84,6 +85,7 @@ export default async function WatchPage({ params }: Props) {
             cfVideoId: video.cf_video_id,
             categoryName: video.categories!.name,
           }}
+          videoUrl={getVideoStorage().getPlaybackUrl(video.cf_video_id)}
           initialProgress={{
             maxWatchedSeconds: viewLog?.max_watched_seconds || 0,
             completed: viewLog?.completed || false,
