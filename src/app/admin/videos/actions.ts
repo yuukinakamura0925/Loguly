@@ -11,9 +11,11 @@ import {
   listVideosByCategory,
   updateVideoOrder,
   insertCategory,
+  updateCategoryOrder,
   updateCategory as dbUpdateCategory,
   deleteCategory as dbDeleteCategory,
 } from "@/lib/db";
+import { getVideoStorage } from "@/lib/video-storage";
 
 export async function createVideo(formData: FormData) {
   await requireRole("platform_admin");
@@ -24,6 +26,7 @@ export async function createVideo(formData: FormData) {
     title: formData.get("title") as string,
     description: (formData.get("description") as string) || null,
     cf_video_id: formData.get("cf_video_id") as string,
+    duration: parseInt(formData.get("duration") as string) || 0,
     display_order: parseInt(formData.get("display_order") as string) || 0,
     is_published: formData.get("is_published") === "true",
   });
@@ -56,6 +59,17 @@ export async function updateVideo(id: number, formData: FormData) {
 export async function deleteVideo(id: number) {
   await requireRole("platform_admin");
   const supabase = await createClient();
+
+  // ストレージから動画ファイルを削除
+  const { data: video } = await getVideoById(supabase, id);
+  if (video?.cf_video_id) {
+    try {
+      const storage = getVideoStorage();
+      await storage.deleteVideo(video.cf_video_id);
+    } catch (err) {
+      console.error("Failed to delete video from storage:", err);
+    }
+  }
 
   const { error } = await dbDeleteVideo(supabase, id);
 
@@ -99,6 +113,33 @@ export async function moveVideo(videoId: number, direction: "up" | "down") {
 
   const { error: err2 } = await updateVideoOrder(supabase, targetVideo.id, currentVideo.display_order);
   if (err2) return { error: err2.message };
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function reorderVideos(categoryId: number, orderedVideoIds: number[]) {
+  await requireRole("platform_admin");
+  const supabase = await createClient();
+
+  // 渡された順番通りに display_order を1から振り直す
+  for (let i = 0; i < orderedVideoIds.length; i++) {
+    const { error } = await updateVideoOrder(supabase, orderedVideoIds[i], i + 1);
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function reorderCategories(orderedCategoryIds: number[]) {
+  await requireRole("platform_admin");
+  const supabase = await createClient();
+
+  for (let i = 0; i < orderedCategoryIds.length; i++) {
+    const { error } = await updateCategoryOrder(supabase, orderedCategoryIds[i], i + 1);
+    if (error) return { error: error.message };
+  }
 
   revalidatePath("/admin/videos");
   return { success: true };

@@ -28,6 +28,7 @@ export function insertVideo(
     title: string;
     description: string | null;
     cf_video_id: string;
+    duration: number;
     display_order: number;
     is_published: boolean;
   }
