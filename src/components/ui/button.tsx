@@ -10,16 +10,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40",
-  secondary: "bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700",
-  ghost: "hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white",
-  danger: "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/25",
+  primary: "bg-da-blue-900 hover:bg-da-blue-1000 active:bg-da-blue-1200 text-white hover:underline",
+  secondary: "bg-white text-da-blue-900 border border-current hover:bg-da-blue-200 hover:text-da-blue-1000 hover:underline dark:bg-slate-800 dark:text-da-blue-300 dark:border-da-blue-300 dark:hover:bg-slate-700",
+  ghost: "text-da-blue-900 hover:bg-da-blue-50 hover:underline dark:text-da-blue-300 dark:hover:bg-slate-800",
+  danger: "bg-da-error hover:bg-red-800 text-white hover:underline",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
   sm: "px-3 py-1.5 text-sm rounded-lg",
-  md: "px-4 py-2.5 text-sm rounded-xl",
-  lg: "px-6 py-3 text-base rounded-xl",
+  md: "px-4 py-2.5 text-sm rounded-lg",
+  lg: "px-6 py-3 text-base rounded-lg",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -29,8 +29,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={`
-          inline-flex items-center justify-center gap-2 font-medium transition-all
-          disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+          inline-flex items-center justify-center gap-2 font-bold transition-all
+          disabled:bg-da-gray-300 disabled:text-da-gray-50 disabled:cursor-not-allowed disabled:shadow-none disabled:no-underline
           ${variantStyles[variant]}
           ${sizeStyles[size]}
           ${className}

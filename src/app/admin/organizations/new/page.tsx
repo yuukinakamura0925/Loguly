@@ -45,8 +45,8 @@ export default function NewOrganizationPage() {
             />
 
             {error && (
-              <div className="p-3 bg-red-900/20 border border-red-800 rounded-xl">
-                <p className="text-sm text-red-400">{error}</p>
+              <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-xl">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               </div>
             )}
 

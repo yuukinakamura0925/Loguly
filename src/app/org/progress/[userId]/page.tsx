@@ -112,8 +112,8 @@ export default async function MemberProgressPage({
         <div className="flex items-center gap-4">
           <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold ${
             completedCount === totalCount && totalCount > 0
-              ? "bg-gradient-to-br from-emerald-400 to-emerald-600"
-              : "bg-gradient-to-br from-slate-400 to-slate-500"
+              ? "bg-da-blue-900 text-white"
+              : "bg-slate-500 dark:bg-slate-600"
           }`}>
             {profile.display_name?.charAt(0) || "?"}
           </div>
@@ -121,7 +121,7 @@ export default async function MemberProgressPage({
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               {profile.display_name}
               {completedCount === totalCount && totalCount > 0 && (
-                <CheckCircleIcon className="w-6 h-6 text-emerald-500" />
+                <CheckCircleIcon className="w-6 h-6 text-da-success" />
               )}
             </h1>
             <p className="text-slate-500">{profile.email}</p>
@@ -131,7 +131,7 @@ export default async function MemberProgressPage({
         {/* 進捗サマリー */}
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
           <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{completedCount}</div>
+            <div className="text-3xl font-bold text-da-success dark:text-emerald-400">{completedCount}</div>
             <div className="text-sm text-slate-500">完了</div>
           </div>
           <div className="text-center">
@@ -139,7 +139,7 @@ export default async function MemberProgressPage({
             <div className="text-sm text-slate-500">視聴中</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{overallPercent}%</div>
+            <div className="text-3xl font-bold text-da-blue-900 dark:text-da-blue-300">{overallPercent}%</div>
             <div className="text-sm text-slate-500">視聴率</div>
           </div>
         </div>
@@ -150,8 +150,8 @@ export default async function MemberProgressPage({
             <div
               className={`h-full rounded-full transition-all ${
                 completedCount === totalCount && totalCount > 0
-                  ? "bg-emerald-500"
-                  : "bg-blue-500"
+                  ? "bg-da-success"
+                  : "bg-da-blue-900"
               }`}
               style={{ width: `${overallPercent}%` }}
             />

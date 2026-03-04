@@ -41,7 +41,7 @@ export default function CategoryAccordion({ name, videos, defaultOpen = false }:
         className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="w-2 h-2 rounded-full bg-da-blue-900" />
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{name}</h2>
           <span className="text-sm text-slate-500">
             ({completedCount}/{videos.length} 完了)
@@ -51,13 +51,13 @@ export default function CategoryAccordion({ name, videos, defaultOpen = false }:
           <div className="w-20 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden hidden sm:block">
             <div
               className={`h-full rounded-full ${
-                progress === 100 ? "bg-emerald-500" : "bg-blue-500"
+                progress === 100 ? "bg-da-success" : "bg-da-blue-900"
               }`}
               style={{ width: `${progress}%` }}
             />
           </div>
           <span className={`text-sm font-medium ${
-            progress === 100 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-slate-400"
+            progress === 100 ? "text-da-success dark:text-emerald-400" : "text-slate-600 dark:text-slate-400"
           }`}>
             {progress}%
           </span>
@@ -79,7 +79,7 @@ export default function CategoryAccordion({ name, videos, defaultOpen = false }:
               key={video.id}
               className={`rounded-lg border p-4 transition-colors ${
                 video.completed
-                  ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10"
+                  ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/10"
                   : "border-slate-200 dark:border-slate-700"
               }`}
             >
@@ -87,7 +87,7 @@ export default function CategoryAccordion({ name, videos, defaultOpen = false }:
                 {/* ステータスアイコン */}
                 <div className={`mt-0.5 ${
                   video.completed
-                    ? "text-emerald-500"
+                    ? "text-da-success"
                     : video.percent > 0
                       ? "text-amber-500"
                       : "text-slate-400"
@@ -133,7 +133,7 @@ export default function CategoryAccordion({ name, videos, defaultOpen = false }:
                   )}
 
                   {video.completed && (
-                    <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    <div className="mt-2 text-xs text-da-success dark:text-emerald-400 font-medium">
                       視聴完了
                     </div>
                   )}

@@ -48,14 +48,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-da-gray-900 p-4">
 
-      <div className="relative w-full max-w-md">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Logo size="lg" showText={false} />
@@ -64,7 +59,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700/50">
+        <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
@@ -88,8 +83,8 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <p className="text-sm text-red-400">{error}</p>
+                <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-da-error/20 rounded-xl">
+                  <p className="text-sm text-da-error">{error}</p>
                 </div>
               )}
 
@@ -104,7 +99,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <Link href="/reset-password" className="text-sm text-slate-400 hover:text-blue-400 transition-colors">
+              <Link href="/reset-password" className="text-sm text-slate-400 hover:text-da-blue-300 transition-colors">
                 パスワードをお忘れですか？
               </Link>
             </div>

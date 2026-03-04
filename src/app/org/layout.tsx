@@ -25,7 +25,7 @@ export default async function OrgLayout({
       <div className="flex-1 flex flex-col">
         <header className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold">
               {profile.display_name?.charAt(0) || "U"}
             </div>
             <div>

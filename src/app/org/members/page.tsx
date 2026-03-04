@@ -79,7 +79,7 @@ export default function MembersPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">メンバー管理</h1>
         <button
           onClick={() => setShowInvite(!showInvite)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors text-sm"
         >
           {showInvite ? "キャンセル" : "メンバーを招待"}
         </button>
@@ -121,7 +121,7 @@ export default function MembersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="名前・メールで検索..."
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 transition-all"
           />
         </div>
       </div>
@@ -178,7 +178,7 @@ export default function MembersPage() {
                 <td className="px-4 py-3">
                   <Link
                     href={`/org/progress/${m.user_id}`}
-                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
                   >
                     {(m.profiles as unknown as { display_name: string })?.display_name}
                     <ChevronRightIcon className="w-4 h-4 text-slate-400" />
@@ -191,7 +191,7 @@ export default function MembersPage() {
                   <span
                     className={`px-2 py-1 rounded text-xs ${
                       m.role === "org_admin"
-                        ? "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300"
+                        ? "bg-da-blue-50 dark:bg-da-blue-900/30 text-da-blue-900 dark:text-da-blue-300"
                         : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
                     }`}
                   >

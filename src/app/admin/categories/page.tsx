@@ -158,13 +158,13 @@ export default function CategoriesPage() {
                       name="display_order"
                       type="number"
                       defaultValue={cat.display_order}
-                      className="w-24 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="w-24 px-3 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 hover:border-black rounded-lg text-slate-900 dark:text-white text-sm"
                     />
                     <input
                       name="name"
                       required
                       defaultValue={cat.name}
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 hover:border-black rounded-lg text-slate-900 dark:text-white text-sm"
                     />
                     <div className="flex gap-2">
                       <Button type="submit" size="sm">

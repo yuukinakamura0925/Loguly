@@ -254,7 +254,7 @@ export default function VideosPage() {
                 ) : (
                   <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 )}
-                <FolderIcon className="w-5 h-5 text-yellow-500" />
+                <FolderIcon className="w-5 h-5 text-da-gray-600" />
                 <span className="font-medium text-slate-900 dark:text-white">{category.name}</span>
                 <span className="text-sm text-slate-500">{categoryVideos.length}本</span>
               </button>
@@ -273,7 +273,7 @@ export default function VideosPage() {
                 </button>
                 <button
                   onClick={() => handleDeleteCategory(category.id)}
-                  className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                   title="カテゴリを削除"
                 >
                   <TrashIcon />
@@ -348,7 +348,7 @@ export default function VideosPage() {
                     </button>
                     <button
                       onClick={() => handleDelete(video.id)}
-                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                       title="削除"
                     >
                       <TrashIcon />
@@ -503,7 +503,7 @@ function CategoryForm({
       <CardContent>
         <form action={onSubmit} className="space-y-4">
           <div className="flex items-center gap-3 mb-4">
-            <FolderIcon className="w-5 h-5 text-yellow-500" />
+            <FolderIcon className="w-5 h-5 text-da-gray-600" />
             <span className="font-medium text-slate-900 dark:text-white">
               {category ? "カテゴリを編集" : "新しいカテゴリ"}
             </span>

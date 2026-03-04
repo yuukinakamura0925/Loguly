@@ -62,7 +62,7 @@ export function CategorySection({ name, videos, viewLogs, progress, defaultOpen 
         </div>
         <div className="flex items-center gap-3">
           <Progress value={progress} className="w-24 hidden sm:block" size="sm" variant={progress === 100 ? "success" : "default"} />
-          <span className={`text-sm font-medium ${progress === 100 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>
+          <span className={`text-sm font-medium ${progress === 100 ? 'text-da-success dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>
             {progress}%
           </span>
           <ChevronDownIcon

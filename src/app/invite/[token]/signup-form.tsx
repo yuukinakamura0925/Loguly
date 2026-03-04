@@ -75,9 +75,9 @@ export default function SignupForm({
   if (success) {
     return (
       <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 bg-da-blue-50 rounded-full flex items-center justify-center mx-auto">
           <svg
-            className="w-8 h-8 text-green-600 dark:text-green-400"
+            className="w-8 h-8 text-da-blue-900"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -90,17 +90,17 @@ export default function SignupForm({
             />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
           登録完了
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-slate-600 dark:text-slate-400">
           確認メールを送信しました。
           <br />
           メール内のリンクをクリックして
           <br />
           アカウントを有効化してください。
         </p>
-        <p className="text-sm text-gray-500 dark:text-gray-500">
+        <p className="text-sm text-slate-500 dark:text-slate-500">
           有効化後、ログインページからログインできます。
         </p>
       </div>
@@ -110,19 +110,19 @@ export default function SignupForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
           メールアドレス
         </label>
         <input
           type="email"
           value={email}
           disabled
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
           表示名
         </label>
         <input
@@ -130,13 +130,13 @@ export default function SignupForm({
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           required
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
           placeholder="山田 太郎"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
           パスワード
         </label>
         <input
@@ -145,13 +145,13 @@ export default function SignupForm({
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
           placeholder="6文字以上"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
           パスワード（確認）
         </label>
         <input
@@ -160,7 +160,7 @@ export default function SignupForm({
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
         />
       </div>
 
@@ -173,7 +173,7 @@ export default function SignupForm({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors"
+        className="w-full py-3 px-4 bg-da-blue-900 hover:bg-da-blue-1000 disabled:bg-da-gray-300 disabled:text-da-gray-50 text-white hover:underline font-medium rounded-lg transition-colors"
       >
         {isLoading ? "登録中..." : "アカウントを作成して参加"}
       </button>

@@ -60,10 +60,10 @@ export default async function AdminDashboardPage() {
   ]);
 
   const stats = [
-    { key: "organizations", label: "組織数", value: orgCount ?? 0, color: "from-blue-500 to-indigo-600", iconColor: "text-blue-400", href: "/admin/organizations" },
-    { key: "videos", label: "動画数", value: videoCount ?? 0, color: "from-emerald-500 to-teal-600", iconColor: "text-emerald-400", href: "/admin/videos" },
-    { key: "categories", label: "カテゴリ数", value: categoryCount ?? 0, color: "from-amber-500 to-orange-600", iconColor: "text-amber-400", href: "/admin/categories" },
-    { key: "licenses", label: "ライセンス数", value: licenseCount ?? 0, color: "from-purple-500 to-pink-600", iconColor: "text-purple-400", href: "/admin/licenses" },
+    { key: "organizations", label: "組織数", value: orgCount ?? 0, href: "/admin/organizations" },
+    { key: "videos", label: "動画数", value: videoCount ?? 0, href: "/admin/videos" },
+    { key: "categories", label: "カテゴリ数", value: categoryCount ?? 0, href: "/admin/categories" },
+    { key: "licenses", label: "ライセンス数", value: licenseCount ?? 0, href: "/admin/licenses" },
   ];
 
   return (
@@ -82,8 +82,8 @@ export default async function AdminDashboardPage() {
             className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg transition-all group"
           >
             <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} bg-opacity-10`}>
-                <span className={stat.iconColor}>
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+                <span className="text-slate-600 dark:text-slate-400">
                   {statIcons[stat.key as keyof typeof statIcons]}
                 </span>
               </div>
@@ -103,8 +103,8 @@ export default async function AdminDashboardPage() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900 dark:text-white">最近の組織</h2>
-            <Link href="/admin/organizations" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-              すべて表示
+            <Link href="/admin/organizations" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000 hover:underline">
+              すべて表示 →
             </Link>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -123,7 +123,7 @@ export default async function AdminDashboardPage() {
                   </div>
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     org.is_active
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      ? "bg-emerald-100 text-da-success dark:bg-emerald-900/30 dark:text-emerald-400"
                       : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                   }`}>
                     {org.is_active ? "有効" : "無効"}
@@ -142,8 +142,8 @@ export default async function AdminDashboardPage() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900 dark:text-white">最近の動画</h2>
-            <Link href="/admin/videos" className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400">
-              すべて表示
+            <Link href="/admin/videos" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000 hover:underline">
+              すべて表示 →
             </Link>
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -161,7 +161,7 @@ export default async function AdminDashboardPage() {
                   </div>
                   <span className={`px-2 py-1 text-xs rounded-full ${
                     video.is_published
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      ? "bg-emerald-100 text-da-success dark:bg-emerald-900/30 dark:text-emerald-400"
                       : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                   }`}>
                     {video.is_published ? "公開" : "非公開"}
@@ -181,42 +181,21 @@ export default async function AdminDashboardPage() {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
         <h2 className="font-semibold text-slate-900 dark:text-white mb-4">クイックアクション</h2>
         <div className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/organizations"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            組織を追加
-          </Link>
-          <Link
-            href="/admin/videos"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            動画を追加
-          </Link>
-          <Link
-            href="/admin/categories"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            カテゴリを追加
-          </Link>
-          <Link
-            href="/admin/licenses"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            ライセンスを追加
-          </Link>
+          {[
+            { href: "/admin/organizations", label: "組織を追加", icon: statIcons.organizations },
+            { href: "/admin/videos", label: "動画を追加", icon: statIcons.videos },
+            { href: "/admin/categories", label: "カテゴリを追加", icon: statIcons.categories },
+            { href: "/admin/licenses", label: "ライセンスを追加", icon: statIcons.licenses },
+          ].map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors text-sm font-bold"
+            >
+              <span className="w-5 h-5 [&>svg]:w-5 [&>svg]:h-5">{action.icon}</span>
+              {action.label}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

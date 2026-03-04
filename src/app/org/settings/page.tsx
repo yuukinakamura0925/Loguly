@@ -134,7 +134,7 @@ export default function OrgSettingsPage() {
               required
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
-              className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
             />
           </div>
           <div>
@@ -157,14 +157,14 @@ export default function OrgSettingsPage() {
             </div>
           )}
           {success && (
-            <div className="p-3 bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-800 rounded-lg">
-              <p className="text-sm text-green-600 dark:text-green-400">更新しました</p>
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-800 rounded-lg">
+              <p className="text-sm text-da-success dark:text-emerald-400">更新しました</p>
             </div>
           )}
 
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
           >
             更新
           </button>
@@ -196,7 +196,7 @@ export default function OrgSettingsPage() {
                       className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="w-2 h-2 rounded-full bg-da-blue-900" />
                         <span className="font-medium text-slate-900 dark:text-white">
                           {category.name}
                         </span>
