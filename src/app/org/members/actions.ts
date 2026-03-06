@@ -3,6 +3,7 @@
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireRole, getCurrentOrg, getCurrentUser } from "@/lib/auth";
 import {
   findMemberByEmail,
@@ -51,12 +52,24 @@ export async function createInvitation(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  // TODO: Resend APIでメール送信
-  // 現時点では招待リンクを返す
-  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${token}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const inviteUrl = `${appUrl}/invite/${token}`;
+
+  // Supabase組み込み招待メール送信
+  const adminClient = createAdminClient();
+  const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${appUrl}/auth/callback?next=/invite/setup`,
+    data: { invitation_token: token },
+  });
 
   revalidatePath("/org/members");
-  return { success: true, inviteUrl };
+
+  if (inviteError) {
+    // ユーザーが既に存在する場合など、メール送信失敗時はリンクをフォールバック表示
+    return { success: true, inviteUrl, emailError: "招待メールの送信に失敗しました。リンクを手動で共有してください。" };
+  }
+
+  return { success: true, emailSent: true };
 }
 
 export async function removeMember(userId: string) {

@@ -6,6 +6,8 @@ import { createInvitation } from "./actions";
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -17,18 +19,48 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
   async function handleSubmit(formData: FormData) {
     setError("");
     setInviteUrl("");
+    setEmailSent(false);
+    setEmailError("");
     const result = await createInvitation(formData);
     if (result.error) {
       setError(result.error);
-    } else if (result.inviteUrl) {
-      setInviteUrl(result.inviteUrl);
+    } else if (result.success) {
+      if (result.emailSent) {
+        setEmailSent(true);
+      }
+      if (result.inviteUrl) {
+        setInviteUrl(result.inviteUrl);
+      }
+      if (result.emailError) {
+        setEmailError(result.emailError);
+      }
     }
   }
 
+  // メール送信成功
+  if (emailSent && !inviteUrl) {
+    return (
+      <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="text-slate-900 dark:text-white text-sm font-medium">
+          招待メールを送信しました
+        </div>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          招待メールが届きます。メール内のリンクからアカウント設定を完了してもらってください。
+        </p>
+        <button
+          onClick={onClose}
+          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm"
+        >
+          閉じる
+        </button>
+      </div>
+    );
+  }
+
+  // メール送信失敗 → リンクフォールバック
   if (inviteUrl) {
     return (
       <div className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3 relative">
-        {/* コピー完了トースト */}
         {copied && (
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm rounded-lg shadow-lg animate-fade-in">
             コピーしました
@@ -37,9 +69,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
         <div className="text-slate-900 dark:text-white text-sm font-medium">
           招待を作成しました
         </div>
+        {emailError && (
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm text-yellow-600 dark:text-yellow-400">{emailError}</p>
+          </div>
+        )}
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-            招待リンク（メールで送信してください）
+            招待リンク（手動で共有してください）
           </label>
           <div className="flex gap-2">
             <input
