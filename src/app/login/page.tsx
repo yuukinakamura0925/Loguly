@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getProfileRole } from "@/lib/db";
-import { Button, Input, Card, CardContent } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
@@ -57,8 +57,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardContent className="p-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 id="email"
@@ -81,7 +80,7 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-da-error/20 rounded-xl">
+                <div className="p-4 bg-red-900/30 border border-da-error/20 rounded-xl">
                   <p className="text-sm text-da-error">{error}</p>
                 </div>
               )}
@@ -101,12 +100,21 @@ export default function LoginPage() {
                 パスワードをお忘れですか？
               </Link>
             </div>
-          </CardContent>
-        </Card>
+        </div>
 
         <div className="text-center text-sm text-slate-500 mt-8">
           <Link href="/" className="hover:text-slate-300 transition-colors">
             ← トップに戻る
+          </Link>
+        </div>
+
+        <div className="text-center text-sm text-slate-500 mt-4 flex gap-3 justify-center">
+          <Link href="/terms" className="hover:text-slate-300 transition-colors">
+            利用規約
+          </Link>
+          <span className="text-slate-600">|</span>
+          <Link href="/privacy" className="hover:text-slate-300 transition-colors">
+            プライバシーポリシー
           </Link>
         </div>
       </div>

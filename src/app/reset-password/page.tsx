@@ -2,28 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { Button, Input, Card, CardContent } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { Logo } from "@/components/logo";
+import { requestPasswordReset } from "./actions";
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password/update`,
-    });
+    const result = await requestPasswordReset(email);
 
-    if (error) {
-      setError("リセットメールの送信に失敗しました。もう一度お試しください。");
+    if (result.error) {
+      setError(result.error);
       setIsLoading(false);
       return;
     }
@@ -42,8 +39,7 @@ export default function ResetPasswordPage() {
           <p className="text-slate-400 mt-2">パスワードリセット</p>
         </div>
 
-        <Card className="bg-slate-900 border-slate-800">
-          <CardContent className="p-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
             {sent ? (
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 bg-da-blue-900/30 rounded-full flex items-center justify-center mx-auto">
@@ -76,7 +72,7 @@ export default function ResetPasswordPage() {
                 />
 
                 {error && (
-                  <div className="p-4 bg-red-100 dark:bg-red-900/30 border border-da-error/20 rounded-xl">
+                  <div className="p-4 bg-red-900/30 border border-da-error/20 rounded-xl">
                     <p className="text-sm text-da-error">{error}</p>
                   </div>
                 )}
@@ -91,8 +87,7 @@ export default function ResetPasswordPage() {
                 </Button>
               </form>
             )}
-          </CardContent>
-        </Card>
+        </div>
 
         <div className="text-center text-sm text-slate-500 mt-8">
           <Link href="/login" className="hover:text-slate-300 transition-colors">
