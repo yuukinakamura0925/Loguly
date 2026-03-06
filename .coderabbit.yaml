@@ -1,0 +1,19 @@
+language: "ja"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - develop
+      - main
+  path_instructions:
+    - path: "src/app/**/actions.ts"
+      instructions: "Server Actions。先頭でrequireRole()を呼んでいるか確認"
+    - path: "src/lib/supabase/**"
+      instructions: "Supabaseクライアントの使い分け（server.ts / client.ts）を確認"
+    - path: "**/*.test.ts"
+      instructions: "テストカバレッジが十分か確認"
