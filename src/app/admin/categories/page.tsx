@@ -105,6 +105,22 @@ export default function CategoriesPage() {
     setDragOverId(null);
   }
 
+  async function moveCategory(categoryId: number, direction: "up" | "down") {
+    setError("");
+    const orderedIds = categories.map((c) => c.id);
+    const index = orderedIds.indexOf(categoryId);
+    if (index === -1) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedIds.length) return;
+
+    orderedIds.splice(index, 1);
+    orderedIds.splice(newIndex, 0, categoryId);
+
+    const result = await reorderCategories(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
   const nextOrder = categories.length > 0 ? Math.max(...categories.map((c) => c.display_order)) + 1 : 1;
 
   return (
@@ -234,9 +250,27 @@ export default function CategoriesPage() {
             }`}
           >
             <div className="flex items-center">
-              {/* Drag handle */}
-              <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+              {/* Drag handle - desktop */}
+              <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
                 <GripIcon />
+              </div>
+
+              {/* Up/down buttons - mobile */}
+              <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
+                <button
+                  onClick={() => moveCategory(cat.id, "up")}
+                  disabled={categories.indexOf(cat) === 0}
+                  className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                </button>
+                <button
+                  onClick={() => moveCategory(cat.id, "down")}
+                  disabled={categories.indexOf(cat) === categories.length - 1}
+                  className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                </button>
               </div>
 
               {/* Category info */}

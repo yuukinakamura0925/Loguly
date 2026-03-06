@@ -64,8 +64,9 @@ body {
   background: #6b7280;
 }
 
-/* Smooth transitions */
-* {
+/* Smooth transitions — scoped to interactive elements to avoid hydration lag */
+a, button, input, select, textarea,
+[role="button"], [tabindex] {
   transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
