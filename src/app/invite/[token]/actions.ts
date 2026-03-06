@@ -30,6 +30,12 @@ export async function acceptInvitation(token: string, email: string) {
     return { error: "ユーザーが見つかりません" };
   }
 
+  // 利用規約同意日時を記録
+  await adminClient
+    .from("profiles")
+    .update({ terms_accepted_at: new Date().toISOString() })
+    .eq("id", profile.id);
+
   // organization_membersに追加
   const { error: memberError } = await insertOrgMember(adminClient, {
     organization_id: invitation.organization_id,

@@ -10,6 +10,7 @@ export type Profile = {
   display_name: string;
   role: Role;
   is_active: boolean;
+  terms_accepted_at: string | null;
   created_at: string;
   updated_at: string;
 };
