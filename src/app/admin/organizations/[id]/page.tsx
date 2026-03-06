@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getOrganizationById, listOrgMembers } from "@/lib/db";
+import { getOrganizationById, listOrgMembers, listAllProfilesWithOrg } from "@/lib/db";
 import {
   updateOrganization,
   addOrgMember,
@@ -27,13 +27,21 @@ import {
   TableCell,
   TableEmpty,
 } from "@/components/ui";
-import { ArrowLeftIcon, TrashIcon, PlusIcon } from "@/components/icons";
+import { ArrowLeftIcon, TrashIcon, PlusIcon, UsersIcon } from "@/components/icons";
 
 type Member = {
   id: string;
   user_id: string;
   role: string;
   profiles: { email: string; display_name: string };
+};
+
+type Profile = {
+  id: string;
+  email: string;
+  display_name: string;
+  role: string;
+  organization_members: { organization_id: string; organizations: { name: string }[] }[];
 };
 
 export default function EditOrganizationPage() {
@@ -44,7 +52,9 @@ export default function EditOrganizationPage() {
 
   const [name, setName] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [maxOrgAdmins, setMaxOrgAdmins] = useState(1);
   const [members, setMembers] = useState<Member[]>([]);
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [error, setError] = useState("");
   const [memberError, setMemberError] = useState("");
   const [createError, setCreateError] = useState("");
@@ -55,22 +65,43 @@ export default function EditOrganizationPage() {
   useEffect(() => {
     let active = true;
     async function fetchData() {
-      const [{ data: org }, { data: mems }] = await Promise.all([
+      const [{ data: org }, { data: mems }, { data: profiles }] = await Promise.all([
         getOrganizationById(supabase, id),
         listOrgMembers(supabase, id),
+        listAllProfilesWithOrg(supabase),
       ]);
       if (active) {
         if (org) {
           setName(org.name);
           setIsActive(org.is_active);
+          setMaxOrgAdmins(org.max_org_admins ?? 1);
         }
         setMembers((mems as unknown as Member[]) || []);
+        setAllProfiles((profiles as Profile[]) || []);
         setLoading(false);
       }
     }
     fetchData();
     return () => { active = false; };
   }, [id, supabase, refreshKey]);
+
+  // Split non-member profiles into truly unassigned vs. belonging to other orgs
+  const { freeUsers, otherOrgUsers } = useMemo(() => {
+    const memberIds = new Set(members.map((m) => m.user_id));
+    const nonMembers = allProfiles.filter((p) => !memberIds.has(p.id));
+    const free: Profile[] = [];
+    const other: (Profile & { orgName: string })[] = [];
+    for (const p of nonMembers) {
+      const membership = p.organization_members?.[0];
+      const orgName = membership?.organizations?.[0]?.name;
+      if (orgName) {
+        other.push({ ...p, orgName });
+      } else {
+        free.push(p);
+      }
+    }
+    return { freeUsers: free, otherOrgUsers: other };
+  }, [allProfiles, members]);
 
   function reload() {
     setRefreshKey((k) => k + 1);
@@ -155,6 +186,17 @@ export default function EditOrganizationPage() {
                   onChange={(e) => setName(e.target.value)}
                 />
 
+                <Input
+                  name="max_org_admins"
+                  type="number"
+                  label="管理者上限数"
+                  min={1}
+                  max={10}
+                  required
+                  value={maxOrgAdmins}
+                  onChange={(e) => setMaxOrgAdmins(Number(e.target.value))}
+                />
+
                 <Switch
                   name="is_active"
                   checked={isActive}
@@ -237,30 +279,52 @@ export default function EditOrganizationPage() {
           <Card className="mb-4">
             <CardContent>
               <form action={handleAddMember} className="space-y-4">
-                <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                  <UsersIcon className="w-4 h-4" />
                   既存ユーザーを追加
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    name="email"
-                    type="email"
-                    label="メールアドレス"
-                    required
-                    placeholder="user@example.com"
-                  />
-                  <Select name="role" label="ロール">
-                    <option value="org_admin">組織管理者</option>
-                    <option value="member">メンバー</option>
-                  </Select>
-                </div>
 
-                {memberError && (
-                  <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
-                    <p className="text-xs text-red-600 dark:text-red-400">{memberError}</p>
-                  </div>
+                {freeUsers.length === 0 && otherOrgUsers.length === 0 ? (
+                  <p className="text-sm text-slate-500">追加可能なユーザーがいません</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Select name="email" label="ユーザー" required>
+                        <option value="">選択してください</option>
+                        {freeUsers.length > 0 && (
+                          <optgroup label="未所属">
+                            {freeUsers.map((u) => (
+                              <option key={u.id} value={u.email}>
+                                {u.display_name || u.email} ({u.email})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {otherOrgUsers.length > 0 && (
+                          <optgroup label="他組織から移動">
+                            {otherOrgUsers.map((u) => (
+                              <option key={u.id} value={u.email}>
+                                {u.display_name || u.email} ({u.email}) — {u.orgName}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </Select>
+                      <Select name="role" label="ロール">
+                        <option value="org_admin">組織管理者</option>
+                        <option value="member">メンバー</option>
+                      </Select>
+                    </div>
+
+                    {memberError && (
+                      <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg">
+                        <p className="text-xs text-red-600 dark:text-red-400">{memberError}</p>
+                      </div>
+                    )}
+
+                    <Button type="submit" size="sm" variant="secondary">追加</Button>
+                  </>
                 )}
-
-                <Button type="submit" size="sm" variant="secondary">追加</Button>
               </form>
             </CardContent>
           </Card>

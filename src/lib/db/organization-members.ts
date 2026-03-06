@@ -42,10 +42,27 @@ export function listOrgMemberProfiles(client: TypedClient, organizationId: strin
     .order("joined_at");
 }
 
+export function listOrgViewerProfiles(client: TypedClient, organizationId: string) {
+  return client
+    .from("organization_members")
+    .select("user_id, profiles(display_name, email)")
+    .eq("organization_id", organizationId)
+    .eq("role", "member")
+    .order("joined_at");
+}
+
+export function countOrgAdmins(client: TypedClient, organizationId: string) {
+  return client
+    .from("organization_members")
+    .select("id", { count: "exact", head: true })
+    .eq("organization_id", organizationId)
+    .eq("role", "org_admin");
+}
+
 export function findExistingMembership(client: TypedClient, userId: string) {
   return client
     .from("organization_members")
-    .select("id")
+    .select("id, organization_id")
     .eq("user_id", userId)
     .maybeSingle();
 }

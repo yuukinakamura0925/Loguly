@@ -2,12 +2,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
-  listOrgMemberProfiles,
+  listOrgViewerProfiles,
   listLicensedVideosForOrg,
   getViewLogsByUsers,
 } from "@/lib/db";
 import { SearchInput } from "@/components/ui";
-import { CheckCircleIcon, ChevronRightIcon } from "@/components/icons";
+import { CheckCircleIcon, ChevronRightIcon, SortAscIcon, SortDescIcon, SortIcon } from "@/components/icons";
 
 type MemberProgress = {
   user_id: string;
@@ -15,23 +15,71 @@ type MemberProgress = {
   email: string;
   completedCount: number;
   totalCount: number;
-  watchedPercent: number; // 実際の視聴進捗（%）
+  watchedPercent: number;
 };
+
+type SortKey = "display_name" | "watchedPercent" | "completedCount";
+type SortOrder = "asc" | "desc";
+
+const VALID_SORT_KEYS: SortKey[] = ["display_name", "watchedPercent", "completedCount"];
+
+function SortLink({
+  label,
+  sortKey,
+  currentSort,
+  currentOrder,
+  searchParams,
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentSort: SortKey;
+  currentOrder: SortOrder;
+  searchParams: Record<string, string>;
+}) {
+  const isActive = currentSort === sortKey;
+  const nextOrder: SortOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
+
+  const params = new URLSearchParams(searchParams);
+  params.set("sort", sortKey);
+  params.set("order", nextOrder);
+
+  return (
+    <Link
+      href={`/org/progress?${params.toString()}`}
+      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+        isActive
+          ? "bg-da-blue-50 dark:bg-da-blue-900/20 text-da-blue-900 dark:text-da-blue-300 font-medium"
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+      }`}
+    >
+      {label}
+      {isActive
+        ? currentOrder === "asc"
+          ? <SortAscIcon className="w-3 h-3" />
+          : <SortDescIcon className="w-3 h-3" />
+        : <SortIcon className="w-3 h-3 text-slate-400" />
+      }
+    </Link>
+  );
+}
 
 export default async function ProgressPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; order?: string }>;
 }) {
   const params = await searchParams;
   const search = params.q?.toLowerCase() || "";
+  const sort = (VALID_SORT_KEYS.includes(params.sort as SortKey) ? params.sort : "display_name") as SortKey;
+  const order = (params.order === "desc" ? "desc" : "asc") as SortOrder;
+
   await requireRole("org_admin");
   const org = await getCurrentOrg();
   if (!org) return null;
 
   const supabase = await createClient();
 
-  const { data: members } = await listOrgMemberProfiles(supabase, org.id);
+  const { data: members } = await listOrgViewerProfiles(supabase, org.id);
   const { data: licenses } = await listLicensedVideosForOrg(supabase, org.id);
 
   const videos =
@@ -42,7 +90,6 @@ export default async function ProgressPage({
   const memberIds = members?.map((m) => m.user_id) || [];
   const { data: viewLogs } = await getViewLogsByUsers(supabase, memberIds);
 
-  // 全動画の合計時間
   const totalDuration = videos.reduce((acc, v) => acc + (v.duration || 0), 0);
 
   const allProgressData: MemberProgress[] =
@@ -52,15 +99,12 @@ export default async function ProgressPage({
         email: string;
       };
 
-      // この人の視聴ログ
       const memberLogs = viewLogs?.filter((l) => l.user_id === m.user_id) || [];
 
-      // 完了数
       const completedCount = videos.filter((v) =>
         memberLogs.some((l) => l.video_id === v.id && l.completed)
       ).length;
 
-      // 視聴済み秒数の合計（各動画のdurationを超えないようにする）
       let totalWatched = 0;
       for (const video of videos) {
         const log = memberLogs.find((l) => l.video_id === video.id);
@@ -69,7 +113,6 @@ export default async function ProgressPage({
         }
       }
 
-      // 視聴進捗率（全動画の合計時間に対する視聴済み時間の割合）
       const watchedPercent = totalDuration > 0
         ? Math.round((totalWatched / totalDuration) * 100)
         : 0;
@@ -84,8 +127,8 @@ export default async function ProgressPage({
       };
     }) || [];
 
-  // 検索フィルタ
-  const progressData = search
+  // Search filter
+  const filtered = search
     ? allProgressData.filter(
         (m) =>
           m.display_name.toLowerCase().includes(search) ||
@@ -93,13 +136,32 @@ export default async function ProgressPage({
       )
     : allProgressData;
 
-  // 統計（検索フィルタ前の全データで計算）
+  // Sort
+  const progressData = [...filtered].sort((a, b) => {
+    const dir = order === "asc" ? 1 : -1;
+    switch (sort) {
+      case "display_name":
+        return dir * a.display_name.localeCompare(b.display_name, "ja");
+      case "watchedPercent":
+        return dir * (a.watchedPercent - b.watchedPercent);
+      case "completedCount":
+        return dir * (a.completedCount - b.completedCount);
+      default:
+        return 0;
+    }
+  });
+
+  // Stats (before filter)
   const totalMembers = allProgressData.length;
   const totalVideos = videos.length;
   const avgProgress = allProgressData.length > 0
     ? Math.round(allProgressData.reduce((acc, m) => acc + m.watchedPercent, 0) / allProgressData.length)
     : 0;
   const fullyCompletedMembers = allProgressData.filter((m) => m.completedCount === m.totalCount && m.totalCount > 0).length;
+
+  // Build search params for sort links (preserve search)
+  const sortLinkParams: Record<string, string> = {};
+  if (search) sortLinkParams.q = search;
 
   return (
     <div>
@@ -111,7 +173,7 @@ export default async function ProgressPage({
         </div>
       ) : (
         <>
-          {/* 統計サマリー */}
+          {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
               <div className="text-2xl font-bold text-slate-900 dark:text-white">{totalMembers}</div>
@@ -131,12 +193,18 @@ export default async function ProgressPage({
             </div>
           </div>
 
-          {/* 検索 */}
-          <div className="mb-4">
+          {/* Search + Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <SearchInput placeholder="名前・メールで検索..." paramName="q" className="max-w-sm" />
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-slate-500 mr-1">並び替え:</span>
+              <SortLink label="名前" sortKey="display_name" currentSort={sort} currentOrder={order} searchParams={sortLinkParams} />
+              <SortLink label="進捗率" sortKey="watchedPercent" currentSort={sort} currentOrder={order} searchParams={sortLinkParams} />
+              <SortLink label="完了数" sortKey="completedCount" currentSort={sort} currentOrder={order} searchParams={sortLinkParams} />
+            </div>
           </div>
 
-          {/* メンバー一覧 */}
+          {/* Member list */}
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -155,7 +223,7 @@ export default async function ProgressPage({
                       isFullyCompleted ? "bg-emerald-50 dark:bg-emerald-900/10" : ""
                     }`}
                   >
-                    {/* アバター */}
+                    {/* Avatar */}
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
                       isFullyCompleted
                         ? "bg-da-blue-900 text-white"
@@ -164,7 +232,7 @@ export default async function ProgressPage({
                       {member.display_name?.charAt(0) || "?"}
                     </div>
 
-                    {/* 名前・メール */}
+                    {/* Name / Email */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-slate-900 dark:text-white font-medium truncate">
@@ -177,7 +245,7 @@ export default async function ProgressPage({
                       <div className="text-slate-500 text-sm truncate">{member.email}</div>
                     </div>
 
-                    {/* 進捗 */}
+                    {/* Progress */}
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <div className={`text-lg font-bold ${
@@ -194,7 +262,7 @@ export default async function ProgressPage({
                         </div>
                       </div>
 
-                      {/* プログレスバー */}
+                      {/* Progress bar */}
                       <div className="w-24 hidden sm:block">
                         <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div

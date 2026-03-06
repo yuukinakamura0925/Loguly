@@ -36,15 +36,13 @@ export default function LoginPage() {
 
     const { data: profile } = await getProfileRole(supabase, data.user.id);
 
-    // 管理者は管理者ログインページへ誘導
-    if (profile?.role === "platform_admin" || profile?.role === "org_admin") {
-      await supabase.auth.signOut();
-      setError("管理者の方は管理者ログインページをご利用ください");
-      setIsLoading(false);
-      return;
+    if (profile?.role === "platform_admin") {
+      router.push("/admin");
+    } else if (profile?.role === "org_admin") {
+      router.push("/org/members");
+    } else {
+      router.push("/dashboard");
     }
-
-    router.push("/dashboard");
   };
 
   return (
@@ -55,7 +53,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <Logo size="lg" showText={false} />
           <h1 className="text-3xl font-bold text-white tracking-tight mt-4">Loguly</h1>
-          <p className="text-slate-400 mt-2">メンバーログイン</p>
+          <p className="text-slate-400 mt-2">ログイン</p>
         </div>
 
         {/* Login Card */}
@@ -106,17 +104,10 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-slate-500 mt-8 space-y-2">
-          <p>
-            <Link href="/admin-login" className="hover:text-slate-300 transition-colors">
-              管理者ログインはこちら
-            </Link>
-          </p>
-          <p>
-            <Link href="/" className="hover:text-slate-300 transition-colors">
-              ← トップに戻る
-            </Link>
-          </p>
+        <div className="text-center text-sm text-slate-500 mt-8">
+          <Link href="/" className="hover:text-slate-300 transition-colors">
+            ← トップに戻る
+          </Link>
         </div>
       </div>
     </div>

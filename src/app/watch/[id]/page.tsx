@@ -25,13 +25,12 @@ export default async function WatchPage({ params }: Props) {
     redirect("/login");
   }
 
-  // member以外はアクセス不可
   const { data: profile } = await getProfileRole(supabase, user.id);
   if (profile?.role === "platform_admin") {
     redirect("/admin");
   }
   if (profile?.role === "org_admin") {
-    redirect("/org/members");
+    redirect("/org/videos");
   }
 
   const { data: video, error: videoError } = await getPublishedVideoById(supabase, videoId);

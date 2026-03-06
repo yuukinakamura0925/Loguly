@@ -22,7 +22,7 @@ export function insertOrganization(client: TypedClient, data: { name: string; sl
 export function updateOrganization(
   client: TypedClient,
   id: string,
-  data: { name?: string; slug?: string; is_active?: boolean }
+  data: { name?: string; slug?: string; is_active?: boolean; max_org_admins?: number }
 ) {
   return client.from("organizations").update(data).eq("id", id);
 }
@@ -39,18 +39,26 @@ export function countOrganizations(client: TypedClient, search?: string) {
   return query;
 }
 
+const VALID_SORT_COLUMNS = ["name", "is_active", "created_at"] as const;
+type SortColumn = (typeof VALID_SORT_COLUMNS)[number];
+
 export function searchOrganizations(
   client: TypedClient,
-  options: { search?: string; page?: number; perPage?: number }
+  options: { search?: string; page?: number; perPage?: number; sort?: string; order?: string }
 ) {
-  const { search, page = 1, perPage = 10 } = options;
+  const { search, page = 1, perPage = 10, sort, order } = options;
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
+
+  const sortColumn: SortColumn = VALID_SORT_COLUMNS.includes(sort as SortColumn)
+    ? (sort as SortColumn)
+    : "created_at";
+  const ascending = order === "asc";
 
   let query = client
     .from("organizations")
     .select("*, organization_members(count)")
-    .order("created_at", { ascending: false })
+    .order(sortColumn, { ascending })
     .range(from, to);
 
   if (search) {

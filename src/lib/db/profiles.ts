@@ -23,3 +23,19 @@ export function updateProfile(
 ) {
   return client.from("profiles").update(data).eq("id", userId);
 }
+
+export function listAllProfiles(client: TypedClient) {
+  return client
+    .from("profiles")
+    .select("id, email, display_name, role")
+    .neq("role", "platform_admin")
+    .order("display_name");
+}
+
+export function listAllProfilesWithOrg(client: TypedClient) {
+  return client
+    .from("profiles")
+    .select("id, email, display_name, role, organization_members(organization_id, organizations(name))")
+    .neq("role", "platform_admin")
+    .order("display_name");
+}

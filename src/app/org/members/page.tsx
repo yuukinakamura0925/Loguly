@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
-import { ChevronRightIcon } from "@/components/icons";
+import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon } from "@/components/icons";
 
 type Member = {
   user_id: string;
@@ -22,6 +22,46 @@ type PendingInvite = {
   expires_at: string;
 };
 
+type SortKey = "display_name" | "role" | "joined_at";
+type SortOrder = "asc" | "desc";
+
+function SortButton({
+  label,
+  sortKey,
+  currentSort,
+  currentOrder,
+  onSort,
+  className = "",
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentSort: SortKey;
+  currentOrder: SortOrder;
+  onSort: (key: SortKey, order: SortOrder) => void;
+  className?: string;
+}) {
+  const isActive = currentSort === sortKey;
+  const nextOrder: SortOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
+
+  return (
+    <th className={`text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 ${className}`}>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey, nextOrder)}
+        className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${isActive ? "text-slate-900 dark:text-white" : ""}`}
+      >
+        {label}
+        {isActive
+          ? currentOrder === "asc"
+            ? <SortAscIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+            : <SortDescIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+          : <SortIcon className="w-3 h-3 text-slate-400" />
+        }
+      </button>
+    </th>
+  );
+}
+
 export default function MembersPage() {
   const supabase = createClient();
   const [members, setMembers] = useState<Member[]>([]);
@@ -30,6 +70,8 @@ export default function MembersPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>("joined_at");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   useEffect(() => {
     let active = true;
@@ -60,6 +102,11 @@ export default function MembersPage() {
     setRefreshKey((k) => k + 1);
   }
 
+  function handleSort(key: SortKey, order: SortOrder) {
+    setSortKey(key);
+    setSortOrder(order);
+  }
+
   async function handleRemove(userId: string) {
     setError("");
     const result = await removeMember(userId);
@@ -79,6 +126,40 @@ export default function MembersPage() {
       reload();
     }
   }
+
+  const filteredAndSorted = useMemo(() => {
+    let result = members;
+
+    // Filter
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((m) => {
+        const profile = m.profiles as unknown as { display_name: string; email: string };
+        return (
+          profile?.display_name?.toLowerCase().includes(q) ||
+          profile?.email?.toLowerCase().includes(q)
+        );
+      });
+    }
+
+    // Sort
+    return [...result].sort((a, b) => {
+      const dir = sortOrder === "asc" ? 1 : -1;
+      switch (sortKey) {
+        case "display_name": {
+          const aName = (a.profiles as unknown as { display_name: string })?.display_name || "";
+          const bName = (b.profiles as unknown as { display_name: string })?.display_name || "";
+          return dir * aName.localeCompare(bName, "ja");
+        }
+        case "role":
+          return dir * a.role.localeCompare(b.role);
+        case "joined_at":
+          return dir * (new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
+        default:
+          return 0;
+      }
+    });
+  }, [members, search, sortKey, sortOrder]);
 
   return (
     <div>
@@ -137,60 +218,44 @@ export default function MembersPage() {
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
         <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
           <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            メンバー ({members.filter((m) => {
-              if (!search) return true;
-              const profile = m.profiles as unknown as { display_name: string; email: string };
-              const q = search.toLowerCase();
-              return (
-                profile?.display_name?.toLowerCase().includes(q) ||
-                profile?.email?.toLowerCase().includes(q)
-              );
-            }).length})
+            メンバー ({filteredAndSorted.length})
           </h2>
         </div>
         <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-transparent">
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
-                名前
-              </th>
+              <SortButton label="名前" sortKey="display_name" currentSort={sortKey} currentOrder={sortOrder} onSort={handleSort} />
               <th className="hidden sm:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 メール
               </th>
-              <th className="text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
-                ロール
-              </th>
-              <th className="hidden md:table-cell text-left px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
-                参加日
-              </th>
+              <SortButton label="ロール" sortKey="role" currentSort={sortKey} currentOrder={sortOrder} onSort={handleSort} />
+              <SortButton label="参加日" sortKey="joined_at" currentSort={sortKey} currentOrder={sortOrder} onSort={handleSort} className="hidden md:table-cell" />
               <th className="text-right px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                 操作
               </th>
             </tr>
           </thead>
           <tbody>
-            {members.filter((m) => {
-              if (!search) return true;
-              const profile = m.profiles as unknown as { display_name: string; email: string };
-              const q = search.toLowerCase();
-              return (
-                profile?.display_name?.toLowerCase().includes(q) ||
-                profile?.email?.toLowerCase().includes(q)
-              );
-            }).map((m) => (
+            {filteredAndSorted.map((m) => (
               <tr
                 key={m.user_id}
                 className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/org/progress/${m.user_id}`}
-                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
-                  >
-                    {(m.profiles as unknown as { display_name: string })?.display_name}
-                    <ChevronRightIcon className="w-4 h-4 text-slate-400" />
-                  </Link>
+                  {m.role === "org_admin" ? (
+                    <span className="text-slate-900 dark:text-white">
+                      {(m.profiles as unknown as { display_name: string })?.display_name}
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/org/progress/${m.user_id}`}
+                      className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
+                    >
+                      {(m.profiles as unknown as { display_name: string })?.display_name}
+                      <ChevronRightIcon className="w-4 h-4 text-slate-400" />
+                    </Link>
+                  )}
                 </td>
                 <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}
