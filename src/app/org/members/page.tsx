@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
@@ -29,29 +29,36 @@ export default function MembersPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-
-  const load = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: membership } = await getMembershipByUserId(supabase, user.id);
-
-    if (!membership) return;
-
-    const [{ data: mems }, { data: invs }] = await Promise.all([
-      listOrgMembersWithJoinDate(supabase, membership.organization_id),
-      listPendingInvitations(supabase, membership.organization_id),
-    ]);
-
-    setMembers((mems as unknown as Member[]) || []);
-    setInvites((invs as PendingInvite[]) || []);
-  }, [supabase]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    async function fetchData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: membership } = await getMembershipByUserId(supabase, user.id);
+      if (!membership) return;
+
+      const [{ data: mems }, { data: invs }] = await Promise.all([
+        listOrgMembersWithJoinDate(supabase, membership.organization_id),
+        listPendingInvitations(supabase, membership.organization_id),
+      ]);
+
+      if (active) {
+        setMembers((mems as unknown as Member[]) || []);
+        setInvites((invs as PendingInvite[]) || []);
+      }
+    }
+    fetchData();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
+
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   async function handleRemove(userId: string) {
     setError("");
@@ -59,7 +66,7 @@ export default function MembersPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -69,7 +76,7 @@ export default function MembersPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -95,7 +102,7 @@ export default function MembersPage() {
         <InviteForm
           onClose={() => {
             setShowInvite(false);
-            load();
+            reload();
           }}
         />
       )}

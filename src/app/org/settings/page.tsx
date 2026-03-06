@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, getOrganizationById, listActiveLicensesForOrg } from "@/lib/db";
 import { updateOrgSettings } from "./actions";
@@ -30,64 +30,69 @@ export default function OrgSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const load = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+  useEffect(() => {
+    let active = true;
+    async function fetchData() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data: membership } = await getMembershipByUserId(supabase, user.id);
+      const { data: membership } = await getMembershipByUserId(supabase, user.id);
+      if (!membership) return;
 
-    if (!membership) return;
+      const [{ data: org }, { data: lics }] = await Promise.all([
+        getOrganizationById(supabase, membership.organization_id),
+        listActiveLicensesForOrg(supabase, membership.organization_id),
+      ]);
 
-    const [{ data: org }, { data: lics }] = await Promise.all([
-      getOrganizationById(supabase, membership.organization_id),
-      listActiveLicensesForOrg(supabase, membership.organization_id),
-    ]);
+      if (!active) return;
 
-    if (org) {
-      setOrgName(org.name);
-      setSlug(org.slug);
-    }
+      if (org) {
+        setOrgName(org.name);
+        setSlug(org.slug);
+      }
 
-    // カテゴリ別にグループ化
-    const licenses = (lics as unknown as License[]) || [];
-    const categoryMap = new Map<string, CategoryGroup>();
+      const licenses = (lics as unknown as License[]) || [];
+      const categoryMap = new Map<string, CategoryGroup>();
 
-    for (const lic of licenses) {
-      const catName = lic.videos.categories.name;
-      const catOrder = lic.videos.categories.display_order;
+      for (const lic of licenses) {
+        const catName = lic.videos.categories.name;
+        const catOrder = lic.videos.categories.display_order;
 
-      if (!categoryMap.has(catName)) {
-        categoryMap.set(catName, {
-          name: catName,
-          display_order: catOrder,
-          videos: [],
+        if (!categoryMap.has(catName)) {
+          categoryMap.set(catName, {
+            name: catName,
+            display_order: catOrder,
+            videos: [],
+          });
+        }
+
+        categoryMap.get(catName)!.videos.push({
+          title: lic.videos.title,
+          expires_at: lic.expires_at,
         });
       }
 
-      categoryMap.get(catName)!.videos.push({
-        title: lic.videos.title,
-        expires_at: lic.expires_at,
-      });
+      const sorted = Array.from(categoryMap.values())
+        .sort((a, b) => a.display_order - b.display_order)
+        .map((cat) => ({
+          ...cat,
+          videos: cat.videos.sort((a, b) => a.title.localeCompare(b.title, "ja")),
+        }));
+
+      setCategories(sorted);
+      setLoading(false);
     }
+    fetchData();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
 
-    // カテゴリをdisplay_orderでソート、動画もソート
-    const sorted = Array.from(categoryMap.values())
-      .sort((a, b) => a.display_order - b.display_order)
-      .map((cat) => ({
-        ...cat,
-        videos: cat.videos.sort((a, b) => a.title.localeCompare(b.title, "ja")),
-      }));
-
-    setCategories(sorted);
-    setLoading(false);
-  }, [supabase]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   function toggleCategory(name: string) {
     setOpenCategories((prev) => {
@@ -109,7 +114,7 @@ export default function OrgSettingsPage() {
       setError(result.error);
     } else {
       setSuccess(true);
-      load();
+      reload();
     }
   }
 

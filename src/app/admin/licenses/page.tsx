@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   listOrganizations,
@@ -60,25 +60,29 @@ export default function LicensesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const loadOrgs = useCallback(async () => {
-    const { data } = await listOrganizations(supabase);
-    setOrgs((data as Org[]) || []);
-  }, [supabase]);
-
-  const loadData = useCallback(async () => {
-    const [{ data: cats }, { data: vids }] = await Promise.all([
-      listCategories(supabase),
-      listVideosWithCategory(supabase),
-    ]);
-    setCategories((cats as Category[]) || []);
-    setVideos((vids as Video[]) || []);
-  }, [supabase]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    loadOrgs();
-    loadData();
-  }, [loadOrgs, loadData]);
+    let active = true;
+    async function fetchData() {
+      const [{ data: orgData }, { data: cats }, { data: vids }] = await Promise.all([
+        listOrganizations(supabase),
+        listCategories(supabase),
+        listVideosWithCategory(supabase),
+      ]);
+      if (active) {
+        setOrgs((orgData as Org[]) || []);
+        setCategories((cats as Category[]) || []);
+        setVideos((vids as Video[]) || []);
+      }
+    }
+    fetchData();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
+
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   async function selectOrg(org: Org) {
     setSelectedOrg(org);
