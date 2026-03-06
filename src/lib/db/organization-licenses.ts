@@ -18,7 +18,7 @@ export function listActiveLicensesForOrg(client: TypedClient, organizationId: st
 export function listLicensedVideosForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id, videos(id, title, duration, display_order, categories(name))")
+    .select("video_id, display_order, videos(id, category_id, title, description, duration, display_order, categories(name, display_order))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }
@@ -26,9 +26,29 @@ export function listLicensedVideosForOrg(client: TypedClient, organizationId: st
 export function listLicensedVideosForOrgWithStream(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id, videos(id, title, description, duration, display_order, cf_video_id, categories(name))")
+    .select("video_id, display_order, videos(id, category_id, title, description, duration, display_order, cf_video_id, categories(name, display_order))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
+}
+
+export function updateLicenseDisplayOrder(
+  client: TypedClient,
+  organizationId: string,
+  videoId: number,
+  displayOrder: number
+) {
+  return client
+    .from("organization_licenses")
+    .update({ display_order: displayOrder })
+    .eq("organization_id", organizationId)
+    .eq("video_id", videoId);
+}
+
+export function resetLicenseDisplayOrders(client: TypedClient, organizationId: string) {
+  return client
+    .from("organization_licenses")
+    .update({ display_order: null })
+    .eq("organization_id", organizationId);
 }
 
 export function upsertLicense(

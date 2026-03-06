@@ -1,15 +1,32 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { requireRole, getCurrentOrg } from "@/lib/auth";
-import { listLicensedVideosForOrg, listCategories } from "@/lib/db";
-import { Card, CardContent } from "@/components/ui";
+import { createClient } from "@/lib/supabase/client";
+import {
+  listLicensedVideosForOrg,
+  listCategories,
+  listOrgCategoryOrder,
+} from "@/lib/db";
+import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder } from "./actions";
+import { Card, CardContent, Button } from "@/components/ui";
+import { ChevronDownIcon, ChevronRightIcon } from "@/components/icons";
 
 type Video = {
   id: number;
   title: string;
   duration: number;
   display_order: number;
-  categories: { name: string } | null;
+  orgDisplayOrder: number | null;
+  categories: { name: string; display_order: number } | null;
+};
+
+type CategoryGroup = {
+  id: number;
+  name: string;
+  globalOrder: number;
+  orgOrder: number | null;
+  videos: Video[];
 };
 
 function formatDuration(seconds: number) {
@@ -18,51 +35,199 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-export default async function OrgVideosPage() {
-  await requireRole("org_admin");
-  const org = await getCurrentOrg();
-  if (!org) return null;
+export default function OrgVideosPage() {
+  const supabase = createClient();
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [hasCustomOrder, setHasCustomOrder] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const supabase = await createClient();
-  const [{ data: licenses }, { data: categories }] = await Promise.all([
-    listLicensedVideosForOrg(supabase, org.id),
-    listCategories(supabase),
-  ]);
+  // Drag state
+  const [dragVideoId, setDragVideoId] = useState<number | null>(null);
+  const [dragOverVideoId, setDragOverVideoId] = useState<number | null>(null);
+  const [dragCategoryId, setDragCategoryId] = useState<number | null>(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(null);
 
-  const videos: Video[] =
-    licenses
-      ?.map((l) => l.videos as unknown as Video)
-      .filter(Boolean)
-      .sort((a, b) => a.display_order - b.display_order) || [];
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  // カテゴリ別にグループ化
-  const categoryMap = new Map<string, Video[]>();
-  for (const video of videos) {
-    const catName = video.categories?.name || "未分類";
-    if (!categoryMap.has(catName)) {
-      categoryMap.set(catName, []);
+      const { data: membership } = await supabase
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!membership || !active) return;
+      const orgId = membership.organization_id;
+
+      const [{ data: licenses }, { data: categories }, { data: orgCatOrders }] = await Promise.all([
+        listLicensedVideosForOrg(supabase, orgId),
+        listCategories(supabase),
+        listOrgCategoryOrder(supabase, orgId),
+      ]);
+
+      const orgCatOrderMap = new Map(
+        (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const videos: Video[] = (licenses || [])
+        .map((l: Record<string, unknown>) => {
+          const v = l.videos as Record<string, unknown> | null;
+          if (!v) return null;
+          return { ...v, orgDisplayOrder: l.display_order as number | null } as Video;
+        })
+        .filter(Boolean) as Video[];
+
+      const hasOrgOrder = videos.some((v) => v.orgDisplayOrder !== null) || (orgCatOrders && orgCatOrders.length > 0);
+      if (active) setHasCustomOrder(!!hasOrgOrder);
+
+      // Build category lookup
+      const catById = new Map((categories || []).map((c: { id: number; name: string; display_order: number }) => [c.id, c]));
+
+      // Group by category
+      const categoryMap = new Map<number, Video[]>();
+      for (const video of videos) {
+        const catName = video.categories?.name || "";
+        let catId = 0;
+        for (const [id, cat] of catById) {
+          if ((cat as { name: string }).name === catName) { catId = id; break; }
+        }
+        if (!categoryMap.has(catId)) categoryMap.set(catId, []);
+        categoryMap.get(catId)!.push(video);
+      }
+
+      const groups: CategoryGroup[] = [];
+      for (const [catId, catVideos] of categoryMap) {
+        const cat = catById.get(catId) as { id: number; name: string; display_order: number } | undefined;
+        if (!cat) continue;
+        groups.push({
+          id: cat.id,
+          name: cat.name,
+          globalOrder: cat.display_order,
+          orgOrder: orgCatOrderMap.get(cat.id) ?? null,
+          videos: catVideos.sort((a, b) => {
+            const aOrder = a.orgDisplayOrder ?? a.display_order;
+            const bOrder = b.orgDisplayOrder ?? b.display_order;
+            return aOrder - bOrder;
+          }),
+        });
+      }
+
+      groups.sort((a, b) => {
+        const aOrder = a.orgOrder ?? a.globalOrder;
+        const bOrder = b.orgOrder ?? b.globalOrder;
+        return aOrder - bOrder;
+      });
+
+      if (active) {
+        setCategoryGroups(groups);
+        setExpandedCategories(new Set(groups.map((g) => g.id)));
+        setLoading(false);
+      }
     }
-    categoryMap.get(catName)!.push(video);
+    load();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
+
+  function reload() { setRefreshKey((k) => k + 1); }
+
+  function toggleCategory(categoryId: number) {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
+    });
   }
 
-  // カテゴリのdisplay_order順に並べる
-  const categoryOrder = new Map(
-    categories?.map((c) => [c.name, c.display_order]) || []
-  );
-  const sortedCategories = [...categoryMap.entries()].sort(
-    (a, b) => (categoryOrder.get(a[0]) ?? 999) - (categoryOrder.get(b[0]) ?? 999)
-  );
+  async function handleDropVideo(categoryId: number, targetVideoId: number) {
+    if (dragVideoId === null || dragVideoId === targetVideoId) return;
+    setError("");
+    const group = categoryGroups.find((g) => g.id === categoryId);
+    if (!group) return;
+
+    const orderedIds = group.videos.map((v) => v.id);
+    const fromIndex = orderedIds.indexOf(dragVideoId);
+    const toIndex = orderedIds.indexOf(targetVideoId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragVideoId);
+
+    const result = await reorderOrgVideos(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+    setDragVideoId(null);
+    setDragOverVideoId(null);
+  }
+
+  async function handleDropCategory(targetCategoryId: number) {
+    if (dragCategoryId === null || dragCategoryId === targetCategoryId) return;
+    setError("");
+
+    const orderedIds = categoryGroups.map((g) => g.id);
+    const fromIndex = orderedIds.indexOf(dragCategoryId);
+    const toIndex = orderedIds.indexOf(targetCategoryId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragCategoryId);
+
+    const result = await reorderOrgCategories(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+    setDragCategoryId(null);
+    setDragOverCategoryId(null);
+  }
+
+  async function handleReset() {
+    setError("");
+    const result = await resetOrgDisplayOrder();
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
+  const totalVideos = categoryGroups.reduce((sum, g) => sum + g.videos.length, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-slate-500">読み込み中...</div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">動画プレビュー</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          ライセンス済みの動画を確認できます（{videos.length}本）
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">動画プレビュー</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            ドラッグ&ドロップで表示順を変更できます（{totalVideos}本）
+          </p>
+        </div>
+        {hasCustomOrder && (
+          <Button variant="secondary" onClick={handleReset}>
+            デフォルトに戻す
+          </Button>
+        )}
       </div>
 
-      {sortedCategories.length === 0 ? (
+      {error && (
+        <Card className="mb-6 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <CardContent className="py-3">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {categoryGroups.length === 0 ? (
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 text-center py-8">
@@ -71,48 +236,105 @@ export default async function OrgVideosPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {sortedCategories.map(([categoryName, categoryVideos]) => (
-            <div key={categoryName}>
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
-                {categoryName}
-                <span className="ml-2 text-slate-400 font-normal">
-                  {categoryVideos.length}本
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {categoryVideos.map((video) => (
-                  <Link
-                    key={video.id}
-                    href={`/org/videos/${video.id}`}
-                    className="group"
+        <div className="space-y-4">
+          {categoryGroups.map((group) => {
+            const isExpanded = expandedCategories.has(group.id);
+            return (
+              <Card
+                key={group.id}
+                draggable
+                onDragStart={(e) => { e.stopPropagation(); setDragCategoryId(group.id); }}
+                onDragEnd={() => { setDragCategoryId(null); setDragOverCategoryId(null); }}
+                onDragOver={(e) => { e.preventDefault(); if (!dragVideoId) setDragOverCategoryId(group.id); }}
+                onDrop={(e) => { e.preventDefault(); if (!dragVideoId) handleDropCategory(group.id); }}
+                className={`${
+                  dragOverCategoryId === group.id && dragCategoryId !== group.id && !dragVideoId
+                    ? "ring-2 ring-da-blue-900"
+                    : dragCategoryId === group.id
+                      ? "opacity-50"
+                      : ""
+                }`}
+              >
+                <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
+                  <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="9" cy="6" r="1.5" />
+                      <circle cx="15" cy="6" r="1.5" />
+                      <circle cx="9" cy="12" r="1.5" />
+                      <circle cx="15" cy="12" r="1.5" />
+                      <circle cx="9" cy="18" r="1.5" />
+                      <circle cx="15" cy="18" r="1.5" />
+                    </svg>
+                  </div>
+                  <button
+                    onClick={() => toggleCategory(group.id)}
+                    className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors"
                   >
-                    <Card className="transition-all group-hover:ring-2 group-hover:ring-da-blue-900/20 dark:group-hover:ring-da-blue-300/20">
-                      <CardContent className="flex items-center gap-4 py-3">
+                    {isExpanded ? (
+                      <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                    ) : (
+                      <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                    )}
+                    <span className="font-medium text-slate-900 dark:text-white">{group.name}</span>
+                    <span className="text-sm text-slate-500">{group.videos.length}本</span>
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="divide-y divide-slate-200 dark:divide-slate-800 border-t border-slate-200 dark:border-slate-700">
+                    {group.videos.map((video) => (
+                      <div
+                        key={video.id}
+                        draggable
+                        onDragStart={(e) => { e.stopPropagation(); setDragVideoId(video.id); }}
+                        onDragEnd={() => { setDragVideoId(null); setDragOverVideoId(null); }}
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverVideoId(video.id); }}
+                        onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleDropVideo(group.id, video.id); }}
+                        className={`flex items-center gap-4 px-4 py-3 transition-colors cursor-grab active:cursor-grabbing ${
+                          dragOverVideoId === video.id && dragVideoId !== video.id
+                            ? "bg-slate-100 dark:bg-slate-800/60 border-t-2 border-da-blue-900"
+                            : dragVideoId === video.id
+                              ? "opacity-50 bg-slate-50 dark:bg-slate-800/30"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                        }`}
+                      >
+                        <div className="flex-shrink-0 text-slate-400 dark:text-slate-600">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="9" cy="6" r="1.5" />
+                            <circle cx="15" cy="6" r="1.5" />
+                            <circle cx="9" cy="12" r="1.5" />
+                            <circle cx="15" cy="12" r="1.5" />
+                            <circle cx="9" cy="18" r="1.5" />
+                            <circle cx="15" cy="18" r="1.5" />
+                          </svg>
+                        </div>
+
                         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
+
+                        <Link href={`/org/videos/${video.id}`} className="flex-1 min-w-0 group">
+                          <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
                             {video.title}
                           </div>
                           <div className="text-xs text-slate-500">
                             {formatDuration(video.duration)}
                           </div>
-                        </div>
-                        <svg className="w-4 h-4 text-slate-400 group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        </Link>
+
+                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

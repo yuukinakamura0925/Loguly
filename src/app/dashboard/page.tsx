@@ -2,7 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOrg } from "@/lib/auth";
-import { getProfileById, listCategories, listPublishedVideos, getViewLogsByUser } from "@/lib/db";
+import {
+  getProfileById,
+  listCategories,
+  listLicensedVideosForOrg,
+  listOrgCategoryOrder,
+  getViewLogsByUser,
+} from "@/lib/db";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SettingsIcon } from "@/components/icons";
@@ -13,15 +19,6 @@ import { CategorySection } from "./components/category-section";
 type Category = {
   id: number;
   name: string;
-  display_order: number;
-};
-
-type Video = {
-  id: number;
-  category_id: number;
-  title: string;
-  description: string | null;
-  duration: number;
   display_order: number;
 };
 
@@ -48,38 +45,77 @@ export default async function DashboardPage() {
     redirect("/org/members");
   }
   const org = await getCurrentOrg();
-  const { data: categories } = await listCategories(supabase);
-  const { data: videos } = await listPublishedVideos(supabase);
-  const { data: viewLogs } = await getViewLogsByUser(supabase, user.id);
+  const orgId = org?.id;
+
+  const [{ data: categories }, licensesResult, { data: orgCatOrders }, { data: viewLogs }] =
+    await Promise.all([
+      listCategories(supabase),
+      orgId ? listLicensedVideosForOrg(supabase, orgId) : Promise.resolve({ data: null }),
+      orgId ? listOrgCategoryOrder(supabase, orgId) : Promise.resolve({ data: null }),
+      getViewLogsByUser(supabase, user.id),
+    ]);
+
+  // 組織別カテゴリ順マップ
+  const orgCatOrderMap = new Map(
+    (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
+  );
+
+  // ライセンス済み動画を展開（組織別表示順を保持）
+  type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null };
+  const videos: DashboardVideo[] = (licensesResult?.data || [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((l: any) => {
+      const v = l.videos;
+      if (!v) return null;
+      return {
+        id: v.id,
+        category_id: v.category_id,
+        title: v.title,
+        description: v.description ?? null,
+        duration: v.duration,
+        display_order: v.display_order,
+        orgDisplayOrder: l.display_order as number | null,
+      };
+    })
+    .filter(Boolean) as DashboardVideo[];
 
   // カテゴリ別の進捗率（視聴時間ベース）
   const getCategoryProgress = (categoryId: number) => {
-    const categoryVideos = videos?.filter((v) => v.category_id === categoryId) || [];
+    const categoryVideos = videos.filter((v) => v.category_id === categoryId);
     if (categoryVideos.length === 0) return 0;
 
     const totalDuration = categoryVideos.reduce((acc, v) => acc + v.duration, 0);
-    let watchedSeconds = 0;
+    let watched = 0;
     for (const video of categoryVideos) {
       const log = viewLogs?.find((l) => l.video_id === video.id);
       if (log) {
-        watchedSeconds += Math.min(log.max_watched_seconds, video.duration);
+        watched += Math.min(log.max_watched_seconds, video.duration);
       }
     }
-    return totalDuration > 0 ? Math.round((watchedSeconds / totalDuration) * 100) : 0;
+    return totalDuration > 0 ? Math.round((watched / totalDuration) * 100) : 0;
   };
 
   // 全体の進捗（視聴時間ベース）
-  const totalSeconds = videos?.reduce((acc, v) => acc + v.duration, 0) || 0;
+  const totalSeconds = videos.reduce((acc, v) => acc + v.duration, 0);
   let watchedSeconds = 0;
-  for (const video of videos || []) {
+  for (const video of videos) {
     const log = viewLogs?.find((l) => l.video_id === video.id);
     if (log) {
       watchedSeconds += Math.min(log.max_watched_seconds, video.duration);
     }
   }
 
-  const totalVideos = videos?.length || 0;
+  const totalVideos = videos.length;
   const completedVideos = viewLogs?.filter((log) => log.completed).length || 0;
+
+  // カテゴリをソート（組織順 → グローバル順）
+  const sortedCategories = (categories || [])
+    .filter((cat: Category) => videos.some((v) => v.category_id === cat.id))
+    .sort((a: Category, b: Category) => {
+      const aOrder = orgCatOrderMap.get(a.id) ?? a.display_order;
+      const bOrder = orgCatOrderMap.get(b.id) ?? b.display_order;
+      return aOrder - bOrder;
+    });
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950">
@@ -120,12 +156,14 @@ export default async function DashboardPage() {
 
         {/* Categories */}
         <div className="space-y-6">
-          {categories?.map((category: Category) => {
-            const categoryVideos = videos?.filter(
-              (v: Video) => v.category_id === category.id
-            ) || [];
-
-            if (categoryVideos.length === 0) return null;
+          {sortedCategories.map((category: Category) => {
+            const categoryVideos = videos
+              .filter((v) => v.category_id === category.id)
+              .sort((a, b) => {
+                const aOrder = a.orgDisplayOrder ?? a.display_order;
+                const bOrder = b.orgDisplayOrder ?? b.display_order;
+                return aOrder - bOrder;
+              });
 
             return (
               <CategorySection
