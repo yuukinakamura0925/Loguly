@@ -124,11 +124,13 @@ export default async function DashboardPage() {
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {profile?.avatar_url ? (
-              <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
-            ) : (
-              <Logo size="sm" showText={false} />
-            )}
+            <Link href="/settings" title="アカウント設定">
+              {profile?.avatar_url ? (
+                <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 transition-opacity" />
+              ) : (
+                <Logo size="sm" showText={false} />
+              )}
+            </Link>
             <div>
               <h1 className="text-lg font-bold text-slate-900 dark:text-white">{org ? org.name : "Loguly"}</h1>
               <p className="text-xs text-slate-500">{profile?.display_name || user.email}</p>

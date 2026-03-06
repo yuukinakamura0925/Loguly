@@ -111,8 +111,8 @@ export default async function OrganizationsPage({
 
             return (
               <TableRow key={org.id}>
-                <TableCell className="text-slate-900 dark:text-white font-medium">
-                  {org.name}
+                <TableCell>
+                  <span className="text-slate-900 dark:text-white font-medium truncate">{org.name}</span>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">

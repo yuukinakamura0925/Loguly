@@ -131,6 +131,8 @@ export async function updateEmail(formData: FormData) {
 }
 
 export async function uploadAvatar(formData: FormData) {
+  const sharp = (await import("sharp")).default;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -143,20 +145,61 @@ export async function uploadAvatar(formData: FormData) {
     return { error: "ファイルを選択してください" };
   }
 
-  if (file.size > 2 * 1024 * 1024) {
-    return { error: "ファイルサイズは2MB以下にしてください" };
+  if (file.size > 10 * 1024 * 1024) {
+    return { error: "ファイルサイズは10MB以下にしてください" };
   }
 
   if (!file.type.startsWith("image/")) {
     return { error: "画像ファイルを選択してください" };
   }
 
-  const ext = file.name.split(".").pop() || "jpg";
-  const filePath = `${user.id}/avatar.${ext}`;
+  // 古いアバターファイルを削除（拡張子が異なる旧ファイル対策）
+  const { data: existingFiles } = await supabase.storage
+    .from("avatars")
+    .list(user.id);
+  if (existingFiles && existingFiles.length > 0) {
+    const filesToDelete = existingFiles.map((f) => `${user.id}/${f.name}`);
+    await supabase.storage.from("avatars").remove(filesToDelete);
+  }
+
+  // クロップ座標を取得（クライアントから送信）
+  const cropLeft = parseInt(formData.get("cropLeft") as string) || 0;
+  const cropTop = parseInt(formData.get("cropTop") as string) || 0;
+  const cropSize = parseInt(formData.get("cropSize") as string) || 0;
+
+  // 256x256 WebPに最適化
+  const buffer = Buffer.from(await file.arrayBuffer());
+  let pipeline = sharp(buffer).rotate(); // EXIF回転を適用
+
+  // クロップ座標がある場合は先にクロップ（範囲制限付き）
+  if (cropSize > 0) {
+    const meta = await sharp(buffer).rotate().metadata();
+    const imgW = meta.width || 0;
+    const imgH = meta.height || 0;
+    const safeSize = Math.min(cropSize, imgW, imgH);
+    const safeLeft = Math.max(0, Math.min(cropLeft, imgW - safeSize));
+    const safeTop = Math.max(0, Math.min(cropTop, imgH - safeSize));
+    pipeline = pipeline.extract({
+      left: safeLeft,
+      top: safeTop,
+      width: safeSize,
+      height: safeSize,
+    });
+  }
+
+  const optimized = await pipeline
+    .resize(256, 256, { fit: "cover" })
+    .webp({ quality: 80 })
+    .toBuffer();
+
+  const filePath = `${user.id}/avatar.webp`;
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
-    .upload(filePath, file, { upsert: true });
+    .upload(filePath, optimized, {
+      upsert: true,
+      contentType: "image/webp",
+    });
 
   if (uploadError) {
     return { error: "アップロードに失敗しました" };

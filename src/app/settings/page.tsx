@@ -9,12 +9,144 @@ import { getProfileById } from "@/lib/db";
 import { updateDisplayName, updatePassword, updateEmail, uploadAvatar, deleteAccount } from "./actions";
 import { ArrowLeftIcon } from "@/components/icons";
 
+function AvatarCropModal({
+  file,
+  onConfirm,
+  onCancel,
+}: {
+  file: File;
+  onConfirm: (file: File, crop: { left: number; top: number; size: number }) => void;
+  onCancel: () => void;
+}) {
+  const CONTAINER = 280;
+  const CIRCLE = 220;
+  const circleOff = (CONTAINER - CIRCLE) / 2;
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [nat, setNat] = useState({ w: 0, h: 0 });
+  const [pos, setPos] = useState({ ox: 0, oy: 0 });
+  const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null);
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setImageUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const scale = nat.w > 0 ? CIRCLE / Math.min(nat.w, nat.h) : 1;
+
+  const clamp = (ox: number, oy: number) => ({
+    ox: Math.min(circleOff, Math.max(circleOff + CIRCLE - nat.w * scale, ox)),
+    oy: Math.min(circleOff, Math.max(circleOff + CIRCLE - nat.h * scale, oy)),
+  });
+
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const w = e.currentTarget.naturalWidth;
+    const h = e.currentTarget.naturalHeight;
+    const sc = CIRCLE / Math.min(w, h);
+    setNat({ w, h });
+    setPos({
+      ox: circleOff - (w * sc - CIRCLE) / 2,
+      oy: circleOff - (h * sc - CIRCLE) / 2,
+    });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    dragRef.current = { sx: e.clientX, sy: e.clientY, ox: pos.ox, oy: pos.oy };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    setPos(clamp(d.ox + (e.clientX - d.sx), d.oy + (e.clientY - d.sy)));
+  };
+
+  const handlePointerUp = () => { dragRef.current = null; };
+
+  const handleConfirm = () => {
+    const cropLeft = Math.round((circleOff - pos.ox) / scale);
+    const cropTop = Math.round((circleOff - pos.oy) / scale);
+    const cropSize = Math.round(CIRCLE / scale);
+    onConfirm(file, { left: cropLeft, top: cropTop, size: cropSize });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-sm w-full shadow-xl overflow-hidden">
+        <div className="p-4 pb-2 text-center">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            画像の位置を調整
+          </h3>
+        </div>
+
+        <div className="flex justify-center py-4 bg-slate-950">
+          <div
+            className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+            style={{ width: CONTAINER, height: CONTAINER, touchAction: "none" }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+          >
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt=""
+                onLoad={onImageLoad}
+                draggable={false}
+                className="absolute pointer-events-none"
+                style={{
+                  width: nat.w * scale,
+                  height: nat.h * scale,
+                  left: pos.ox,
+                  top: pos.oy,
+                }}
+              />
+            )}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${CONTAINER} ${CONTAINER}`}>
+              <defs>
+                <mask id="cropMask">
+                  <rect width={CONTAINER} height={CONTAINER} fill="white" />
+                  <circle cx={CONTAINER / 2} cy={CONTAINER / 2} r={CIRCLE / 2} fill="black" />
+                </mask>
+              </defs>
+              <rect width={CONTAINER} height={CONTAINER} fill="rgba(0,0,0,0.55)" mask="url(#cropMask)" />
+              <circle cx={CONTAINER / 2} cy={CONTAINER / 2} r={CIRCLE / 2} fill="none" stroke="white" strokeWidth="2" opacity="0.7" />
+            </svg>
+          </div>
+        </div>
+
+        <div className="px-4 pt-3 pb-4">
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-4 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              キャンセル
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              className="flex-1 px-4 py-2 text-sm bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 transition-colors"
+            >
+              決定
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
   const [profile, setProfile] = useState<{ display_name: string; email: string; role: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states
@@ -72,15 +204,22 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setCropFile(file);
+  }
 
+  async function handleCropConfirm(file: File, crop: { left: number; top: number; size: number }) {
+    setCropFile(null);
     setAvatarUploading(true);
     setProfileMessage(null);
 
     const formData = new FormData();
     formData.set("avatar", file);
+    formData.set("cropLeft", String(crop.left));
+    formData.set("cropTop", String(crop.top));
+    formData.set("cropSize", String(crop.size));
 
     const result = await uploadAvatar(formData);
     if (result.error) {
@@ -182,47 +321,62 @@ export default function SettingsPage() {
         <section className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">プロフィール</h2>
 
-          {/* アバター */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative">
-              {profile?.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt="プロフィール画像"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full object-cover"
+          {/* アバター（platform_admin以外） */}
+          {profile?.role !== "platform_admin" && (
+            <>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="relative">
+                  {profile?.avatar_url ? (
+                    <Image
+                      src={profile.avatar_url}
+                      alt="プロフィール画像"
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-slate-500 flex items-center justify-center text-white text-2xl font-bold">
+                      {profile?.display_name?.charAt(0) || "?"}
+                    </div>
+                  )}
+                  {avatarUploading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                  >
+                    画像を変更
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">JPG, PNG（10MB以下）</p>
+                </div>
+              </div>
+
+              {cropFile && (
+                <AvatarCropModal
+                  file={cropFile}
+                  onConfirm={handleCropConfirm}
+                  onCancel={() => {
+                    setCropFile(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
                 />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-slate-500 flex items-center justify-center text-white text-2xl font-bold">
-                  {profile?.display_name?.charAt(0) || "?"}
-                </div>
               )}
-              {avatarUploading && (
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarUploading}
-                className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
-              >
-                画像を変更
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-              <p className="text-xs text-slate-500 mt-1">JPG, PNG（2MB以下）</p>
-            </div>
-          </div>
+            </>
+          )}
 
           <form onSubmit={handleUpdateDisplayName} className="space-y-4">
             <div>

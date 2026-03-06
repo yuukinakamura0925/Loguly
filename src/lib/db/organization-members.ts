@@ -29,7 +29,7 @@ export function listOrgMembers(client: TypedClient, organizationId: string) {
 export function listOrgMembersWithJoinDate(client: TypedClient, organizationId: string) {
   return client
     .from("organization_members")
-    .select("user_id, role, joined_at, profiles(display_name, email)")
+    .select("user_id, role, joined_at, profiles(display_name, email, avatar_url)")
     .eq("organization_id", organizationId)
     .order("joined_at");
 }
