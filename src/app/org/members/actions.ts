@@ -11,6 +11,7 @@ import {
   deleteOrgMember,
   deleteInvitation,
 } from "@/lib/db";
+import { sendInvitationEmail } from "@/lib/email";
 
 export async function createInvitation(formData: FormData) {
   await requireRole("org_admin");
@@ -51,9 +52,23 @@ export async function createInvitation(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  // TODO: Resend APIでメール送信
-  // 現時点では招待リンクを返す
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${token}`;
+
+  // メール送信（RESEND_API_KEY未設定時はスキップ）
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendInvitationEmail({
+        to: email,
+        organizationName: org.name,
+        inviteUrl,
+        role,
+      });
+    } catch {
+      // メール送信失敗でも招待自体は作成済み
+      revalidatePath("/org/members");
+      return { success: true, inviteUrl, emailError: "招待メールの送信に失敗しました。リンクを手動で共有してください。" };
+    }
+  }
 
   revalidatePath("/org/members");
   return { success: true, inviteUrl };

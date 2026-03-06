@@ -6,6 +6,8 @@ import { createInvitation } from "./actions";
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -17,11 +19,15 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
   async function handleSubmit(formData: FormData) {
     setError("");
     setInviteUrl("");
+    setEmailSent(false);
+    setEmailError("");
     const result = await createInvitation(formData);
     if (result.error) {
       setError(result.error);
     } else if (result.inviteUrl) {
       setInviteUrl(result.inviteUrl);
+      setEmailSent(!result.emailError);
+      if (result.emailError) setEmailError(result.emailError);
     }
   }
 
@@ -35,11 +41,16 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           </div>
         )}
         <div className="text-slate-900 dark:text-white text-sm font-medium">
-          招待を作成しました
+          {emailSent ? "招待メールを送信しました" : "招待を作成しました"}
         </div>
+        {emailError && (
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm text-yellow-600 dark:text-yellow-400">{emailError}</p>
+          </div>
+        )}
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-            招待リンク（メールで送信してください）
+            招待リンク{emailSent ? "" : "（メールで送信してください）"}
           </label>
           <div className="flex gap-2">
             <input
