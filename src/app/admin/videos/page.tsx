@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listVideosWithCategory, listCategories } from "@/lib/db";
 import {
@@ -70,18 +70,27 @@ export default function VideosPage() {
   const [previewVideoId, setPreviewVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const load = useCallback(async () => {
-    const [{ data: vids }, { data: cats }] = await Promise.all([
-      listVideosWithCategory(supabase),
-      listCategories(supabase),
-    ]);
-    setVideos((vids as Video[]) || []);
-    setCategories((cats as Category[]) || []);
-  }, [supabase]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    async function fetchData() {
+      const [{ data: vids }, { data: cats }] = await Promise.all([
+        listVideosWithCategory(supabase),
+        listCategories(supabase),
+      ]);
+      if (active) {
+        setVideos((vids as Video[]) || []);
+        setCategories((cats as Category[]) || []);
+      }
+    }
+    fetchData();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
+
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   async function handleDelete(id: number) {
     setError("");
@@ -89,7 +98,7 @@ export default function VideosPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -118,7 +127,7 @@ export default function VideosPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
     setDragVideoId(null);
     setDragOverVideoId(null);
@@ -140,7 +149,7 @@ export default function VideosPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
     setDragCategoryId(null);
     setDragOverCategoryId(null);
@@ -157,7 +166,7 @@ export default function VideosPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -248,7 +257,7 @@ export default function VideosPage() {
             } else {
               setShowCategoryForm(false);
               setEditingCategoryId(null);
-              load();
+              reload();
             }
           }}
           onCancel={() => {
@@ -273,7 +282,7 @@ export default function VideosPage() {
             } else {
               setShowForm(false);
               setEditingId(null);
-              load();
+              reload();
             }
           }}
           onCancel={() => {
