@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -50,24 +50,31 @@ export default function EditOrganizationPage() {
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    const [{ data: org }, { data: mems }] = await Promise.all([
-      getOrganizationById(supabase, id),
-      listOrgMembers(supabase, id),
-    ]);
-
-    if (org) {
-      setName(org.name);
-      setIsActive(org.is_active);
-    }
-    setMembers((mems as unknown as Member[]) || []);
-    setLoading(false);
-  }, [id, supabase]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    async function fetchData() {
+      const [{ data: org }, { data: mems }] = await Promise.all([
+        getOrganizationById(supabase, id),
+        listOrgMembers(supabase, id),
+      ]);
+      if (active) {
+        if (org) {
+          setName(org.name);
+          setIsActive(org.is_active);
+        }
+        setMembers((mems as unknown as Member[]) || []);
+        setLoading(false);
+      }
+    }
+    fetchData();
+    return () => { active = false; };
+  }, [id, supabase, refreshKey]);
+
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   async function handleSubmit(formData: FormData) {
     setError("");
@@ -86,7 +93,7 @@ export default function EditOrganizationPage() {
     if (result.error) {
       setMemberError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -96,7 +103,7 @@ export default function EditOrganizationPage() {
     if (result.error) {
       setMemberError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -108,7 +115,7 @@ export default function EditOrganizationPage() {
       setCreateError(result.error);
     } else {
       setCreateSuccess("ユーザーを作成しました");
-      load();
+      reload();
     }
   }
 

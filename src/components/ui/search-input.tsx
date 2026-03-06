@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState, useEffect, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 type SearchInputProps = {
   placeholder?: string;
@@ -18,11 +18,12 @@ export function SearchInput({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [value, setValue] = useState(searchParams.get(paramName) || "");
+  const paramValue = searchParams.get(paramName) || "";
+  const [value, setValue] = useState(paramValue);
 
-  useEffect(() => {
-    setValue(searchParams.get(paramName) || "");
-  }, [searchParams, paramName]);
+  if (value !== paramValue && !isPending) {
+    setValue(paramValue);
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;

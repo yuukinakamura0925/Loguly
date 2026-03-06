@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listCategories } from "@/lib/db";
 import {
@@ -37,15 +37,21 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState("");
-
-  const load = useCallback(async () => {
-    const { data } = await listCategories(supabase);
-    setCategories((data as Category[]) || []);
-  }, [supabase]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    let active = true;
+    async function fetchData() {
+      const { data } = await listCategories(supabase);
+      if (active) setCategories((data as Category[]) || []);
+    }
+    fetchData();
+    return () => { active = false; };
+  }, [supabase, refreshKey]);
+
+  function reload() {
+    setRefreshKey((k) => k + 1);
+  }
 
   async function handleCreate(formData: FormData) {
     setError("");
@@ -54,7 +60,7 @@ export default function CategoriesPage() {
       setError(result.error);
     } else {
       setShowForm(false);
-      load();
+      reload();
     }
   }
 
@@ -65,7 +71,7 @@ export default function CategoriesPage() {
       setError(result.error);
     } else {
       setEditingId(null);
-      load();
+      reload();
     }
   }
 
@@ -76,7 +82,7 @@ export default function CategoriesPage() {
     if (result.error) {
       setError(result.error);
     } else {
-      load();
+      reload();
     }
   }
 
