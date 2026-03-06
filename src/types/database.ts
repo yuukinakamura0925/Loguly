@@ -37,6 +37,7 @@ export type OrganizationLicense = {
   id: string;
   organization_id: string;
   video_id: number;
+  display_order: number | null;
   expires_at: string | null;
   is_active: boolean;
   created_at: string;
@@ -73,6 +74,13 @@ export type ViewLog = {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type OrgCategoryOrder = {
+  id: string;
+  organization_id: string;
+  category_id: number;
+  display_order: number;
 };
 
 export type Invitation = {

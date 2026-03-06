@@ -6,4 +6,5 @@ export * from "./categories";
 export * from "./videos";
 export * from "./view-logs";
 export * from "./invitations";
+export * from "./org-category-order";
 export type { TypedClient } from "./types";
