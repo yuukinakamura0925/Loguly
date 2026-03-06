@@ -36,6 +36,11 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // 認証コールバック・パスワードリセットはそのまま通す
+  if (pathname.startsWith("/auth/callback") || pathname.startsWith("/reset-password")) {
+    return supabaseResponse;
+  }
+
   // 保護されたルート（/admin-loginは除外）
   const protectedRoutes = ["/dashboard", "/watch", "/org"];
   const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin-login";

@@ -35,11 +35,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           </div>
         )}
         <div className="text-slate-900 dark:text-white text-sm font-medium">
-          招待を作成しました
+          招待リンクを発行しました
         </div>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          以下のリンクをコピーして、メールやチャットなどで対象者に共有してください。リンクの有効期限は7日間です。
+        </p>
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-            招待リンク（メールで送信してください）
+            招待リンク
           </label>
           <div className="flex gap-2">
             <input
@@ -111,7 +114,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           type="submit"
           className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline text-sm"
         >
-          招待を送信
+          招待リンクを発行
         </button>
         <button
           type="button"
