@@ -196,7 +196,7 @@ export default async function ProgressPage({
           {/* Search + Sort */}
           <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <SearchInput placeholder="名前・メールで検索..." paramName="q" className="max-w-sm" />
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-wrap">
               <span className="text-xs text-slate-500 mr-1">並び替え:</span>
               <SortLink label="名前" sortKey="display_name" currentSort={sort} currentOrder={order} searchParams={sortLinkParams} />
               <SortLink label="進捗率" sortKey="watchedPercent" currentSort={sort} currentOrder={order} searchParams={sortLinkParams} />
@@ -219,36 +219,69 @@ export default async function ProgressPage({
                   <Link
                     key={member.user_id}
                     href={`/org/progress/${member.user_id}`}
-                    className={`flex items-center gap-4 px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
+                    className={`block px-4 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${
                       isFullyCompleted ? "bg-emerald-50 dark:bg-emerald-900/10" : ""
                     }`}
                   >
-                    {/* Avatar */}
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                      isFullyCompleted
-                        ? "bg-da-blue-900 text-white"
-                        : "bg-slate-500 dark:bg-slate-600"
-                    }`}>
-                      {member.display_name?.charAt(0) || "?"}
-                    </div>
-
-                    {/* Name / Email */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-900 dark:text-white font-medium truncate">
-                          {member.display_name}
-                        </span>
-                        {isFullyCompleted && (
-                          <CheckCircleIcon className="w-4 h-4 text-da-success flex-shrink-0" />
-                        )}
+                    <div className="flex items-center gap-3">
+                      {/* Avatar */}
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0 ${
+                        isFullyCompleted
+                          ? "bg-da-blue-900 text-white"
+                          : "bg-slate-500 dark:bg-slate-600"
+                      }`}>
+                        {member.display_name?.charAt(0) || "?"}
                       </div>
-                      <div className="text-slate-500 text-sm truncate">{member.email}</div>
-                    </div>
 
-                    {/* Progress */}
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${
+                      {/* Name / Email */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-900 dark:text-white font-medium truncate">
+                            {member.display_name}
+                          </span>
+                          {isFullyCompleted && (
+                            <CheckCircleIcon className="w-4 h-4 text-da-success flex-shrink-0" />
+                          )}
+                        </div>
+                        <div className="text-slate-500 text-sm truncate">{member.email}</div>
+                      </div>
+
+                      {/* Progress - desktop */}
+                      <div className="hidden sm:flex items-center gap-4 flex-shrink-0">
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${
+                            isFullyCompleted
+                              ? "text-da-success dark:text-emerald-400"
+                              : member.watchedPercent > 0
+                                ? "text-da-blue-900 dark:text-da-blue-300"
+                                : "text-slate-400"
+                          }`}>
+                            {member.watchedPercent}%
+                          </div>
+                          <div className="text-xs text-slate-500">
+                            {member.completedCount}/{member.totalCount} 完了
+                          </div>
+                        </div>
+                        <div className="w-24">
+                          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                isFullyCompleted
+                                  ? "bg-da-success"
+                                  : member.watchedPercent > 0
+                                    ? "bg-da-blue-900"
+                                    : "bg-slate-300 dark:bg-slate-600"
+                              }`}
+                              style={{ width: `${member.watchedPercent}%` }}
+                            />
+                          </div>
+                        </div>
+                        <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+                      </div>
+
+                      {/* Progress - mobile (compact) */}
+                      <div className="flex sm:hidden items-center gap-2 flex-shrink-0">
+                        <span className={`text-sm font-bold ${
                           isFullyCompleted
                             ? "text-da-success dark:text-emerald-400"
                             : member.watchedPercent > 0
@@ -256,29 +289,28 @@ export default async function ProgressPage({
                               : "text-slate-400"
                         }`}>
                           {member.watchedPercent}%
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {member.completedCount}/{member.totalCount} 完了
-                        </div>
+                        </span>
+                        <ChevronRightIcon className="w-4 h-4 text-slate-400" />
                       </div>
+                    </div>
 
-                      {/* Progress bar */}
-                      <div className="w-24 hidden sm:block">
-                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              isFullyCompleted
-                                ? "bg-da-success"
-                                : member.watchedPercent > 0
-                                  ? "bg-da-blue-900"
-                                  : "bg-slate-300 dark:bg-slate-600"
-                            }`}
-                            style={{ width: `${member.watchedPercent}%` }}
-                          />
-                        </div>
+                    {/* Progress bar - mobile */}
+                    <div className="sm:hidden mt-2 ml-[52px]">
+                      <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            isFullyCompleted
+                              ? "bg-da-success"
+                              : member.watchedPercent > 0
+                                ? "bg-da-blue-900"
+                                : "bg-slate-300 dark:bg-slate-600"
+                          }`}
+                          style={{ width: `${member.watchedPercent}%` }}
+                        />
                       </div>
-
-                      <ChevronRightIcon className="w-5 h-5 text-slate-400" />
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {member.completedCount}/{member.totalCount} 完了
+                      </div>
                     </div>
                   </Link>
                 );
