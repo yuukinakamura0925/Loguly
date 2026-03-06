@@ -155,25 +155,27 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
     if (!videoEl || initialProgress.maxWatchedSeconds <= 0) return;
 
     const seekToInitial = () => {
-      if (!initialSeekDoneRef.current) {
-        initialSeekDoneRef.current = true;
-        videoEl.currentTime = initialProgress.maxWatchedSeconds;
-        setCurrentTime(initialProgress.maxWatchedSeconds);
-      }
+      if (initialSeekDoneRef.current) return;
+      // readyState >= 1 でないとシークできない（iOS Safari対策）
+      if (videoEl.readyState < 1) return;
+      initialSeekDoneRef.current = true;
+      videoEl.currentTime = initialProgress.maxWatchedSeconds;
+      setCurrentTime(initialProgress.maxWatchedSeconds);
     };
 
     // デスクトップ: メタデータ読み込み済みならすぐシーク
-    if (videoEl.readyState >= 1) {
-      seekToInitial();
-    }
+    seekToInitial();
 
     // モバイル: メタデータ読み込み後にシーク
     videoEl.addEventListener("loadedmetadata", seekToInitial);
-    // フォールバック: canplayでも試行
+    // iOS Safari: ユーザー操作（再生）後にシーク
+    videoEl.addEventListener("play", seekToInitial);
+    // フォールバック
     videoEl.addEventListener("canplay", seekToInitial);
 
     return () => {
       videoEl.removeEventListener("loadedmetadata", seekToInitial);
+      videoEl.removeEventListener("play", seekToInitial);
       videoEl.removeEventListener("canplay", seekToInitial);
     };
   }, [initialProgress.maxWatchedSeconds]);
