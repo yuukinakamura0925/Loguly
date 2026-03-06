@@ -109,6 +109,16 @@ export default function LoginPage() {
             ← トップに戻る
           </Link>
         </div>
+
+        <div className="text-center text-sm text-slate-500 mt-4 flex gap-3 justify-center">
+          <Link href="/terms" className="hover:text-slate-300 transition-colors">
+            利用規約
+          </Link>
+          <span className="text-slate-600">|</span>
+          <Link href="/privacy" className="hover:text-slate-300 transition-colors">
+            プライバシーポリシー
+          </Link>
+        </div>
       </div>
     </div>
   );

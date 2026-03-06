@@ -18,10 +18,16 @@ export default function SignupForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!agreedToTerms) {
+      setError("利用規約とプライバシーポリシーに同意してください");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("パスワードが一致しません");
@@ -162,6 +168,22 @@ export default function SignupForm({
           minLength={6}
           className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
         />
+      </div>
+
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          id="terms"
+          checked={agreedToTerms}
+          onChange={(e) => setAgreedToTerms(e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-da-gray-600"
+        />
+        <label htmlFor="terms" className="text-sm text-slate-400">
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-da-blue-300 hover:underline">利用規約</a>
+          および
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-da-blue-300 hover:underline">プライバシーポリシー</a>
+          に同意します
+        </label>
       </div>
 
       {error && (

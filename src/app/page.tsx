@@ -23,7 +23,16 @@ export default function Home() {
       </main>
 
       <footer className="mt-16 text-sm text-slate-400">
-        &copy; 2026 Loguly
+        <div className="flex gap-4 justify-center mb-2">
+          <Link href="/terms" className="hover:text-slate-200 transition-colors">
+            利用規約
+          </Link>
+          <span className="text-slate-600">|</span>
+          <Link href="/privacy" className="hover:text-slate-200 transition-colors">
+            プライバシーポリシー
+          </Link>
+        </div>
+        <p>&copy; 2026 Loguly</p>
       </footer>
     </div>
   );
