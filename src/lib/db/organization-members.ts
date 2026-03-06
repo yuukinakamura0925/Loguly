@@ -45,7 +45,7 @@ export function listOrgMemberProfiles(client: TypedClient, organizationId: strin
 export function listOrgViewerProfiles(client: TypedClient, organizationId: string) {
   return client
     .from("organization_members")
-    .select("user_id, profiles(display_name, email)")
+    .select("user_id, profiles(display_name, email, avatar_url)")
     .eq("organization_id", organizationId)
     .eq("role", "member")
     .order("joined_at");

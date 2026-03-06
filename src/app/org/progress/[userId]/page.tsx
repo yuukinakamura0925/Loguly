@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
@@ -151,13 +152,17 @@ export default async function MemberProgressPage({
       {/* プロフィール */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
         <div className="flex items-center gap-4">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold ${
-            completedCount === totalCount && totalCount > 0
-              ? "bg-da-blue-900 text-white"
-              : "bg-slate-500 dark:bg-slate-600"
-          }`}>
-            {profile.display_name?.charAt(0) || "?"}
-          </div>
+          {profile.avatar_url ? (
+            <Image src={profile.avatar_url} alt="" width={64} height={64} className="w-16 h-16 rounded-full object-cover" />
+          ) : (
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold ${
+              completedCount === totalCount && totalCount > 0
+                ? "bg-da-blue-900 text-white"
+                : "bg-slate-500 dark:bg-slate-600"
+            }`}>
+              {profile.display_name?.charAt(0) || "?"}
+            </div>
+          )}
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               {profile.display_name}

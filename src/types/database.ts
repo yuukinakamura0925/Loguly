@@ -8,6 +8,7 @@ export type Profile = {
   id: string;
   email: string;
   display_name: string;
+  avatar_url: string | null;
   role: Role;
   is_active: boolean;
   terms_accepted_at: string | null;

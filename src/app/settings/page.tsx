@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getProfileById } from "@/lib/db";
-import { updateDisplayName, updatePassword, updateEmail, deleteAccount } from "./actions";
+import { updateDisplayName, updatePassword, updateEmail, uploadAvatar, deleteAccount } from "./actions";
 import { ArrowLeftIcon } from "@/components/icons";
 
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [profile, setProfile] = useState<{ display_name: string; email: string; role: string } | null>(null);
+  const [profile, setProfile] = useState<{ display_name: string; email: string; role: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states
   const [displayName, setDisplayName] = useState("");
@@ -44,6 +47,7 @@ export default function SettingsPage() {
           display_name: data.display_name || "",
           email: data.email || "",
           role: data.role || "member",
+          avatar_url: data.avatar_url || null,
         });
         setDisplayName(data.display_name || "");
       }
@@ -66,6 +70,27 @@ export default function SettingsPage() {
       setProfileMessage({ type: "success", text: "表示名を更新しました" });
       setProfile((prev) => prev ? { ...prev, display_name: displayName } : null);
     }
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarUploading(true);
+    setProfileMessage(null);
+
+    const formData = new FormData();
+    formData.set("avatar", file);
+
+    const result = await uploadAvatar(formData);
+    if (result.error) {
+      setProfileMessage({ type: "error", text: result.error });
+    } else if (result.avatarUrl) {
+      setProfile((prev) => prev ? { ...prev, avatar_url: result.avatarUrl! } : null);
+      setProfileMessage({ type: "success", text: "プロフィール画像を更新しました" });
+    }
+    setAvatarUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleUpdatePassword(e: React.FormEvent) {
@@ -156,6 +181,49 @@ export default function SettingsPage() {
         {/* プロフィール */}
         <section className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">プロフィール</h2>
+
+          {/* アバター */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="relative">
+              {profile?.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt="プロフィール画像"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-slate-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {profile?.display_name?.charAt(0) || "?"}
+                </div>
+              )}
+              {avatarUploading && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarUploading}
+                className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+              >
+                画像を変更
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+              <p className="text-xs text-slate-500 mt-1">JPG, PNG（2MB以下）</p>
+            </div>
+          </div>
+
           <form onSubmit={handleUpdateDisplayName} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">

@@ -130,6 +130,52 @@ export async function updateEmail(formData: FormData) {
   return { success: true, message: "確認メールを送信しました。メール内のリンクをクリックして変更を完了してください。" };
 }
 
+export async function uploadAvatar(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "認証されていません" };
+  }
+
+  const file = formData.get("avatar") as File;
+  if (!file || file.size === 0) {
+    return { error: "ファイルを選択してください" };
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    return { error: "ファイルサイズは2MB以下にしてください" };
+  }
+
+  if (!file.type.startsWith("image/")) {
+    return { error: "画像ファイルを選択してください" };
+  }
+
+  const ext = file.name.split(".").pop() || "jpg";
+  const filePath = `${user.id}/avatar.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) {
+    return { error: "アップロードに失敗しました" };
+  }
+
+  const { data: urlData } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath);
+
+  const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+  await updateProfile(supabase, user.id, { avatar_url: avatarUrl });
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/org/progress");
+  return { success: true, avatarUrl };
+}
+
 export async function deleteAccount(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
