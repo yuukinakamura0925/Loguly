@@ -170,6 +170,41 @@ export default function VideosPage() {
     }
   }
 
+  async function moveVideo(categoryId: number, videoId: number, direction: "up" | "down") {
+    setError("");
+    const categoryVids = videos
+      .filter((v) => v.category_id === categoryId)
+      .sort((a, b) => a.display_order - b.display_order);
+    const orderedIds = categoryVids.map((v) => v.id);
+    const index = orderedIds.indexOf(videoId);
+    if (index === -1) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedIds.length) return;
+
+    orderedIds.splice(index, 1);
+    orderedIds.splice(newIndex, 0, videoId);
+
+    const result = await reorderVideos(categoryId, orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
+  async function moveAdminCategory(categoryId: number, direction: "up" | "down") {
+    setError("");
+    const orderedIds = categories.map((c) => c.id);
+    const index = orderedIds.indexOf(categoryId);
+    if (index === -1) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedIds.length) return;
+
+    orderedIds.splice(index, 1);
+    orderedIds.splice(newIndex, 0, categoryId);
+
+    const result = await reorderCategories(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
   function toggleCategory(categoryId: number) {
     setExpandedCategories((prev) => {
       const next = new Set(prev);
@@ -312,8 +347,8 @@ export default function VideosPage() {
             }`}
           >
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
-              {/* Category drag handle */}
-              <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+              {/* Category drag handle - desktop */}
+              <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="9" cy="6" r="1.5" />
                   <circle cx="15" cy="6" r="1.5" />
@@ -322,6 +357,23 @@ export default function VideosPage() {
                   <circle cx="9" cy="18" r="1.5" />
                   <circle cx="15" cy="18" r="1.5" />
                 </svg>
+              </div>
+              {/* Up/down buttons - mobile */}
+              <div className="flex lg:hidden flex-shrink-0 pl-2 gap-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "up"); }}
+                  disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === 0}
+                  className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "down"); }}
+                  disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === videosByCategory.length - 1}
+                  className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                </button>
               </div>
               <button
                 onClick={() => toggleCategory(category.id)}
@@ -381,8 +433,8 @@ export default function VideosPage() {
                         : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
                   }`}
                 >
-                  {/* Drag handle */}
-                  <div className="flex-shrink-0 text-slate-400 dark:text-slate-600">
+                  {/* Drag handle - desktop */}
+                  <div className="hidden lg:flex flex-shrink-0 text-slate-400 dark:text-slate-600">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <circle cx="9" cy="6" r="1.5" />
                       <circle cx="15" cy="6" r="1.5" />
@@ -391,6 +443,24 @@ export default function VideosPage() {
                       <circle cx="9" cy="18" r="1.5" />
                       <circle cx="15" cy="18" r="1.5" />
                     </svg>
+                  </div>
+
+                  {/* Up/down buttons - mobile */}
+                  <div className="flex lg:hidden flex-shrink-0 flex-col gap-0.5">
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(category.id, video.id, "up"); }}
+                      disabled={categoryVideos.indexOf(video) === 0}
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                    </button>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(category.id, video.id, "down"); }}
+                      disabled={categoryVideos.indexOf(video) === categoryVideos.length - 1}
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                    </button>
                   </div>
 
                   {/* Video thumbnail */}
