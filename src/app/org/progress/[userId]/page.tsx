@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
   listLicensedVideosForOrg,
+  listOrgCategoryOrder,
+  listCategories,
   getViewLogsByUsers,
   getProfileById,
   getMembershipByUserId,
@@ -45,22 +47,54 @@ export default async function MemberProgressPage({
     notFound();
   }
 
-  // ライセンスされた動画を取得
-  const { data: licenses } = await listLicensedVideosForOrg(supabase, org.id);
-  const videos =
-    licenses
-      ?.map((l) => l.videos as unknown as {
-        id: number;
-        title: string;
-        duration: number;
-        display_order: number;
-        categories: { name: string } | null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.display_order - b.display_order) || [];
+  // ライセンスされた動画 + 組織カテゴリ順を取得
+  const [{ data: licenses }, { data: orgCatOrders }, { data: allCategories }, { data: viewLogs }] =
+    await Promise.all([
+      listLicensedVideosForOrg(supabase, org.id),
+      listOrgCategoryOrder(supabase, org.id),
+      listCategories(supabase),
+      getViewLogsByUsers(supabase, [userId]),
+    ]);
 
-  // 視聴ログ取得
-  const { data: viewLogs } = await getViewLogsByUsers(supabase, [userId]);
+  // 組織別カテゴリ順マップ
+  const orgCatOrderMap = new Map(
+    (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
+  );
+
+  // カテゴリ名→IDマップ
+  const catNameToId = new Map(
+    (allCategories || []).map((c: { id: number; name: string; display_order: number }) => [c.name, { id: c.id, display_order: c.display_order }])
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const videos = (licenses || [])
+    .map((l: any) => {
+      const v = l.videos;
+      if (!v) return null;
+      return {
+        id: v.id as number,
+        title: v.title as string,
+        duration: v.duration as number,
+        display_order: v.display_order as number,
+        orgDisplayOrder: l.display_order as number | null,
+        categories: v.categories as { name: string; display_order: number } | null,
+      };
+    })
+    .filter(Boolean) as {
+      id: number;
+      title: string;
+      duration: number;
+      display_order: number;
+      orgDisplayOrder: number | null;
+      categories: { name: string; display_order: number } | null;
+    }[];
+
+  // 動画を組織順でソート（フォールバック: グローバル順）
+  videos.sort((a, b) => {
+    const aOrder = a.orgDisplayOrder ?? a.display_order;
+    const bOrder = b.orgDisplayOrder ?? b.display_order;
+    return aOrder - bOrder;
+  });
 
   // 動画ごとの進捗を計算
   const videoProgress: VideoProgress[] = videos.map((v) => {
@@ -79,9 +113,16 @@ export default async function MemberProgressPage({
     };
   });
 
-  // カテゴリでグループ化
-  const categories = [...new Set(videoProgress.map((v) => v.category_name))];
-  const videosByCategory = categories.map((cat) => ({
+  // カテゴリでグループ化（組織順でソート）
+  const categoryNames = [...new Set(videoProgress.map((v) => v.category_name))];
+  categoryNames.sort((a, b) => {
+    const catA = catNameToId.get(a);
+    const catB = catNameToId.get(b);
+    const aOrder = (catA ? orgCatOrderMap.get(catA.id) : undefined) ?? catA?.display_order ?? 0;
+    const bOrder = (catB ? orgCatOrderMap.get(catB.id) : undefined) ?? catB?.display_order ?? 0;
+    return aOrder - bOrder;
+  });
+  const videosByCategory = categoryNames.map((cat) => ({
     name: cat,
     videos: videoProgress.filter((v) => v.category_name === cat),
   }));
