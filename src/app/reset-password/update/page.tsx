@@ -13,17 +13,19 @@ export default function UpdatePasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
+  const [checking, setChecking] = useState(true);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+    const checkSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
         setReady(true);
       }
-    });
-
-    return () => subscription.unsubscribe();
+      setChecking(false);
+    };
+    checkSession();
   }, [supabase.auth]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +52,7 @@ export default function UpdatePasswordPage() {
       return;
     }
 
+    await supabase.auth.signOut();
     router.push("/login");
   };
 
@@ -65,7 +68,7 @@ export default function UpdatePasswordPage() {
 
         <Card className="bg-slate-900 border-slate-800">
           <CardContent className="p-8">
-            {!ready ? (
+            {checking ? (
               <div className="text-center space-y-4">
                 <div className="flex justify-center">
                   <svg className="animate-spin h-8 w-8 text-da-blue-300" viewBox="0 0 24 24" fill="none">
@@ -74,6 +77,17 @@ export default function UpdatePasswordPage() {
                   </svg>
                 </div>
                 <p className="text-sm text-slate-400">認証情報を確認中...</p>
+              </div>
+            ) : !ready ? (
+              <div className="text-center space-y-4">
+                <p className="text-sm text-da-error">
+                  リセットリンクが無効または期限切れです。もう一度パスワードリセットをお試しください。
+                </p>
+                <Link href="/reset-password">
+                  <Button className="w-full" size="lg">
+                    パスワードリセットへ
+                  </Button>
+                </Link>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
