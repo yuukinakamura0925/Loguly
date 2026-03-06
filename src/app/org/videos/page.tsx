@@ -186,6 +186,41 @@ export default function OrgVideosPage() {
     setDragOverCategoryId(null);
   }
 
+  async function moveVideo(categoryId: number, videoId: number, direction: "up" | "down") {
+    setError("");
+    const group = categoryGroups.find((g) => g.id === categoryId);
+    if (!group) return;
+
+    const orderedIds = group.videos.map((v) => v.id);
+    const index = orderedIds.indexOf(videoId);
+    if (index === -1) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedIds.length) return;
+
+    orderedIds.splice(index, 1);
+    orderedIds.splice(newIndex, 0, videoId);
+
+    const result = await reorderOrgVideos(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
+  async function moveCategory(categoryId: number, direction: "up" | "down") {
+    setError("");
+    const orderedIds = categoryGroups.map((g) => g.id);
+    const index = orderedIds.indexOf(categoryId);
+    if (index === -1) return;
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedIds.length) return;
+
+    orderedIds.splice(index, 1);
+    orderedIds.splice(newIndex, 0, categoryId);
+
+    const result = await reorderOrgCategories(orderedIds);
+    if (result.error) setError(result.error);
+    else reload();
+  }
+
   async function handleReset() {
     setError("");
     const result = await resetOrgDisplayOrder();
@@ -209,7 +244,7 @@ export default function OrgVideosPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">動画プレビュー</h1>
           <p className="text-sm text-slate-500 mt-1">
-            ドラッグ&ドロップで表示順を変更できます（{totalVideos}本）
+            表示順を変更できます（{totalVideos}本）
           </p>
         </div>
         {hasCustomOrder && (
@@ -256,7 +291,7 @@ export default function OrgVideosPage() {
                 }`}
               >
                 <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
-                  <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+                  <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <circle cx="9" cy="6" r="1.5" />
                       <circle cx="15" cy="6" r="1.5" />
@@ -278,6 +313,22 @@ export default function OrgVideosPage() {
                     <span className="font-medium text-slate-900 dark:text-white">{group.name}</span>
                     <span className="text-sm text-slate-500">{group.videos.length}本</span>
                   </button>
+                  <div className="flex lg:hidden flex-shrink-0 pr-2 gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "up"); }}
+                      disabled={categoryGroups.indexOf(group) === 0}
+                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "down"); }}
+                      disabled={categoryGroups.indexOf(group) === categoryGroups.length - 1}
+                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </div>
                 </div>
 
                 {isExpanded && (
@@ -298,7 +349,7 @@ export default function OrgVideosPage() {
                               : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
                         }`}
                       >
-                        <div className="flex-shrink-0 text-slate-400 dark:text-slate-600">
+                        <div className="hidden lg:flex flex-shrink-0 text-slate-400 dark:text-slate-600">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <circle cx="9" cy="6" r="1.5" />
                             <circle cx="15" cy="6" r="1.5" />
@@ -307,6 +358,23 @@ export default function OrgVideosPage() {
                             <circle cx="9" cy="18" r="1.5" />
                             <circle cx="15" cy="18" r="1.5" />
                           </svg>
+                        </div>
+
+                        <div className="flex lg:hidden flex-shrink-0 flex-col gap-0.5">
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "up"); }}
+                            disabled={group.videos.indexOf(video) === 0}
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                          </button>
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "down"); }}
+                            disabled={group.videos.indexOf(video) === group.videos.length - 1}
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </button>
                         </div>
 
                         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
