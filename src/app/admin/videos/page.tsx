@@ -7,7 +7,8 @@ import {
   createVideo,
   updateVideo,
   deleteVideo,
-  moveVideo,
+  reorderVideos,
+  reorderCategories,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -28,7 +29,6 @@ import {
   PencilIcon,
   TrashIcon,
   ClockIcon,
-  ChevronUpIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
@@ -67,6 +67,7 @@ export default function VideosPage() {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -92,14 +93,57 @@ export default function VideosPage() {
     }
   }
 
-  async function handleMove(id: number, direction: "up" | "down") {
+  const [dragVideoId, setDragVideoId] = useState<number | null>(null);
+  const [dragOverVideoId, setDragOverVideoId] = useState<number | null>(null);
+  const [dragCategoryId, setDragCategoryId] = useState<number | null>(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<number | null>(null);
+
+  async function handleDrop(categoryId: number, targetVideoId: number) {
+    if (dragVideoId === null || dragVideoId === targetVideoId) return;
     setError("");
-    const result = await moveVideo(id, direction);
+
+    const categoryVids = videos
+      .filter((v) => v.category_id === categoryId)
+      .sort((a, b) => a.display_order - b.display_order);
+
+    const orderedIds = categoryVids.map((v) => v.id);
+    const fromIndex = orderedIds.indexOf(dragVideoId);
+    const toIndex = orderedIds.indexOf(targetVideoId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragVideoId);
+
+    const result = await reorderVideos(categoryId, orderedIds);
     if (result.error) {
       setError(result.error);
     } else {
       load();
     }
+    setDragVideoId(null);
+    setDragOverVideoId(null);
+  }
+
+  async function handleDropCategory(targetCategoryId: number) {
+    if (dragCategoryId === null || dragCategoryId === targetCategoryId) return;
+    setError("");
+
+    const orderedIds = categories.map((c) => c.id);
+    const fromIndex = orderedIds.indexOf(dragCategoryId);
+    const toIndex = orderedIds.indexOf(targetCategoryId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    orderedIds.splice(fromIndex, 1);
+    orderedIds.splice(toIndex, 0, dragCategoryId);
+
+    const result = await reorderCategories(orderedIds);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      load();
+    }
+    setDragCategoryId(null);
+    setDragOverCategoryId(null);
   }
 
   async function handleDeleteCategory(id: number) {
@@ -243,8 +287,33 @@ export default function VideosPage() {
         {videosByCategory.map(({ category, videos: categoryVideos }) => {
           const isExpanded = expandedCategories.has(category.id);
           return (
-          <Card key={category.id}>
+          <Card
+            key={category.id}
+            draggable
+            onDragStart={(e) => { e.stopPropagation(); setDragCategoryId(category.id); }}
+            onDragEnd={() => { setDragCategoryId(null); setDragOverCategoryId(null); }}
+            onDragOver={(e) => { e.preventDefault(); if (!dragVideoId) setDragOverCategoryId(category.id); }}
+            onDrop={(e) => { e.preventDefault(); if (!dragVideoId) handleDropCategory(category.id); }}
+            className={`${
+              dragOverCategoryId === category.id && dragCategoryId !== category.id && !dragVideoId
+                ? "ring-2 ring-da-blue-900"
+                : dragCategoryId === category.id
+                  ? "opacity-50"
+                  : ""
+            }`}
+          >
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
+              {/* Category drag handle */}
+              <div className="flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="9" cy="6" r="1.5" />
+                  <circle cx="15" cy="6" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" />
+                  <circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="18" r="1.5" />
+                  <circle cx="15" cy="18" r="1.5" />
+                </svg>
+              </div>
               <button
                 onClick={() => toggleCategory(category.id)}
                 className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors"
@@ -287,38 +356,63 @@ export default function VideosPage() {
                   このカテゴリには動画がありません
                 </div>
               )}
-              {categoryVideos.map((video, index) => (
+              {categoryVideos.map((video) => (
                 <div
                   key={video.id}
-                  className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+                  draggable
+                  onDragStart={() => setDragVideoId(video.id)}
+                  onDragEnd={() => { setDragVideoId(null); setDragOverVideoId(null); }}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverVideoId(video.id); }}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(category.id, video.id); }}
+                  className={`flex items-center gap-4 px-4 py-3 transition-colors cursor-grab active:cursor-grabbing ${
+                    dragOverVideoId === video.id && dragVideoId !== video.id
+                      ? "bg-slate-100 dark:bg-slate-800/60 border-t-2 border-da-blue-900"
+                      : dragVideoId === video.id
+                        ? "opacity-50 bg-slate-50 dark:bg-slate-800/30"
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                  }`}
                 >
-                  {/* Reorder buttons */}
-                  <div className="flex flex-col gap-0.5">
-                    <button
-                      onClick={() => handleMove(video.id, "up")}
-                      disabled={index === 0}
-                      className={`p-1 rounded transition-all ${
-                        index === 0
-                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                      title="上へ"
-                    >
-                      <ChevronUpIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleMove(video.id, "down")}
-                      disabled={index === categoryVideos.length - 1}
-                      className={`p-1 rounded transition-all ${
-                        index === categoryVideos.length - 1
-                          ? "text-slate-300 dark:text-slate-700 cursor-not-allowed"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                      }`}
-                      title="下へ"
-                    >
-                      <ChevronDownIcon className="w-4 h-4" />
-                    </button>
+                  {/* Drag handle */}
+                  <div className="flex-shrink-0 text-slate-400 dark:text-slate-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="9" cy="6" r="1.5" />
+                      <circle cx="15" cy="6" r="1.5" />
+                      <circle cx="9" cy="12" r="1.5" />
+                      <circle cx="15" cy="12" r="1.5" />
+                      <circle cx="9" cy="18" r="1.5" />
+                      <circle cx="15" cy="18" r="1.5" />
+                    </svg>
                   </div>
+
+                  {/* Video thumbnail */}
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (video.cf_video_id) setPreviewVideoId(video.cf_video_id); }}
+                    className="relative w-24 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 group"
+                  >
+                    {video.cf_video_id && process.env.NEXT_PUBLIC_VIDEO_BASE_URL ? (
+                      <>
+                        <video
+                          src={`${process.env.NEXT_PUBLIC_VIDEO_BASE_URL}/${video.cf_video_id}`}
+                          preload="metadata"
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
+                          <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
 
                   {/* Video info */}
                   <div className="flex-1 min-w-0">
@@ -335,7 +429,7 @@ export default function VideosPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-1">
+                  <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
                         setEditingId(video.id);
@@ -370,9 +464,38 @@ export default function VideosPage() {
           </Card>
         )}
       </div>
+
+      {/* Preview modal */}
+      {previewVideoId && process.env.NEXT_PUBLIC_VIDEO_BASE_URL && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setPreviewVideoId(null)}
+        >
+          <div
+            className="relative w-full max-w-3xl mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setPreviewVideoId(null)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white text-sm"
+            >
+              閉じる
+            </button>
+            <video
+              src={`${process.env.NEXT_PUBLIC_VIDEO_BASE_URL}/${previewVideoId}`}
+              controls
+              autoPlay
+              className="w-full rounded-xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 
 function VideoForm({
   categories,
@@ -391,8 +514,12 @@ function VideoForm({
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     video?.category_id ?? null
   );
+  const [uploadedVideoId, setUploadedVideoId] = useState(video?.cf_video_id || "");
+  const [detectedDuration, setDetectedDuration] = useState(video?.duration || 0);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // Calculate next display_order for selected category
   const getNextDisplayOrder = (categoryId: number) => {
     const categoryVideos = videos.filter((v) => v.category_id === categoryId);
     if (categoryVideos.length === 0) return 1;
@@ -410,10 +537,108 @@ function VideoForm({
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+
+    if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      setUploadError("MP4、MOV、WebM形式のみアップロード可能です");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError("ファイルサイズは2GB以下にしてください");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // duration自動検出:
+    // 非表示の<video>要素を作ってファイルを読み込み、メタデータからdurationを取得。
+    // これによりdurationフィールドを手入力する必要がなくなる。
+    const videoEl = document.createElement("video");
+    videoEl.preload = "metadata";
+    videoEl.onloadedmetadata = () => {
+      setDetectedDuration(Math.floor(videoEl.duration));
+      URL.revokeObjectURL(videoEl.src); // メモリリーク防止
+    };
+    videoEl.src = URL.createObjectURL(file);
+  };
+
+  /**
+   * アップロード処理（2段階）
+   *
+   * 1. Next.js API Route にファイル名を送って、署名付きアップロードURLを取得
+   * 2. そのURLにブラウザから直接動画ファイルをPUT（サーバーを経由しない）
+   *
+   * fetch() ではなく XMLHttpRequest を使う理由:
+   * fetch() には upload.onprogress に相当するAPIがないため、
+   * アップロード進捗（%）を取得するには XMLHttpRequest が必要。
+   */
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setUploadError("");
+    setUploadProgress(0);
+
+    try {
+      // Step 1: サーバーから署名付きURLを取得
+      const urlRes = await fetch("/api/videos/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: selectedFile.name }),
+      });
+
+      if (!urlRes.ok) {
+        throw new Error("アップロードURLの取得に失敗しました");
+      }
+
+      const { videoId, uploadUrl } = await urlRes.json();
+
+      // Step 2: 署名付きURLに動画ファイルを直接PUT
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`アップロードに失敗しました (${xhr.status})`));
+          }
+        };
+        xhr.onerror = () => reject(new Error("ネットワークエラーが発生しました"));
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", selectedFile.type);
+        xhr.send(selectedFile); // ← ファイルをR2/Streamに直接送信
+      });
+
+      // アップロード成功: videoIdをhidden inputにセット → フォーム送信時にDBに保存される
+      setUploadedVideoId(videoId);
+      setUploadProgress(null);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "アップロードに失敗しました");
+      setUploadProgress(null);
+    }
+  };
+
+  const isUploading = uploadProgress !== null;
+  const hasVideo = !!uploadedVideoId;
+
   return (
     <Card className="mb-6">
       <CardContent>
         <form action={onSubmit} className="space-y-4">
+          <input type="hidden" name="cf_video_id" value={uploadedVideoId} />
+          <input type="hidden" name="duration" value={detectedDuration} />
+
           <div className="grid grid-cols-2 gap-4">
             <Input
               name="title"
@@ -446,15 +671,73 @@ function VideoForm({
             placeholder="動画の説明（任意）"
           />
 
+          {/* 動画ファイルアップロード */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              動画ファイル {!video && <span className="text-red-500">*</span>}
+            </label>
+
+            {hasVideo && !selectedFile ? (
+              <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <svg className="w-5 h-5 text-da-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                  {video ? "アップロード済み" : "アップロード完了"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedFile(null); setUploadedVideoId(""); }}
+                  className="ml-auto text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                >
+                  変更
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <input
+                  type="file"
+                  accept="video/mp4,video/quicktime,video/webm"
+                  onChange={handleFileSelect}
+                  disabled={isUploading}
+                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-900 file:text-white hover:file:bg-slate-800 dark:file:bg-slate-700 dark:hover:file:bg-slate-600 file:cursor-pointer"
+                />
+
+                {selectedFile && !isUploading && !uploadedVideoId && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm text-slate-500">
+                      {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)}MB)
+                      {detectedDuration > 0 && ` · ${Math.floor(detectedDuration / 60)}:${(detectedDuration % 60).toString().padStart(2, "0")}`}
+                    </div>
+                    <Button type="button" onClick={handleUpload} variant="secondary">
+                      アップロード
+                    </Button>
+                  </div>
+                )}
+
+                {isUploading && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600 dark:text-slate-400">アップロード中...</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-da-blue-900 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {uploadError && (
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              name="cf_video_id"
-              label="Cloudflare Video ID"
-              required
-              defaultValue={video?.cf_video_id}
-              placeholder="abc123..."
-              className="font-mono"
-            />
             <Input
               name="display_order"
               label="表示順"
@@ -464,6 +747,16 @@ function VideoForm({
               value={displayOrder}
               onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 1)}
             />
+            {detectedDuration > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  再生時間
+                </label>
+                <div className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  {Math.floor(detectedDuration / 60)}:{(detectedDuration % 60).toString().padStart(2, "0")}
+                </div>
+              </div>
+            )}
           </div>
 
           <Switch
@@ -474,7 +767,7 @@ function VideoForm({
           />
 
           <div className="flex gap-2 pt-2">
-            <Button type="submit">
+            <Button type="submit" disabled={!video && !uploadedVideoId}>
               {video ? "更新" : "追加"}
             </Button>
             <Button type="button" variant="secondary" onClick={onCancel}>

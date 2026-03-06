@@ -23,6 +23,10 @@ export function updateCategory(
   return client.from("categories").update(data).eq("id", id);
 }
 
+export function updateCategoryOrder(client: TypedClient, id: number, displayOrder: number) {
+  return client.from("categories").update({ display_order: displayOrder }).eq("id", id);
+}
+
 export function deleteCategory(client: TypedClient, id: number) {
   return client.from("categories").delete().eq("id", id);
 }

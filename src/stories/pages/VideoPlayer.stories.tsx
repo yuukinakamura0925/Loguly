@@ -57,6 +57,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     video: mockVideo,
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     initialProgress: {
       maxWatchedSeconds: 0,
       completed: false,
@@ -69,6 +70,7 @@ export const Default: Story = {
 export const HalfWatched: Story = {
   args: {
     video: mockVideo,
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     initialProgress: {
       maxWatchedSeconds: 300,
       completed: false,
@@ -81,6 +83,7 @@ export const HalfWatched: Story = {
 export const Completed: Story = {
   args: {
     video: mockVideo,
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     initialProgress: {
       maxWatchedSeconds: 600,
       completed: true,
@@ -93,6 +96,7 @@ export const Completed: Story = {
 export const LongVideo: Story = {
   args: {
     video: mockVideoLong,
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
     initialProgress: {
       maxWatchedSeconds: 450,
       completed: false,

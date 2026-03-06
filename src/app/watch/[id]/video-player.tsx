@@ -20,6 +20,7 @@ type Progress = {
 
 type Props = {
   video: VideoData;
+  videoUrl: string;
   initialProgress: Progress;
   userId: string;
 };
@@ -30,10 +31,11 @@ function formatTime(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-export default function VideoPlayer({ video, initialProgress, userId }: Props) {
+export default function VideoPlayer({ video, videoUrl, initialProgress, userId }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(initialProgress.maxWatchedSeconds);
+  const [currentTime, setCurrentTime] = useState(0);
+  const initialSeekDoneRef = useRef(false);
   const [maxWatchedSeconds, setMaxWatchedSeconds] = useState(initialProgress.maxWatchedSeconds);
   const [completed, setCompleted] = useState(initialProgress.completed);
   const [showSkipWarning, setShowSkipWarning] = useState(false);
@@ -147,12 +149,35 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
     };
   }, [maxWatchedSeconds, completed, saveProgress]);
 
-  // 初期位置にシーク
+  // 初期位置にシーク（モバイル対応: loadedmetadataを待つ）
   useEffect(() => {
     const videoEl = videoRef.current;
-    if (videoEl && initialProgress.maxWatchedSeconds > 0) {
+    if (!videoEl || initialProgress.maxWatchedSeconds <= 0) return;
+
+    const seekToInitial = () => {
+      if (initialSeekDoneRef.current) return;
+      // readyState >= 1 でないとシークできない（iOS Safari対策）
+      if (videoEl.readyState < 1) return;
+      initialSeekDoneRef.current = true;
       videoEl.currentTime = initialProgress.maxWatchedSeconds;
-    }
+      setCurrentTime(initialProgress.maxWatchedSeconds);
+    };
+
+    // デスクトップ: メタデータ読み込み済みならすぐシーク
+    seekToInitial();
+
+    // モバイル: メタデータ読み込み後にシーク
+    videoEl.addEventListener("loadedmetadata", seekToInitial);
+    // iOS Safari: ユーザー操作（再生）後にシーク
+    videoEl.addEventListener("play", seekToInitial);
+    // フォールバック
+    videoEl.addEventListener("canplay", seekToInitial);
+
+    return () => {
+      videoEl.removeEventListener("loadedmetadata", seekToInitial);
+      videoEl.removeEventListener("play", seekToInitial);
+      videoEl.removeEventListener("canplay", seekToInitial);
+    };
   }, [initialProgress.maxWatchedSeconds]);
 
   const progressPercent = (currentTime / video.duration) * 100;
@@ -172,12 +197,9 @@ export default function VideoPlayer({ video, initialProgress, userId }: Props) {
           onPause={() => setIsPlaying(false)}
           controls
           playsInline
+          preload="metadata"
         >
-          {/* テスト用のサンプル動画 */}
-          <source
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            type="video/mp4"
-          />
+          <source src={videoUrl} type="video/mp4" />
           お使いのブラウザは動画再生に対応していません。
         </video>
 
