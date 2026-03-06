@@ -32,6 +32,8 @@ export default function CategoriesPage() {
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [menuId, setMenuId] = useState<number | null>(null);
+
   // D&D state
   const [dragId, setDragId] = useState<number | null>(null);
   const [dragOverId, setDragOverId] = useState<number | null>(null);
@@ -274,14 +276,14 @@ export default function CategoriesPage() {
               </div>
 
               {/* Category info */}
-              <div className="flex-1 flex items-center gap-3 px-4 py-3">
-                <FolderIcon className="w-5 h-5 text-da-gray-600" />
-                <span className="font-medium text-slate-900 dark:text-white">{cat.name}</span>
-                <span className="text-sm text-slate-500 font-mono">#{cat.display_order}</span>
+              <div className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 min-w-0">
+                <FolderIcon className="w-5 h-5 text-da-gray-600 hidden sm:block flex-shrink-0" />
+                <span className="font-medium text-slate-900 dark:text-white truncate">{cat.name}</span>
+                <span className="text-sm text-slate-500 font-mono flex-shrink-0">#{cat.display_order}</span>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-1 pr-4">
+              {/* Actions - desktop */}
+              <div className="hidden sm:flex gap-1 pr-4">
                 <button
                   onClick={() => {
                     setEditingId(cat.id);
@@ -299,6 +301,37 @@ export default function CategoriesPage() {
                 >
                   <TrashIcon />
                 </button>
+              </div>
+              {/* ... menu - mobile */}
+              <div className="relative sm:hidden pr-2">
+                <button
+                  onClick={() => setMenuId(menuId === cat.id ? null : cat.id)}
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <circle cx="10" cy="4" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="10" cy="16" r="1.5" />
+                  </svg>
+                </button>
+                {menuId === cat.id && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
+                    <button
+                      onClick={() => { setEditingId(cat.id); setShowForm(false); setMenuId(null); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      <PencilIcon />
+                      編集
+                    </button>
+                    <button
+                      onClick={() => { handleDelete(cat.id); setMenuId(null); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <TrashIcon />
+                      削除
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
