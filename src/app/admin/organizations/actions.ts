@@ -8,9 +8,11 @@ import {
   insertOrganization,
   updateOrganization as dbUpdateOrganization,
   deleteOrganization as dbDeleteOrganization,
+  getOrganizationById,
   getProfileByEmail,
   updateProfileRole,
   findExistingMembership,
+  countOrgAdmins,
   insertOrgMember,
   deleteOrgMember,
 } from "@/lib/db";
@@ -46,8 +48,9 @@ export async function updateOrganization(id: string, formData: FormData) {
 
   const name = formData.get("name") as string;
   const isActive = formData.get("is_active") === "true";
+  const maxOrgAdmins = Math.max(1, parseInt(formData.get("max_org_admins") as string) || 1);
 
-  const { error } = await dbUpdateOrganization(supabase, id, { name, is_active: isActive });
+  const { error } = await dbUpdateOrganization(supabase, id, { name, is_active: isActive, max_org_admins: maxOrgAdmins });
 
   if (error) {
     return { error: error.message };
@@ -71,10 +74,25 @@ export async function addOrgMember(formData: FormData) {
     return { error: "このメールアドレスのユーザーが見つかりません" };
   }
 
+  if (role === "org_admin") {
+    const { data: org } = await getOrganizationById(supabase, organizationId);
+    const { count } = await countOrgAdmins(supabase, organizationId);
+    const max = org?.max_org_admins ?? 1;
+    if ((count ?? 0) >= max) {
+      return { error: `この組織の管理者上限（${max}人）に達しています` };
+    }
+  }
+
   const { data: existing } = await findExistingMembership(supabase, profile.id);
 
   if (existing) {
-    return { error: "このユーザーは既に組織に所属しています" };
+    // 既存の所属を削除して移動
+    const { error: removeError } = await deleteOrgMember(
+      supabase,
+      existing.organization_id,
+      profile.id
+    );
+    if (removeError) return { error: removeError.message };
   }
 
   const { error: memberError } = await insertOrgMember(supabase, {
@@ -118,6 +136,15 @@ export async function createOrgUser(organizationId: string, formData: FormData) 
   const password = formData.get("password") as string;
   const displayName = formData.get("display_name") as string;
   const role = formData.get("role") as string;
+
+  if (role === "org_admin") {
+    const { data: org } = await getOrganizationById(supabase, organizationId);
+    const { count } = await countOrgAdmins(supabase, organizationId);
+    const max = org?.max_org_admins ?? 1;
+    if ((count ?? 0) >= max) {
+      return { error: `この組織の管理者上限（${max}人）に達しています` };
+    }
+  }
 
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,

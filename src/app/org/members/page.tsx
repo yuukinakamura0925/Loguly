@@ -243,13 +243,19 @@ export default function MembersPage() {
                 className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/org/progress/${m.user_id}`}
-                    className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
-                  >
-                    {(m.profiles as unknown as { display_name: string })?.display_name}
-                    <ChevronRightIcon className="w-4 h-4 text-slate-400" />
-                  </Link>
+                  {m.role === "org_admin" ? (
+                    <span className="text-slate-900 dark:text-white">
+                      {(m.profiles as unknown as { display_name: string })?.display_name}
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/org/progress/${m.user_id}`}
+                      className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
+                    >
+                      {(m.profiles as unknown as { display_name: string })?.display_name}
+                      <ChevronRightIcon className="w-4 h-4 text-slate-400" />
+                    </Link>
+                  )}
                 </td>
                 <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}

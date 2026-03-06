@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getOrganizationById, listOrgMembers, listAllProfiles } from "@/lib/db";
+import { getOrganizationById, listOrgMembers, listAllProfilesWithOrg } from "@/lib/db";
 import {
   updateOrganization,
   addOrgMember,
@@ -41,6 +41,7 @@ type Profile = {
   email: string;
   display_name: string;
   role: string;
+  organization_members: { organization_id: string; organizations: { name: string }[] }[];
 };
 
 export default function EditOrganizationPage() {
@@ -51,6 +52,7 @@ export default function EditOrganizationPage() {
 
   const [name, setName] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [maxOrgAdmins, setMaxOrgAdmins] = useState(1);
   const [members, setMembers] = useState<Member[]>([]);
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [error, setError] = useState("");
@@ -66,12 +68,13 @@ export default function EditOrganizationPage() {
       const [{ data: org }, { data: mems }, { data: profiles }] = await Promise.all([
         getOrganizationById(supabase, id),
         listOrgMembers(supabase, id),
-        listAllProfiles(supabase),
+        listAllProfilesWithOrg(supabase),
       ]);
       if (active) {
         if (org) {
           setName(org.name);
           setIsActive(org.is_active);
+          setMaxOrgAdmins(org.max_org_admins ?? 1);
         }
         setMembers((mems as unknown as Member[]) || []);
         setAllProfiles((profiles as Profile[]) || []);
@@ -82,10 +85,22 @@ export default function EditOrganizationPage() {
     return () => { active = false; };
   }, [id, supabase, refreshKey]);
 
-  // Unassigned users = all profiles minus current org members
-  const unassignedUsers = useMemo(() => {
+  // Split non-member profiles into truly unassigned vs. belonging to other orgs
+  const { freeUsers, otherOrgUsers } = useMemo(() => {
     const memberIds = new Set(members.map((m) => m.user_id));
-    return allProfiles.filter((p) => !memberIds.has(p.id));
+    const nonMembers = allProfiles.filter((p) => !memberIds.has(p.id));
+    const free: Profile[] = [];
+    const other: (Profile & { orgName: string })[] = [];
+    for (const p of nonMembers) {
+      const membership = p.organization_members?.[0];
+      const orgName = membership?.organizations?.[0]?.name;
+      if (orgName) {
+        other.push({ ...p, orgName });
+      } else {
+        free.push(p);
+      }
+    }
+    return { freeUsers: free, otherOrgUsers: other };
   }, [allProfiles, members]);
 
   function reload() {
@@ -169,6 +184,17 @@ export default function EditOrganizationPage() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                />
+
+                <Input
+                  name="max_org_admins"
+                  type="number"
+                  label="管理者上限数"
+                  min={1}
+                  max={10}
+                  required
+                  value={maxOrgAdmins}
+                  onChange={(e) => setMaxOrgAdmins(Number(e.target.value))}
                 />
 
                 <Switch
@@ -258,18 +284,31 @@ export default function EditOrganizationPage() {
                   既存ユーザーを追加
                 </div>
 
-                {unassignedUsers.length === 0 ? (
+                {freeUsers.length === 0 && otherOrgUsers.length === 0 ? (
                   <p className="text-sm text-slate-500">追加可能なユーザーがいません</p>
                 ) : (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <Select name="email" label="ユーザー" required>
                         <option value="">選択してください</option>
-                        {unassignedUsers.map((u) => (
-                          <option key={u.id} value={u.email}>
-                            {u.display_name || u.email} ({u.email})
-                          </option>
-                        ))}
+                        {freeUsers.length > 0 && (
+                          <optgroup label="未所属">
+                            {freeUsers.map((u) => (
+                              <option key={u.id} value={u.email}>
+                                {u.display_name || u.email} ({u.email})
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {otherOrgUsers.length > 0 && (
+                          <optgroup label="他組織から移動">
+                            {otherOrgUsers.map((u) => (
+                              <option key={u.id} value={u.email}>
+                                {u.display_name || u.email} ({u.email}) — {u.orgName}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
                       </Select>
                       <Select name="role" label="ロール">
                         <option value="org_admin">組織管理者</option>

@@ -41,7 +41,6 @@ export default async function DashboardPage() {
 
   const { data: profile } = await getProfileById(supabase, user.id);
 
-  // member以外はアクセス不可
   if (profile?.role === "platform_admin") {
     redirect("/admin");
   }

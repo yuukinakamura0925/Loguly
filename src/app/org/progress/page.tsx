@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
-  listOrgMemberProfiles,
+  listOrgViewerProfiles,
   listLicensedVideosForOrg,
   getViewLogsByUsers,
 } from "@/lib/db";
@@ -79,7 +79,7 @@ export default async function ProgressPage({
 
   const supabase = await createClient();
 
-  const { data: members } = await listOrgMemberProfiles(supabase, org.id);
+  const { data: members } = await listOrgViewerProfiles(supabase, org.id);
   const { data: licenses } = await listLicensedVideosForOrg(supabase, org.id);
 
   const videos =

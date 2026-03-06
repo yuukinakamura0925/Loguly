@@ -22,7 +22,7 @@ export function insertOrganization(client: TypedClient, data: { name: string; sl
 export function updateOrganization(
   client: TypedClient,
   id: string,
-  data: { name?: string; slug?: string; is_active?: boolean }
+  data: { name?: string; slug?: string; is_active?: boolean; max_org_admins?: number }
 ) {
   return client.from("organizations").update(data).eq("id", id);
 }
