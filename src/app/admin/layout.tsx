@@ -10,7 +10,7 @@ export default async function AdminLayout({
   const profile = await requireRole("platform_admin");
 
   return (
-    <div className="h-screen bg-slate-100 dark:bg-slate-950 flex overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-950 dark:to-slate-900 flex overflow-hidden">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader displayName={profile.display_name || ""} />

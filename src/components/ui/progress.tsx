@@ -26,14 +26,14 @@ export function Progress({
 
   return (
     <div
-      className={`w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden ${sizeStyles[size]} ${className}`}
+      className={`w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner ${sizeStyles[size]} ${className}`}
       {...props}
     >
       <div
         className={`h-full rounded-full transition-all duration-500 ${
           variant === "success" || isComplete
-            ? "bg-da-success"
-            : "bg-da-blue-900"
+            ? "bg-gradient-to-r from-emerald-500 to-green-400"
+            : "bg-gradient-to-r from-da-blue-900 to-da-blue-300"
         }`}
         style={{ width: `${percentage}%` }}
       />

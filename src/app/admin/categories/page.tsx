@@ -16,7 +16,7 @@ import {
   CardContent,
   PageHeader,
 } from "@/components/ui";
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon, FolderIcon, GripIcon } from "@/components/icons";
+import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon, FolderIcon, GripIcon, ChevronUpIcon, ChevronDownIcon, MoreVerticalIcon } from "@/components/icons";
 
 type Category = {
   id: number;
@@ -273,14 +273,14 @@ export default function CategoriesPage() {
                   disabled={categories.indexOf(cat) === 0}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                  <ChevronUpIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => moveCategory(cat.id, "down")}
                   disabled={categories.indexOf(cat) === categories.length - 1}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                  <ChevronDownIcon className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -317,11 +317,7 @@ export default function CategoriesPage() {
                   onClick={() => setMenuId(menuId === cat.id ? null : cat.id)}
                   className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <circle cx="10" cy="4" r="1.5" />
-                    <circle cx="10" cy="10" r="1.5" />
-                    <circle cx="10" cy="16" r="1.5" />
-                  </svg>
+                  <MoreVerticalIcon className="w-5 h-5" />
                 </button>
                 {menuId === cat.id && (
                   <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">

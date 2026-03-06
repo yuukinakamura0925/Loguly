@@ -8,28 +8,13 @@ import {
   listOrganizations,
   listVideosWithCategory,
 } from "@/lib/db";
+import { BuildingIcon, VideoIcon, TagIcon, KeyIcon, ChevronRightIcon } from "@/components/icons";
 
 const statIcons = {
-  organizations: (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-  ),
-  videos: (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-    </svg>
-  ),
-  categories: (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-    </svg>
-  ),
-  licenses: (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-    </svg>
-  ),
+  organizations: <BuildingIcon className="w-6 h-6" strokeWidth={1.5} />,
+  videos: <VideoIcon className="w-6 h-6" strokeWidth={1.5} />,
+  categories: <TagIcon className="w-6 h-6" strokeWidth={1.5} />,
+  licenses: <KeyIcon className="w-6 h-6" strokeWidth={1.5} />,
 };
 
 function formatDate(dateStr: string) {
@@ -67,43 +52,40 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">ダッシュボード</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">ダッシュボード</h1>
         <p className="text-slate-600 dark:text-slate-400 mt-1">システム全体の概要</p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Bento Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {/* Stats Cards — top row */}
+        {stats.map((stat, index) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg transition-all group"
+            className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/60 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group animate-card-enter"
+            style={{ animationDelay: `${index * 80}ms` }}
           >
             <div className="flex items-start justify-between mb-4">
-              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700/50">
                 <span className="text-slate-600 dark:text-slate-400">
                   {statIcons[stat.key as keyof typeof statIcons]}
                 </span>
               </div>
-              <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRightIcon className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
             </div>
-            <div className="text-4xl font-bold text-slate-900 dark:text-white mb-1">{stat.value}</div>
+            <div className="text-4xl font-extrabold tracking-tighter text-slate-900 dark:text-white mb-1">{stat.value}</div>
             <div className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
           </Link>
         ))}
-      </div>
 
-      {/* Recent Items */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Organizations */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        {/* Recent Organizations — spans 2 cols on lg */}
+        <div className="sm:col-span-2 lg:col-span-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden animate-card-enter" style={{ animationDelay: "320ms" }}>
+          <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900 dark:text-white">最近の組織</h2>
-            <Link href="/admin/organizations" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000 hover:underline">
+            <Link href="/admin/organizations" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000">
               すべて表示 →
             </Link>
           </div>
@@ -138,11 +120,11 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Videos */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        {/* Recent Videos — spans 2 cols on lg */}
+        <div className="sm:col-span-2 lg:col-span-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden animate-card-enter" style={{ animationDelay: "400ms" }}>
+          <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between">
             <h2 className="font-semibold text-slate-900 dark:text-white">最近の動画</h2>
-            <Link href="/admin/videos" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000 hover:underline">
+            <Link href="/admin/videos" className="text-sm text-da-blue-900 dark:text-da-blue-300 hover:text-da-blue-1000">
               すべて表示 →
             </Link>
           </div>
@@ -175,27 +157,29 @@ export default async function AdminDashboardPage() {
             )}
           </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-        <h2 className="font-semibold text-slate-900 dark:text-white mb-4">クイックアクション</h2>
-        <div className="flex flex-wrap gap-3">
-          {[
-            { href: "/admin/organizations", label: "組織を追加", icon: statIcons.organizations },
-            { href: "/admin/videos", label: "動画を追加", icon: statIcons.videos },
-            { href: "/admin/categories", label: "カテゴリを追加", icon: statIcons.categories },
-            { href: "/admin/licenses", label: "ライセンスを追加", icon: statIcons.licenses },
-          ].map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors text-sm font-bold"
-            >
-              <span className="w-5 h-5 [&>svg]:w-5 [&>svg]:h-5">{action.icon}</span>
-              {action.label}
-            </Link>
-          ))}
+        {/* Quick Actions — full width */}
+        <div className="sm:col-span-2 lg:col-span-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-6 animate-card-enter" style={{ animationDelay: "480ms" }}>
+          <h2 className="font-semibold text-slate-900 dark:text-white mb-4">クイックアクション</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { href: "/admin/organizations", label: "組織を追加", icon: statIcons.organizations },
+              { href: "/admin/videos", label: "動画を追加", icon: statIcons.videos },
+              { href: "/admin/categories", label: "カテゴリを追加", icon: statIcons.categories },
+              { href: "/admin/licenses", label: "ライセンスを追加", icon: statIcons.licenses },
+            ].map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-da-blue-50 dark:hover:bg-slate-800 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-da-blue-900 dark:hover:text-white transition-all group"
+              >
+                <span className="p-2 rounded-lg bg-white dark:bg-slate-700 shadow-sm group-hover:shadow-md transition-shadow">
+                  {action.icon}
+                </span>
+                {action.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ export default async function OrgLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-950 dark:to-slate-900 flex">
       <OrgSidebar orgName={org.name} />
       <div className="flex-1 flex flex-col">
         <OrgHeader displayName={profile.display_name || ""} orgName={org.name} avatarUrl={profile.avatar_url} />

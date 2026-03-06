@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 
 type PaginationProps = {
   currentPage: number;
@@ -58,15 +59,11 @@ export function Pagination({
           href={getPageUrl(currentPage - 1)}
           className="px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeftIcon className="w-4 h-4" />
         </Link>
       ) : (
         <span className="px-3 py-2 text-slate-300 dark:text-slate-700">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+          <ChevronLeftIcon className="w-4 h-4" />
         </span>
       )}
 
@@ -97,15 +94,11 @@ export function Pagination({
           href={getPageUrl(currentPage + 1)}
           className="px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon className="w-4 h-4" />
         </Link>
       ) : (
         <span className="px-3 py-2 text-slate-300 dark:text-slate-700">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon className="w-4 h-4" />
         </span>
       )}
     </nav>

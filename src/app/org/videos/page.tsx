@@ -10,7 +10,7 @@ import {
 } from "@/lib/db";
 import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder } from "./actions";
 import { Card, CardContent, Button } from "@/components/ui";
-import { ChevronDownIcon, ChevronRightIcon } from "@/components/icons";
+import { GripIcon, ChevronUpIcon, ChevronDownIcon, CirclePlayIcon, ChevronRightIcon } from "@/components/icons";
 
 type Video = {
   id: number;
@@ -293,14 +293,7 @@ export default function OrgVideosPage() {
                 <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
                   {/* Category drag handle - desktop */}
                   <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="9" cy="6" r="1.5" />
-                      <circle cx="15" cy="6" r="1.5" />
-                      <circle cx="9" cy="12" r="1.5" />
-                      <circle cx="15" cy="12" r="1.5" />
-                      <circle cx="9" cy="18" r="1.5" />
-                      <circle cx="15" cy="18" r="1.5" />
-                    </svg>
+                    <GripIcon className="w-5 h-5" />
                   </div>
                   {/* Up/down buttons - mobile */}
                   <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
@@ -309,14 +302,14 @@ export default function OrgVideosPage() {
                       disabled={categoryGroups.indexOf(group) === 0}
                       className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                      <ChevronUpIcon className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "down"); }}
                       disabled={categoryGroups.indexOf(group) === categoryGroups.length - 1}
                       className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                      <ChevronDownIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <button
@@ -352,14 +345,7 @@ export default function OrgVideosPage() {
                         }`}
                       >
                         <div className="hidden lg:flex flex-shrink-0 text-slate-400 dark:text-slate-600">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <circle cx="9" cy="6" r="1.5" />
-                            <circle cx="15" cy="6" r="1.5" />
-                            <circle cx="9" cy="12" r="1.5" />
-                            <circle cx="15" cy="12" r="1.5" />
-                            <circle cx="9" cy="18" r="1.5" />
-                            <circle cx="15" cy="18" r="1.5" />
-                          </svg>
+                          <GripIcon className="w-5 h-5" />
                         </div>
 
                         <div className="flex lg:hidden flex-shrink-0 flex-col gap-0.5">
@@ -368,22 +354,19 @@ export default function OrgVideosPage() {
                             disabled={group.videos.indexOf(video) === 0}
                             className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                           >
-                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                            <ChevronUpIcon className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "down"); }}
                             disabled={group.videos.indexOf(video) === group.videos.length - 1}
                             className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                           >
-                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                            <ChevronDownIcon className="w-3.5 h-3.5" />
                           </button>
                         </div>
 
                         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                          <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
+                          <CirclePlayIcon className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                         </div>
 
                         <Link href={`/org/videos/${video.id}`} className="flex-1 min-w-0 group">
@@ -395,9 +378,7 @@ export default function OrgVideosPage() {
                           </div>
                         </Link>
 
-                        <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <ChevronRightIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       </div>
                     ))}
                   </div>
