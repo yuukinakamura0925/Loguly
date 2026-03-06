@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listVideosWithCategory, listCategories } from "@/lib/db";
 import {
@@ -104,6 +104,19 @@ export default function VideosPage() {
 
   const [menuCategoryId, setMenuCategoryId] = useState<number | null>(null);
   const [menuVideoId, setMenuVideoId] = useState<number | null>(null);
+
+  const closeAllMenus = useCallback(() => {
+    setMenuCategoryId(null);
+    setMenuVideoId(null);
+  }, []);
+
+  useEffect(() => {
+    if (menuCategoryId === null && menuVideoId === null) return;
+    const handler = () => closeAllMenus();
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [menuCategoryId, menuVideoId, closeAllMenus]);
+
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
   const [dragOverVideoId, setDragOverVideoId] = useState<number | null>(null);
   const [dragCategoryId, setDragCategoryId] = useState<number | null>(null);
@@ -415,7 +428,7 @@ export default function VideosPage() {
               {/* ... menu - mobile */}
               <div className="relative sm:hidden pr-2">
                 <button
-                  onClick={(e) => { e.stopPropagation(); setMenuCategoryId(menuCategoryId === category.id ? null : category.id); }}
+                  onClick={(e) => { e.stopPropagation(); setMenuVideoId(null); setMenuCategoryId(menuCategoryId === category.id ? null : category.id); }}
                   className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -570,7 +583,7 @@ export default function VideosPage() {
                   {/* ... menu - mobile */}
                   <div className="relative sm:hidden">
                     <button
-                      onClick={(e) => { e.stopPropagation(); setMenuVideoId(menuVideoId === video.id ? null : video.id); }}
+                      onClick={(e) => { e.stopPropagation(); setMenuCategoryId(null); setMenuVideoId(menuVideoId === video.id ? null : video.id); }}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

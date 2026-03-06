@@ -13,7 +13,7 @@ export default async function AdminLayout({
     <div className="h-screen bg-slate-100 dark:bg-slate-950 flex overflow-hidden">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <AdminHeader displayName={profile.display_name || ""} avatarUrl={profile.avatar_url} />
+        <AdminHeader displayName={profile.display_name || ""} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
       </div>
     </div>

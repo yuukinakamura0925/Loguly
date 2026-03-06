@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
@@ -12,7 +13,7 @@ type Member = {
   user_id: string;
   role: string;
   joined_at: string;
-  profiles: { display_name: string; email: string };
+  profiles: { display_name: string; email: string; avatar_url?: string | null };
 };
 
 type PendingInvite = {
@@ -84,10 +85,21 @@ export default function MembersPage() {
       const { data: membership } = await getMembershipByUserId(supabase, user.id);
       if (!membership) return;
 
-      const [{ data: mems }, { data: invs }] = await Promise.all([
+      const [membersResult, { data: invs }] = await Promise.all([
         listOrgMembersWithJoinDate(supabase, membership.organization_id),
         listPendingInvitations(supabase, membership.organization_id),
       ]);
+
+      let mems = membersResult.data;
+      if (membersResult.error) {
+        // avatar_url カラムが未追加の場合のフォールバック
+        const fallback = await supabase
+          .from("organization_members")
+          .select("user_id, role, joined_at, profiles(display_name, email)")
+          .eq("organization_id", membership.organization_id)
+          .order("joined_at");
+        mems = fallback.data as typeof mems;
+      }
 
       if (active) {
         setMembers((mems as unknown as Member[]) || []);
@@ -243,19 +255,33 @@ export default function MembersPage() {
                 className="border-b border-slate-200 dark:border-slate-700 last:border-b-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  {m.role === "org_admin" ? (
-                    <span className="text-slate-900 dark:text-white">
-                      {(m.profiles as unknown as { display_name: string })?.display_name}
-                    </span>
-                  ) : (
-                    <Link
-                      href={`/org/progress/${m.user_id}`}
-                      className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
-                    >
-                      {(m.profiles as unknown as { display_name: string })?.display_name}
-                      <ChevronRightIcon className="w-4 h-4 text-slate-400" />
-                    </Link>
-                  )}
+                  {(() => {
+                    const profile = m.profiles as unknown as { display_name: string; avatar_url?: string | null };
+                    const avatar = profile?.avatar_url ? (
+                      <Image src={profile.avatar_url} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
+                        m.role === "org_admin" ? "bg-da-blue-900" : "bg-slate-500 dark:bg-slate-600"
+                      }`}>
+                        {profile?.display_name?.charAt(0) || "?"}
+                      </div>
+                    );
+                    return m.role === "org_admin" ? (
+                      <span className="flex items-center gap-2 text-slate-900 dark:text-white">
+                        {avatar}
+                        {profile?.display_name}
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/org/progress/${m.user_id}`}
+                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
+                      >
+                        {avatar}
+                        {profile?.display_name}
+                        <ChevronRightIcon className="w-4 h-4 text-slate-400" />
+                      </Link>
+                    );
+                  })()}
                 </td>
                 <td className="hidden sm:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {(m.profiles as unknown as { email: string })?.email}

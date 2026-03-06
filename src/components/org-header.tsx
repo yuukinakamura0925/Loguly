@@ -45,13 +45,15 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
-          ) : (
-            <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-              {displayName?.charAt(0) || "U"}
-            </div>
-          )}
+          <Link href="/settings" title="アカウント設定">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 transition-opacity" />
+            ) : (
+              <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold hover:opacity-80 transition-opacity">
+                {displayName?.charAt(0) || "U"}
+              </div>
+            )}
+          </Link>
           <div className="hidden sm:block">
             <div className="text-sm font-medium text-slate-900 dark:text-white">{displayName}</div>
             <div className="text-xs text-slate-500">組織管理者</div>

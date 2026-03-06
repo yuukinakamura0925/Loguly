@@ -81,7 +81,22 @@ export default async function ProgressPage({
 
   const supabase = await createClient();
 
-  const { data: members } = await listOrgViewerProfiles(supabase, org.id);
+  let members: Awaited<ReturnType<typeof listOrgViewerProfiles>>["data"];
+  {
+    const result = await listOrgViewerProfiles(supabase, org.id);
+    if (result.error) {
+      // avatar_url カラムが未追加の場合のフォールバック
+      const fallback = await supabase
+        .from("organization_members")
+        .select("user_id, profiles(display_name, email)")
+        .eq("organization_id", org.id)
+        .eq("role", "member")
+        .order("joined_at");
+      members = fallback.data as typeof members;
+    } else {
+      members = result.data;
+    }
+  }
   const { data: licenses } = await listLicensedVideosForOrg(supabase, org.id);
 
   const videos =

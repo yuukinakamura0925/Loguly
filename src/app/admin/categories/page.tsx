@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listCategories } from "@/lib/db";
 import {
@@ -33,6 +33,15 @@ export default function CategoriesPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [menuId, setMenuId] = useState<number | null>(null);
+
+  const closeAllMenus = useCallback(() => setMenuId(null), []);
+
+  useEffect(() => {
+    if (menuId === null) return;
+    const handler = () => closeAllMenus();
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [menuId, closeAllMenus]);
 
   // D&D state
   const [dragId, setDragId] = useState<number | null>(null);

@@ -291,6 +291,7 @@ export default function OrgVideosPage() {
                 }`}
               >
                 <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
+                  {/* Category drag handle - desktop */}
                   <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                       <circle cx="9" cy="6" r="1.5" />
@@ -301,34 +302,35 @@ export default function OrgVideosPage() {
                       <circle cx="15" cy="18" r="1.5" />
                     </svg>
                   </div>
-                  <button
-                    onClick={() => toggleCategory(group.id)}
-                    className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors"
-                  >
-                    {isExpanded ? (
-                      <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                    ) : (
-                      <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                    )}
-                    <span className="font-medium text-slate-900 dark:text-white">{group.name}</span>
-                    <span className="text-sm text-slate-500">{group.videos.length}本</span>
-                  </button>
-                  <div className="flex lg:hidden flex-shrink-0 pr-2 gap-1">
+                  {/* Up/down buttons - mobile */}
+                  <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "up"); }}
                       disabled={categoryGroups.indexOf(group) === 0}
-                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "down"); }}
                       disabled={categoryGroups.indexOf(group) === categoryGroups.length - 1}
-                      className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
                     </button>
                   </div>
+                  <button
+                    onClick={() => toggleCategory(group.id)}
+                    className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors min-w-0"
+                  >
+                    {isExpanded ? (
+                      <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+                    ) : (
+                      <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+                    )}
+                    <span className="font-medium text-slate-900 dark:text-white truncate">{group.name}</span>
+                    <span className="text-sm text-slate-500 flex-shrink-0">{group.videos.length}本</span>
+                  </button>
                 </div>
 
                 {isExpanded && (
