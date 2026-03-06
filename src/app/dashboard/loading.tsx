@@ -6,7 +6,7 @@ export default function DashboardLoading() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             {/* ロゴ */}
-            <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+            <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-2xl animate-pulse" />
             <div>
               <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
               <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-1" />
@@ -31,7 +31,7 @@ export default function DashboardLoading() {
               </div>
               <div className="h-9 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
             </div>
-            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
+            <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
           </div>
         </div>
 
@@ -52,7 +52,7 @@ export default function DashboardLoading() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse hidden sm:block" />
+                  <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse hidden sm:block" />
                   <div className="h-4 w-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                   <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                 </div>
@@ -75,7 +75,7 @@ export default function DashboardLoading() {
                         </div>
                       </div>
                       {/* 矢印 */}
-                      <div className="flex items-center">
+                      <div className="flex items-center flex-shrink-0">
                         <div className="w-5 h-5 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                       </div>
                     </div>

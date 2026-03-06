@@ -44,12 +44,12 @@ export default function WatchLoading() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                <div className="h-6 w-2/3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-2" />
-                <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-3" />
+                <div className="h-6 w-2/3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-1" />
+                <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-2" />
               </div>
               <div className="text-right ml-4">
                 <div className="h-8 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                <div className="h-3 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-1" />
+                <div className="h-4 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-1" />
               </div>
             </div>
           </div>

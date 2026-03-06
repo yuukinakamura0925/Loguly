@@ -4,7 +4,7 @@ export default function AdminLoading() {
       {/* タイトル */}
       <div>
         <div className="h-7 w-40 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-        <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-2" />
+        <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mt-1" />
       </div>
 
       {/* 統計カード 4つ */}
