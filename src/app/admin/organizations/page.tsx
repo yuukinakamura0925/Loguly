@@ -13,9 +13,11 @@ import {
   TableHead,
   TableCell,
   TableEmpty,
+  SortableTableHead,
   SearchInput,
   Pagination,
 } from "@/components/ui";
+import type { SortOrder } from "@/components/ui";
 import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@/components/icons";
 
 const PER_PAGE = 10;
@@ -23,24 +25,32 @@ const PER_PAGE = 10;
 export default async function OrganizationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; sort?: string; order?: string }>;
 }) {
   const params = await searchParams;
   const search = params.q || "";
   const page = parseInt(params.page || "1", 10);
+  const sort = params.sort || "created_at";
+  const order = (params.order || "desc") as SortOrder;
 
   const supabase = await createClient();
 
   const [{ data: organizations }, { count }] = await Promise.all([
-    searchOrganizations(supabase, { search, page, perPage: PER_PAGE }),
+    searchOrganizations(supabase, { search, page, perPage: PER_PAGE, sort, order }),
     countOrganizations(supabase, search),
   ]);
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
-  // Build search params for pagination
+  // Build search params for pagination (preserve sort & search)
   const paginationParams: Record<string, string> = {};
   if (search) paginationParams.q = search;
+  if (sort !== "created_at") paginationParams.sort = sort;
+  if (order !== "desc") paginationParams.order = order;
+
+  // Build search params for sort headers (preserve search)
+  const sortParams: Record<string, string> = {};
+  if (search) sortParams.q = search;
 
   return (
     <div>
@@ -65,9 +75,33 @@ export default async function OrganizationsPage({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>組織名</TableHead>
+            <SortableTableHead
+              label="組織名"
+              sortKey="name"
+              currentSort={sort}
+              currentOrder={order}
+              baseUrl="/admin/organizations"
+              searchParams={sortParams}
+            />
             <TableHead className="hidden sm:table-cell">メンバー数</TableHead>
-            <TableHead>ステータス</TableHead>
+            <SortableTableHead
+              label="ステータス"
+              sortKey="is_active"
+              currentSort={sort}
+              currentOrder={order}
+              baseUrl="/admin/organizations"
+              searchParams={sortParams}
+              className="hidden md:table-cell"
+            />
+            <SortableTableHead
+              label="作成日"
+              sortKey="created_at"
+              currentSort={sort}
+              currentOrder={order}
+              baseUrl="/admin/organizations"
+              searchParams={sortParams}
+              className="hidden lg:table-cell"
+            />
             <TableHead className="text-right w-32">操作</TableHead>
           </TableRow>
         </TableHeader>
@@ -86,10 +120,13 @@ export default async function OrganizationsPage({
                     {memberCount}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <Badge variant={org.is_active ? "success" : "danger"}>
                     {org.is_active ? "有効" : "無効"}
                   </Badge>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell text-slate-500 text-sm">
+                  {new Date(org.created_at).toLocaleDateString("ja-JP")}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
@@ -121,7 +158,7 @@ export default async function OrganizationsPage({
           })}
           {(!organizations || organizations.length === 0) && (
             <TableEmpty
-              colSpan={4}
+              colSpan={5}
               message={search ? "検索結果がありません" : "組織がまだ登録されていません"}
             />
           )}
