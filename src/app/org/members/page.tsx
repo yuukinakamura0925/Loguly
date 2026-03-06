@@ -48,14 +48,14 @@ function SortButton({
       <button
         type="button"
         onClick={() => onSort(sortKey, nextOrder)}
-        className="group inline-flex items-center gap-1.5"
+        className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${isActive ? "text-slate-900 dark:text-white" : ""}`}
       >
         {label}
         {isActive
           ? currentOrder === "asc"
-            ? <SortAscIcon />
-            : <SortDescIcon />
-          : <SortIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            ? <SortAscIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+            : <SortDescIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+          : <SortIcon className="w-3 h-3 text-slate-400" />
         }
       </button>
     </th>

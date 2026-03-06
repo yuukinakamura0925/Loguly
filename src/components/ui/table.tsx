@@ -134,9 +134,11 @@ export function SortableTableHead({
 
   const icon = isActive
     ? currentOrder === "asc"
-      ? <SortAscIcon />
-      : <SortDescIcon />
-    : <SortIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />;
+      ? <SortAscIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+      : <SortDescIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+    : <SortIcon className="w-3 h-3 text-slate-400" />;
+
+  const activeStyle = isActive ? "text-slate-900 dark:text-white" : "";
 
   if (onSort) {
     return (
@@ -144,7 +146,7 @@ export function SortableTableHead({
         className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}
         {...props}
       >
-        <button type="button" onClick={() => onSort(sortKey, nextOrder)} className="group inline-flex items-center gap-1.5">
+        <button type="button" onClick={() => onSort(sortKey, nextOrder)} className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${activeStyle}`}>
           {label}
           {icon}
         </button>
@@ -163,7 +165,7 @@ export function SortableTableHead({
       className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}
       {...props}
     >
-      <Link href={`${baseUrl}?${params.toString()}`} className="group inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors">
+      <Link href={`${baseUrl}?${params.toString()}`} className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${activeStyle}`}>
         {label}
         {icon}
       </Link>

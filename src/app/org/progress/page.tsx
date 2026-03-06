@@ -48,16 +48,16 @@ function SortLink({
       href={`/org/progress?${params.toString()}`}
       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${
         isActive
-          ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-medium"
+          ? "bg-da-blue-50 dark:bg-da-blue-900/20 text-da-blue-900 dark:text-da-blue-300 font-medium"
           : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
       }`}
     >
       {label}
       {isActive
         ? currentOrder === "asc"
-          ? <SortAscIcon />
-          : <SortDescIcon />
-        : <SortIcon className="w-3 h-3 opacity-50" />
+          ? <SortAscIcon className="w-3 h-3" />
+          : <SortDescIcon className="w-3 h-3" />
+        : <SortIcon className="w-3 h-3 text-slate-400" />
       }
     </Link>
   );
