@@ -1,4 +1,6 @@
 import { type HTMLAttributes, type TdHTMLAttributes, type ThHTMLAttributes, type ReactNode } from "react";
+import Link from "next/link";
+import { SortIcon, SortAscIcon, SortDescIcon } from "@/components/icons";
 
 interface TableProps extends HTMLAttributes<HTMLTableElement> {
   children: ReactNode;
@@ -89,5 +91,84 @@ export function TableEmpty({ colSpan, message }: TableEmptyProps) {
         <div className="text-slate-500">{message}</div>
       </td>
     </tr>
+  );
+}
+
+export type SortOrder = "asc" | "desc";
+
+interface SortableTableHeadLinkProps extends ThHTMLAttributes<HTMLTableCellElement> {
+  label: string;
+  sortKey: string;
+  currentSort?: string;
+  currentOrder?: SortOrder;
+  baseUrl: string;
+  searchParams?: Record<string, string>;
+  onSort?: never;
+}
+
+interface SortableTableHeadButtonProps extends ThHTMLAttributes<HTMLTableCellElement> {
+  label: string;
+  sortKey: string;
+  currentSort?: string;
+  currentOrder?: SortOrder;
+  onSort: (key: string, order: SortOrder) => void;
+  baseUrl?: never;
+  searchParams?: never;
+}
+
+type SortableTableHeadProps = SortableTableHeadLinkProps | SortableTableHeadButtonProps;
+
+export function SortableTableHead({
+  label,
+  sortKey,
+  currentSort,
+  currentOrder,
+  baseUrl,
+  searchParams,
+  onSort,
+  className = "",
+  ...props
+}: SortableTableHeadProps) {
+  const isActive = currentSort === sortKey;
+  const nextOrder: SortOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
+
+  const icon = isActive
+    ? currentOrder === "asc"
+      ? <SortAscIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+      : <SortDescIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+    : <SortIcon className="w-3 h-3 text-slate-400" />;
+
+  const activeStyle = isActive ? "text-slate-900 dark:text-white" : "";
+
+  if (onSort) {
+    return (
+      <th
+        className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}
+        {...props}
+      >
+        <button type="button" onClick={() => onSort(sortKey, nextOrder)} className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${activeStyle}`}>
+          {label}
+          {icon}
+        </button>
+      </th>
+    );
+  }
+
+  // Link-based (server component compatible)
+  const params = new URLSearchParams(searchParams || {});
+  params.set("sort", sortKey);
+  params.set("order", nextOrder);
+  params.delete("page"); // Reset page on sort change
+
+  return (
+    <th
+      className={`px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider ${className}`}
+      {...props}
+    >
+      <Link href={`${baseUrl}?${params.toString()}`} className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${activeStyle}`}>
+        {label}
+        {icon}
+      </Link>
+    </th>
   );
 }

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg, getCurrentUser } from "@/lib/auth";
 import {
   findMemberByEmail,
+  countOrgAdmins,
   findPendingInvitation,
   insertInvitation,
   deleteOrgMember,
@@ -27,6 +28,15 @@ export async function createInvitation(formData: FormData) {
 
   if (existingMember) {
     return { error: "このメールアドレスは既にメンバーです" };
+  }
+
+  // org_admin上限チェック
+  if (role === "org_admin") {
+    const { count } = await countOrgAdmins(supabase, org.id);
+    const max = org.max_org_admins ?? 1;
+    if ((count ?? 0) >= max) {
+      return { error: `組織管理者の上限（${max}人）に達しています` };
+    }
   }
 
   // 未使用の招待が既にあるか確認

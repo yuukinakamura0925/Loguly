@@ -25,6 +25,8 @@ import {
   FolderIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  SortAscIcon,
+  SortDescIcon,
 } from "@/components/icons";
 
 type Org = {
@@ -61,6 +63,7 @@ export default function LicensesPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -181,9 +184,12 @@ export default function LicensesPage() {
     selectedVideoIds.size !== originalVideoIds.size ||
     Array.from(selectedVideoIds).some((id) => !originalVideoIds.has(id));
 
-  const filteredOrgs = orgs.filter((org) =>
-    org.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredOrgs = orgs
+    .filter((org) => org.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      const dir = sortAsc ? 1 : -1;
+      return dir * a.name.localeCompare(b.name, "ja");
+    });
 
   // Org selection view
   if (!selectedOrg) {
@@ -194,12 +200,25 @@ export default function LicensesPage() {
           description="組織を選択して動画ライセンスを一括設定します"
         />
 
-        <div className="mb-6">
-          <Input
-            placeholder="組織名で検索..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex gap-3 items-end mb-6">
+          <div className="flex-1 max-w-sm">
+            <Input
+              placeholder="組織名で検索..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => setSortAsc(!sortAsc)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            名前順
+            {sortAsc
+              ? <SortAscIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+              : <SortDescIcon className="w-3 h-3 text-da-blue-900 dark:text-da-blue-300" />
+            }
+          </button>
+          <span className="text-sm text-slate-500 pb-2">{filteredOrgs.length}件</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

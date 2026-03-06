@@ -19,6 +19,7 @@ export type Organization = {
   name: string;
   slug: string;
   is_active: boolean;
+  max_org_admins: number;
   created_at: string;
   updated_at: string;
 };

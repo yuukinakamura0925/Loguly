@@ -23,6 +23,14 @@ export function listLicensedVideosForOrg(client: TypedClient, organizationId: st
     .eq("is_active", true);
 }
 
+export function listLicensedVideosForOrgWithStream(client: TypedClient, organizationId: string) {
+  return client
+    .from("organization_licenses")
+    .select("video_id, videos(id, title, description, duration, display_order, cf_video_id, categories(name))")
+    .eq("organization_id", organizationId)
+    .eq("is_active", true);
+}
+
 export function upsertLicense(
   client: TypedClient,
   data: { organization_id: string; video_id: number; expires_at: string | null; is_active: boolean }
