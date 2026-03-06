@@ -38,7 +38,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           招待リンクを発行しました
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          以下のリンクをコピーして、Slackやメールなどで対象者に共有してください。リンクの有効期限は7日間です。
+          以下のリンクをコピーして、メールやチャットなどで対象者に共有してください。リンクの有効期限は7日間です。
         </p>
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
