@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
 import LogoutButton from "@/app/dashboard/logout-button";
 import { SettingsIcon } from "@/components/icons";
@@ -10,9 +11,10 @@ import { adminNavItems } from "@/components/admin-sidebar";
 
 interface AdminHeaderProps {
   displayName: string;
+  avatarUrl?: string | null;
 }
 
-export function AdminHeader({ displayName }: AdminHeaderProps) {
+export function AdminHeader({ displayName, avatarUrl }: AdminHeaderProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
@@ -44,9 +46,13 @@ export function AdminHeader({ displayName }: AdminHeaderProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-            {displayName?.charAt(0) || "A"}
-          </div>
+          {avatarUrl ? (
+            <Image src={avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover" />
+          ) : (
+            <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+              {displayName?.charAt(0) || "A"}
+            </div>
+          )}
           <div className="hidden sm:block">
             <div className="text-sm font-medium text-slate-900 dark:text-white">{displayName}</div>
             <div className="text-xs text-slate-500">Platform Admin</div>

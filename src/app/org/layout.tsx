@@ -20,7 +20,7 @@ export default async function OrgLayout({
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex">
       <OrgSidebar orgName={org.name} />
       <div className="flex-1 flex flex-col">
-        <OrgHeader displayName={profile.display_name || ""} orgName={org.name} />
+        <OrgHeader displayName={profile.display_name || ""} orgName={org.name} avatarUrl={profile.avatar_url} />
         <main className="flex-1 p-4 lg:p-6 overflow-auto">{children}</main>
       </div>
     </div>

@@ -19,7 +19,7 @@ export function updateProfileRole(client: TypedClient, userId: string, role: str
 export function updateProfile(
   client: TypedClient,
   userId: string,
-  data: { display_name?: string; email?: string }
+  data: { display_name?: string; email?: string; avatar_url?: string | null }
 ) {
   return client.from("profiles").update(data).eq("id", userId);
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
@@ -13,6 +14,7 @@ type MemberProgress = {
   user_id: string;
   display_name: string;
   email: string;
+  avatar_url: string | null;
   completedCount: number;
   totalCount: number;
   watchedPercent: number;
@@ -97,6 +99,7 @@ export default async function ProgressPage({
       const profile = m.profiles as unknown as {
         display_name: string;
         email: string;
+        avatar_url: string | null;
       };
 
       const memberLogs = viewLogs?.filter((l) => l.user_id === m.user_id) || [];
@@ -121,6 +124,7 @@ export default async function ProgressPage({
         user_id: m.user_id,
         display_name: profile?.display_name || "",
         email: profile?.email || "",
+        avatar_url: profile?.avatar_url || null,
         completedCount,
         totalCount: videos.length,
         watchedPercent,
@@ -225,13 +229,17 @@ export default async function ProgressPage({
                   >
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0 ${
-                        isFullyCompleted
-                          ? "bg-da-blue-900 text-white"
-                          : "bg-slate-500 dark:bg-slate-600"
-                      }`}>
-                        {member.display_name?.charAt(0) || "?"}
-                      </div>
+                      {member.avatar_url ? (
+                        <Image src={member.avatar_url} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                      ) : (
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0 ${
+                          isFullyCompleted
+                            ? "bg-da-blue-900 text-white"
+                            : "bg-slate-500 dark:bg-slate-600"
+                        }`}>
+                          {member.display_name?.charAt(0) || "?"}
+                        </div>
+                      )}
 
                       {/* Name / Email */}
                       <div className="flex-1 min-w-0">
