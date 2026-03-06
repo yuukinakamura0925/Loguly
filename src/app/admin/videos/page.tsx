@@ -102,6 +102,8 @@ export default function VideosPage() {
     }
   }
 
+  const [menuCategoryId, setMenuCategoryId] = useState<number | null>(null);
+  const [menuVideoId, setMenuVideoId] = useState<number | null>(null);
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
   const [dragOverVideoId, setDragOverVideoId] = useState<number | null>(null);
   const [dragCategoryId, setDragCategoryId] = useState<number | null>(null);
@@ -359,36 +361,37 @@ export default function VideosPage() {
                 </svg>
               </div>
               {/* Up/down buttons - mobile */}
-              <div className="flex lg:hidden flex-shrink-0 pl-2 gap-1">
+              <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "up"); }}
                   disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === 0}
-                  className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                  className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "down"); }}
                   disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === videosByCategory.length - 1}
-                  className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                  className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
                 </button>
               </div>
               <button
                 onClick={() => toggleCategory(category.id)}
-                className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors"
+                className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors min-w-0"
               >
                 {isExpanded ? (
-                  <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
                 ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <ChevronRightIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
                 )}
-                <FolderIcon className="w-5 h-5 text-da-gray-600" />
-                <span className="font-medium text-slate-900 dark:text-white">{category.name}</span>
-                <span className="text-sm text-slate-500">{categoryVideos.length}本</span>
+                <FolderIcon className="w-5 h-5 text-da-gray-600 hidden sm:block flex-shrink-0" />
+                <span className="font-medium text-slate-900 dark:text-white truncate">{category.name}</span>
+                <span className="text-sm text-slate-500 flex-shrink-0">{categoryVideos.length}本</span>
               </button>
-              <div className="flex gap-1 pr-4">
+              {/* Edit/Delete - desktop */}
+              <div className="hidden sm:flex gap-1 pr-4">
                 <button
                   onClick={() => {
                     setEditingCategoryId(category.id);
@@ -408,6 +411,43 @@ export default function VideosPage() {
                 >
                   <TrashIcon />
                 </button>
+              </div>
+              {/* ... menu - mobile */}
+              <div className="relative sm:hidden pr-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuCategoryId(menuCategoryId === category.id ? null : category.id); }}
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <circle cx="10" cy="4" r="1.5" />
+                    <circle cx="10" cy="10" r="1.5" />
+                    <circle cx="10" cy="16" r="1.5" />
+                  </svg>
+                </button>
+                {menuCategoryId === category.id && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
+                    <button
+                      onClick={() => {
+                        setEditingCategoryId(category.id);
+                        setShowCategoryForm(false);
+                        setShowForm(false);
+                        setEditingId(null);
+                        setMenuCategoryId(null);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      <PencilIcon />
+                      編集
+                    </button>
+                    <button
+                      onClick={() => { handleDeleteCategory(category.id); setMenuCategoryId(null); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <TrashIcon />
+                      削除
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             {isExpanded && (
@@ -463,11 +503,11 @@ export default function VideosPage() {
                     </button>
                   </div>
 
-                  {/* Video thumbnail */}
+                  {/* Video thumbnail - desktop only */}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); if (video.cf_video_id) setPreviewVideoId(video.cf_video_id); }}
-                    className="relative w-24 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 group"
+                    className="relative w-24 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200 dark:bg-slate-800 group hidden sm:block"
                   >
                     {video.cf_video_id && process.env.NEXT_PUBLIC_VIDEO_BASE_URL ? (
                       <>
@@ -495,9 +535,9 @@ export default function VideosPage() {
 
                   {/* Video info */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-slate-900 dark:text-white font-medium truncate">{video.title}</div>
+                    <div className="text-slate-900 dark:text-white font-medium truncate text-sm sm:text-base">{video.title}</div>
                     <div className="flex items-center gap-3 mt-1">
-                      <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+                      <div className="flex items-center gap-1.5 text-slate-500 text-xs sm:text-sm">
                         <ClockIcon className="w-3.5 h-3.5" />
                         {formatDuration(video.duration)}
                       </div>
@@ -507,8 +547,8 @@ export default function VideosPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1">
+                  {/* Actions - desktop */}
+                  <div className="hidden sm:flex items-center gap-1">
                     <button
                       onClick={() => {
                         setEditingId(video.id);
@@ -526,6 +566,37 @@ export default function VideosPage() {
                     >
                       <TrashIcon />
                     </button>
+                  </div>
+                  {/* ... menu - mobile */}
+                  <div className="relative sm:hidden">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuVideoId(menuVideoId === video.id ? null : video.id); }}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="4" r="1.5" />
+                        <circle cx="10" cy="10" r="1.5" />
+                        <circle cx="10" cy="16" r="1.5" />
+                      </svg>
+                    </button>
+                    {menuVideoId === video.id && (
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
+                        <button
+                          onClick={() => { setEditingId(video.id); setShowForm(false); setMenuVideoId(null); }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <PencilIcon />
+                          編集
+                        </button>
+                        <button
+                          onClick={() => { handleDelete(video.id); setMenuVideoId(null); }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <TrashIcon />
+                          削除
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
