@@ -18,7 +18,8 @@ export async function requestPasswordReset(email: string) {
   });
 
   if (error) {
-    return { error: "リセットメールの送信に失敗しました。もう一度お試しください。" };
+    console.error("resetPasswordForEmail error:", error.message);
+    return { error: `リセットメールの送信に失敗しました: ${error.message}` };
   }
 
   return { success: true };
