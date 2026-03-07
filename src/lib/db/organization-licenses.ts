@@ -98,7 +98,7 @@ export function deleteLicensesByOrgAndVideos(
 
 export function insertLicensesBulk(
   client: TypedClient,
-  licenses: { organization_id: string; video_id: number; is_active: boolean }[]
+  licenses: { organization_id: string; video_id: number; is_active: boolean; expires_at?: string | null }[]
 ) {
   return client
     .from("organization_licenses")
