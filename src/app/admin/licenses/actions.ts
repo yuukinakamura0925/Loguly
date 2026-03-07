@@ -58,7 +58,8 @@ export async function revokeLicense(id: string) {
 export async function updateOrgLicenses(
   organizationId: string,
   selectedVideoIds: number[],
-  allVideoIds: number[]
+  allVideoIds: number[],
+  expiresAt: string | null = null
 ) {
   await requireRole("platform_admin");
   const supabase = await createClient();
@@ -80,6 +81,7 @@ export async function updateOrgLicenses(
       organization_id: organizationId,
       video_id: videoId,
       is_active: true,
+      expires_at: expiresAt,
     }));
     const { error: insertError } = await insertLicensesBulk(supabase, licenses);
     if (insertError) return { error: insertError.message };
