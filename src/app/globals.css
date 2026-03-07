@@ -120,6 +120,21 @@ a, button, input, select, textarea,
   animation: card-enter 0.3s ease-out both;
 }
 
+/* タッチデバイス: タップ時のデフォルトハイライトを消してCSS :active に統一 */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* タッチデバイス: 全リンク・ボタンにタップフィードバック */
+@media (hover: none) and (pointer: coarse) {
+  a:active,
+  button:active,
+  [role="button"]:active {
+    opacity: 0.7 !important;
+    transform: scale(0.97) !important;
+  }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-card-enter,
