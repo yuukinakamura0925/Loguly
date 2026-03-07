@@ -59,6 +59,7 @@ export default function LicensesPage() {
   const [originalVideoIds, setOriginalVideoIds] = useState<Set<number>>(new Set());
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -168,7 +169,8 @@ export default function LicensesPage() {
       const result = await updateOrgLicenses(
         selectedOrg.id,
         Array.from(selectedVideoIds),
-        videos.map((v) => v.id)
+        videos.map((v) => v.id),
+        expiresAt || null
       );
 
       if (result.error) {
@@ -281,6 +283,21 @@ export default function LicensesPage() {
         </button>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-3">{selectedOrg.name}</h1>
         <p className="text-slate-600 dark:text-slate-400 mt-1">カテゴリを開いて動画を選択してください</p>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          有効期限（任意）
+        </label>
+        <input
+          type="date"
+          value={expiresAt}
+          onChange={(e) => setExpiresAt(e.target.value)}
+          className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+        />
+        <p className="text-xs text-slate-500 mt-1">
+          空欄の場合は期限なしになります
+        </p>
       </div>
 
       {error && (
