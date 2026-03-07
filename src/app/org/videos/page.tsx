@@ -80,7 +80,6 @@ export default function OrgVideosPage() {
         (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const videos: Video[] = (licenses || [])
         .map((l: Record<string, unknown>) => {
           const v = l.videos as Record<string, unknown> | null;

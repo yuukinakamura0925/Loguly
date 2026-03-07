@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,16 +22,14 @@ function AvatarCropModal({
   const CIRCLE = 220;
   const circleOff = (CONTAINER - CIRCLE) / 2;
 
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const imageUrl = useMemo(() => URL.createObjectURL(file), [file]);
   const [nat, setNat] = useState({ w: 0, h: 0 });
   const [pos, setPos] = useState({ ox: 0, oy: 0 });
   const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null);
 
   useEffect(() => {
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+    return () => URL.revokeObjectURL(imageUrl);
+  }, [imageUrl]);
 
   const scale = nat.w > 0 ? CIRCLE / Math.min(nat.w, nat.h) : 1;
 

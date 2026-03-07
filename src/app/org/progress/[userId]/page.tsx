@@ -67,10 +67,9 @@ export default async function MemberProgressPage({
     (allCategories || []).map((c: { id: number; name: string; display_order: number }) => [c.name, { id: c.id, display_order: c.display_order }])
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const videos = (licenses || [])
-    .map((l: any) => {
-      const v = l.videos;
+    .map((l: Record<string, unknown>) => {
+      const v = l.videos as Record<string, unknown> | null;
       if (!v) return null;
       return {
         id: v.id as number,
