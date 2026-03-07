@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   listOrganizations,
@@ -50,7 +50,7 @@ type Video = {
 };
 
 export default function LicensesPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -407,7 +407,7 @@ export default function LicensesPage() {
       </Card>
 
       <div className="flex gap-3">
-        <Button onClick={handleSave} disabled={!hasChanges || saving}>
+        <Button onClick={handleSave} disabled={saving}>
           {saving ? "保存中..." : "保存"}
         </Button>
         <Button
