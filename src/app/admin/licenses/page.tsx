@@ -164,19 +164,23 @@ export default function LicensesPage() {
     setError("");
     setSuccess("");
 
-    const result = await updateOrgLicenses(
-      selectedOrg.id,
-      Array.from(selectedVideoIds),
-      videos.map((v) => v.id)
-    );
+    try {
+      const result = await updateOrgLicenses(
+        selectedOrg.id,
+        Array.from(selectedVideoIds),
+        videos.map((v) => v.id)
+      );
 
-    setSaving(false);
-
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess("ライセンスを更新しました");
-      setOriginalVideoIds(new Set(selectedVideoIds));
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess("ライセンスを更新しました");
+        setOriginalVideoIds(new Set(selectedVideoIds));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存中にエラーが発生しました");
+    } finally {
+      setSaving(false);
     }
   }
 

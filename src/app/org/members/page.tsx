@@ -289,12 +289,14 @@ export default function MembersPage() {
                   {new Date(m.joined_at).toLocaleDateString("ja-JP")}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleRemove(m.user_id)}
-                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
-                  >
-                    削除
-                  </button>
+                  {m.role !== "org_admin" && (
+                    <button
+                      onClick={() => handleRemove(m.user_id)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
+                    >
+                      削除
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

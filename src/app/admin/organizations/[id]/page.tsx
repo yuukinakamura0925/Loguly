@@ -355,13 +355,15 @@ export default function EditOrganizationPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button
-                      onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
-                      title="削除"
-                    >
-                      <TrashIcon />
-                    </button>
+                    {m.role !== "org_admin" && (
+                      <button
+                        onClick={() => handleRemoveMember(m.user_id)}
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
+                        title="削除"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

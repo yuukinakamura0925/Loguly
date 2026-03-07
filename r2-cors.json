@@ -1,0 +1,21 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://loguly.vercel.app",
+          "http://localhost:3000"
+        ],
+        "methods": [
+          "GET",
+          "PUT",
+          "HEAD"
+        ],
+        "headers": [
+          "*"
+        ]
+      },
+      "maxAgeSeconds": 3600
+    }
+  ]
+}
