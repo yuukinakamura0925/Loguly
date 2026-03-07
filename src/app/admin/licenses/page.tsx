@@ -65,6 +65,34 @@ export default function LicensesPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [sortAsc, setSortAsc] = useState(true);
   const [expiresAt, setExpiresAt] = useState("");
+  const [videoExpiresMap, setVideoExpiresMap] = useState<Map<number, string>>(new Map());
+
+  function handleBulkExpiresChange(date: string) {
+    setExpiresAt(date);
+    setVideoExpiresMap((prev) => {
+      const next = new Map(prev);
+      selectedVideoIds.forEach((id) => {
+        if (date) {
+          next.set(id, date);
+        } else {
+          next.delete(id);
+        }
+      });
+      return next;
+    });
+  }
+
+  function handleVideoExpiresChange(videoId: number, date: string) {
+    setVideoExpiresMap((prev) => {
+      const next = new Map(prev);
+      if (date) {
+        next.set(videoId, date);
+      } else {
+        next.delete(videoId);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -98,10 +126,18 @@ export default function LicensesPage() {
     const ids = new Set((data || []).map((l) => l.video_id));
     setSelectedVideoIds(ids);
     setOriginalVideoIds(new Set(ids));
-    // 既存の有効期限を取得（全動画で共通の場合はその値を表示）
-    const dates = [...new Set((data || []).map((l) => l.expires_at).filter(Boolean))];
+    // 既存の有効期限を動画ごとにロード
+    const expiresMap = new Map<number, string>();
+    (data || []).forEach((l) => {
+      if (l.expires_at) {
+        expiresMap.set(l.video_id, l.expires_at.split("T")[0]);
+      }
+    });
+    setVideoExpiresMap(expiresMap);
+    // 全動画で共通の場合はその値を一括フィールドに表示
+    const dates = [...new Set([...expiresMap.values()])];
     if (dates.length === 1) {
-      setExpiresAt(dates[0]!.split("T")[0]);
+      setExpiresAt(dates[0]);
     } else {
       setExpiresAt("");
     }
@@ -173,11 +209,15 @@ export default function LicensesPage() {
     setSuccess("");
 
     try {
+      const expiresRecord: Record<string, string | null> = {};
+      selectedVideoIds.forEach((id) => {
+        expiresRecord[String(id)] = videoExpiresMap.get(id) || null;
+      });
       const result = await updateOrgLicenses(
         selectedOrg.id,
         Array.from(selectedVideoIds),
         videos.map((v) => v.id),
-        expiresAt || null
+        expiresRecord
       );
 
       if (result.error) {
@@ -312,12 +352,12 @@ export default function LicensesPage() {
         <Input
           id="expires_at"
           type="date"
-          label="有効期限（全動画共通）"
+          label="有効期限（一括設定）"
           value={expiresAt}
-          onChange={(e) => setExpiresAt(e.target.value)}
+          onChange={(e) => handleBulkExpiresChange(e.target.value)}
           className="max-w-xs"
         />
-        <p className="text-xs text-slate-500 mt-1">未設定の場合は無期限になります</p>
+        <p className="text-xs text-slate-500 mt-1">変更すると選択中の全動画に適用されます。個別設定は各動画行で変更できます。</p>
       </div>
 
       <Card className="mb-6">
@@ -383,33 +423,48 @@ export default function LicensesPage() {
                     <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
                       {categoryVideos.map((video) => {
                         const isSelected = selectedVideoIds.has(video.id);
+                        const videoExpires = videoExpiresMap.get(video.id) || "";
 
                         return (
-                          <button
+                          <div
                             key={video.id}
-                            onClick={() => toggleVideo(video.id)}
                             className={`
-                              flex items-center gap-3 w-full px-4 py-2.5 text-left
+                              flex items-center gap-3 w-full px-4 py-2.5
                               border-b border-slate-200 dark:border-slate-800 last:border-b-0
                               transition-colors
                               ${isSelected ? "bg-da-blue-50 dark:bg-da-blue-900/10" : "hover:bg-slate-100 dark:hover:bg-slate-800/50"}
                             `}
                           >
-                            <div className="w-10 flex justify-center">
-                              <div
-                                className={`
-                                  w-4 h-4 rounded flex items-center justify-center
-                                  ${isSelected ? "bg-da-blue-900" : "bg-slate-300 dark:bg-slate-700"}
-                                `}
-                              >
-                                {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
+                            <button
+                              onClick={() => toggleVideo(video.id)}
+                              className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                            >
+                              <div className="w-10 flex justify-center flex-shrink-0">
+                                <div
+                                  className={`
+                                    w-4 h-4 rounded flex items-center justify-center
+                                    ${isSelected ? "bg-da-blue-900" : "bg-slate-300 dark:bg-slate-700"}
+                                  `}
+                                >
+                                  {isSelected && <CheckIcon className="w-2.5 h-2.5 text-white" />}
+                                </div>
                               </div>
-                            </div>
-                            <VideoIcon className={`w-4 h-4 ${isSelected ? "text-da-blue-900 dark:text-da-blue-300" : "text-slate-500"}`} />
-                            <span className={isSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}>
-                              {video.title}
-                            </span>
-                          </button>
+                              <VideoIcon className={`w-4 h-4 flex-shrink-0 ${isSelected ? "text-da-blue-900 dark:text-da-blue-300" : "text-slate-500"}`} />
+                              <span className={`truncate ${isSelected ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-300"}`}>
+                                {video.title}
+                              </span>
+                            </button>
+                            {isSelected && (
+                              <input
+                                type="date"
+                                value={videoExpires}
+                                onChange={(e) => handleVideoExpiresChange(video.id, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex-shrink-0 text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 w-36"
+                                title="個別の有効期限"
+                              />
+                            )}
+                          </div>
                         );
                       })}
                     </div>
