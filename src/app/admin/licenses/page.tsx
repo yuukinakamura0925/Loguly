@@ -64,6 +64,7 @@ export default function LicensesPage() {
   const [success, setSuccess] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [sortAsc, setSortAsc] = useState(true);
+  const [expiresAt, setExpiresAt] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -97,6 +98,13 @@ export default function LicensesPage() {
     const ids = new Set((data || []).map((l) => l.video_id));
     setSelectedVideoIds(ids);
     setOriginalVideoIds(new Set(ids));
+    // 既存の有効期限を取得（全動画で共通の場合はその値を表示）
+    const dates = [...new Set((data || []).map((l) => l.expires_at).filter(Boolean))];
+    if (dates.length === 1) {
+      setExpiresAt(dates[0]!.split("T")[0]);
+    } else {
+      setExpiresAt("");
+    }
     // Expand all categories by default
     setExpandedCategories(new Set(categories.map((c) => c.id)));
   }
@@ -168,7 +176,8 @@ export default function LicensesPage() {
       const result = await updateOrgLicenses(
         selectedOrg.id,
         Array.from(selectedVideoIds),
-        videos.map((v) => v.id)
+        videos.map((v) => v.id),
+        expiresAt || null
       );
 
       if (result.error) {
@@ -298,6 +307,18 @@ export default function LicensesPage() {
           </CardContent>
         </Card>
       )}
+
+      <div className="mb-6">
+        <Input
+          id="expires_at"
+          type="date"
+          label="有効期限（全動画共通）"
+          value={expiresAt}
+          onChange={(e) => setExpiresAt(e.target.value)}
+          className="max-w-xs"
+        />
+        <p className="text-xs text-slate-500 mt-1">未設定の場合は無期限になります</p>
+      </div>
 
       <Card className="mb-6">
         <CardContent>

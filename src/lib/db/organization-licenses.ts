@@ -79,7 +79,7 @@ export function countLicenses(client: TypedClient) {
 export function listLicenseVideoIdsForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id")
+    .select("video_id, expires_at")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }
@@ -111,7 +111,7 @@ export function updateLicenseLabel(
 
 export function insertLicensesBulk(
   client: TypedClient,
-  licenses: { organization_id: string; video_id: number; is_active: boolean }[]
+  licenses: { organization_id: string; video_id: number; is_active: boolean; expires_at: string | null }[]
 ) {
   return client
     .from("organization_licenses")
