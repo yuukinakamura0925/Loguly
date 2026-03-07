@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
 import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon } from "@/components/icons";
+import AvatarPreview from "@/components/avatar-preview";
 
 type Member = {
   user_id: string;
@@ -49,7 +49,7 @@ function SortButton({
       <button
         type="button"
         onClick={() => onSort(sortKey, nextOrder)}
-        className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors ${isActive ? "text-slate-900 dark:text-white" : ""}`}
+        className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white active:opacity-70 transition-colors ${isActive ? "text-slate-900 dark:text-white" : ""}`}
       >
         {label}
         {isActive
@@ -179,7 +179,7 @@ export default function MembersPage() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">メンバー管理</h1>
         <button
           onClick={() => setShowInvite(!showInvite)}
-          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors text-sm"
+          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.98] transition-colors text-sm"
         >
           {showInvite ? "キャンセル" : "メンバーを招待"}
         </button>
@@ -246,7 +246,7 @@ export default function MembersPage() {
                   {(() => {
                     const profile = m.profiles as unknown as { display_name: string; avatar_url?: string | null };
                     const avatar = profile?.avatar_url ? (
-                      <Image src={profile.avatar_url} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                      <AvatarPreview src={profile.avatar_url} size={28} className="w-7 h-7" />
                     ) : (
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
                         m.role === "org_admin" ? "bg-da-blue-900" : "bg-slate-500 dark:bg-slate-600"
@@ -262,7 +262,7 @@ export default function MembersPage() {
                     ) : (
                       <Link
                         href={`/org/progress/${m.user_id}`}
-                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline"
+                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:underline active:opacity-70"
                       >
                         {avatar}
                         {profile?.display_name}
@@ -289,12 +289,14 @@ export default function MembersPage() {
                   {new Date(m.joined_at).toLocaleDateString("ja-JP")}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => handleRemove(m.user_id)}
-                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
-                  >
-                    削除
-                  </button>
+                  {m.role !== "org_admin" && (
+                    <button
+                      onClick={() => handleRemove(m.user_id)}
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:opacity-70 text-sm"
+                    >
+                      削除
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -345,7 +347,7 @@ export default function MembersPage() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleCancelInvite(inv.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:opacity-70 text-sm"
                     >
                       取消
                     </button>

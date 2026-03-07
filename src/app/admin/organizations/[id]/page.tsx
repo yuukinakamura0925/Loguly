@@ -61,6 +61,9 @@ export default function EditOrganizationPage() {
   const [createSuccess, setCreateSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [updating, setUpdating] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -108,23 +111,33 @@ export default function EditOrganizationPage() {
   }
 
   async function handleSubmit(formData: FormData) {
+    setUpdating(true);
     setError("");
-    const result = await updateOrganization(id, formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      router.push("/admin/organizations");
+    try {
+      const result = await updateOrganization(id, formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        router.push("/admin/organizations");
+      }
+    } finally {
+      setUpdating(false);
     }
   }
 
   async function handleAddMember(formData: FormData) {
+    setAdding(true);
     setMemberError("");
-    formData.set("organization_id", id);
-    const result = await addOrgMember(formData);
-    if (result.error) {
-      setMemberError(result.error);
-    } else {
-      reload();
+    try {
+      formData.set("organization_id", id);
+      const result = await addOrgMember(formData);
+      if (result.error) {
+        setMemberError(result.error);
+      } else {
+        reload();
+      }
+    } finally {
+      setAdding(false);
     }
   }
 
@@ -139,14 +152,19 @@ export default function EditOrganizationPage() {
   }
 
   async function handleCreateUser(formData: FormData) {
+    setCreating(true);
     setCreateError("");
     setCreateSuccess("");
-    const result = await createOrgUser(id, formData);
-    if (result.error) {
-      setCreateError(result.error);
-    } else {
-      setCreateSuccess("ユーザーを作成しました");
-      reload();
+    try {
+      const result = await createOrgUser(id, formData);
+      if (result.error) {
+        setCreateError(result.error);
+      } else {
+        setCreateSuccess("ユーザーを作成しました");
+        reload();
+      }
+    } finally {
+      setCreating(false);
     }
   }
 
@@ -211,7 +229,9 @@ export default function EditOrganizationPage() {
                 )}
 
                 <div className="pt-2">
-                  <Button type="submit">更新</Button>
+                  <Button type="submit" isLoading={updating}>
+                    {updating ? "更新中..." : "更新"}
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -270,7 +290,9 @@ export default function EditOrganizationPage() {
                   </div>
                 )}
 
-                <Button type="submit" size="sm">ユーザーを作成</Button>
+                <Button type="submit" size="sm" isLoading={creating}>
+                  {creating ? "作成中..." : "ユーザーを作成"}
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -322,7 +344,9 @@ export default function EditOrganizationPage() {
                       </div>
                     )}
 
-                    <Button type="submit" size="sm" variant="secondary">追加</Button>
+                    <Button type="submit" size="sm" variant="secondary" isLoading={adding}>
+                      {adding ? "追加中..." : "追加"}
+                    </Button>
                   </>
                 )}
               </form>
@@ -355,13 +379,15 @@ export default function EditOrganizationPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <button
-                      onClick={() => handleRemoveMember(m.user_id)}
-                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
-                      title="削除"
-                    >
-                      <TrashIcon />
-                    </button>
+                    {m.role !== "org_admin" && (
+                      <button
+                        onClick={() => handleRemoveMember(m.user_id)}
+                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
+                        title="削除"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

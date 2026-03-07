@@ -8,9 +8,9 @@ import {
   listCategories,
   listOrgCategoryOrder,
 } from "@/lib/db";
-import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder } from "./actions";
+import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder, updateVideoLabel } from "./actions";
 import { Card, CardContent, Button } from "@/components/ui";
-import { GripIcon, ChevronUpIcon, ChevronDownIcon, CirclePlayIcon, ChevronRightIcon } from "@/components/icons";
+import { GripIcon, ChevronUpIcon, ChevronDownIcon, CirclePlayIcon, ChevronRightIcon, PencilIcon } from "@/components/icons";
 
 type Video = {
   id: number;
@@ -18,6 +18,7 @@ type Video = {
   duration: number;
   display_order: number;
   orgDisplayOrder: number | null;
+  label: string | null;
   categories: { name: string; display_order: number } | null;
 };
 
@@ -43,6 +44,10 @@ export default function OrgVideosPage() {
   const [hasCustomOrder, setHasCustomOrder] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Label editing state
+  const [editingLabelVideoId, setEditingLabelVideoId] = useState<number | null>(null);
+  const [editingLabelValue, setEditingLabelValue] = useState("");
 
   // Drag state
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
@@ -75,12 +80,11 @@ export default function OrgVideosPage() {
         (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const videos: Video[] = (licenses || [])
         .map((l: Record<string, unknown>) => {
           const v = l.videos as Record<string, unknown> | null;
           if (!v) return null;
-          return { ...v, orgDisplayOrder: l.display_order as number | null } as Video;
+          return { ...v, orgDisplayOrder: l.display_order as number | null, label: (l.label as string | null) ?? null } as Video;
         })
         .filter(Boolean) as Video[];
 
@@ -228,6 +232,19 @@ export default function OrgVideosPage() {
     else reload();
   }
 
+  function startEditLabel(videoId: number, currentLabel: string | null) {
+    setEditingLabelVideoId(videoId);
+    setEditingLabelValue(currentLabel || "");
+  }
+
+  async function saveLabel(videoId: number) {
+    setError("");
+    const result = await updateVideoLabel(videoId, editingLabelValue);
+    if (result.error) setError(result.error);
+    else reload();
+    setEditingLabelVideoId(null);
+  }
+
   const totalVideos = categoryGroups.reduce((sum, g) => sum + g.videos.length, 0);
 
   if (loading) {
@@ -266,7 +283,7 @@ export default function OrgVideosPage() {
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 text-center py-8">
-              ライセンスされた動画がありません
+              割り当てられた動画がありません
             </p>
           </CardContent>
         </Card>
@@ -300,21 +317,21 @@ export default function OrgVideosPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "up"); }}
                       disabled={categoryGroups.indexOf(group) === 0}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                     >
                       <ChevronUpIcon className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "down"); }}
                       disabled={categoryGroups.indexOf(group) === categoryGroups.length - 1}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                     >
                       <ChevronDownIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <button
                     onClick={() => toggleCategory(group.id)}
-                    className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors min-w-0"
+                    className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 active:bg-slate-300 dark:active:bg-slate-700 transition-colors min-w-0"
                   >
                     {isExpanded ? (
                       <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
@@ -352,14 +369,14 @@ export default function OrgVideosPage() {
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "up"); }}
                             disabled={group.videos.indexOf(video) === 0}
-                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                           >
                             <ChevronUpIcon className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "down"); }}
                             disabled={group.videos.indexOf(video) === group.videos.length - 1}
-                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                           >
                             <ChevronDownIcon className="w-3.5 h-3.5" />
                           </button>
@@ -369,14 +386,54 @@ export default function OrgVideosPage() {
                           <CirclePlayIcon className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                         </div>
 
-                        <Link href={`/org/videos/${video.id}`} className="flex-1 min-w-0 group">
-                          <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
-                            {video.title}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {formatDuration(video.duration)}
-                          </div>
-                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <Link href={`/org/videos/${video.id}`} className="group active:opacity-70 transition-opacity">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
+                              {video.title}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {formatDuration(video.duration)}
+                            </div>
+                          </Link>
+                          {/* Label display / edit */}
+                          {editingLabelVideoId === video.id ? (
+                            <div className="mt-1">
+                              <input
+                                type="text"
+                                value={editingLabelValue}
+                                onChange={(e) => setEditingLabelValue(e.target.value)}
+                                onBlur={() => saveLabel(video.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") saveLabel(video.id);
+                                  if (e.key === "Escape") setEditingLabelVideoId(null);
+                                }}
+                                maxLength={50}
+                                autoFocus
+                                placeholder="ラベルを入力（50文字以内）"
+                                className="w-full max-w-xs px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white placeholder-slate-400"
+                                onClick={(e) => e.stopPropagation()}
+                                onDragStart={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditLabel(video.id, video.label); }}
+                              className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 active:opacity-70 transition-colors"
+                            >
+                              {video.label ? (
+                                <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-300">
+                                  {video.label}
+                                </span>
+                              ) : (
+                                <>
+                                  <PencilIcon className="w-3 h-3" />
+                                  ラベルを追加
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
 
                         <ChevronRightIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       </div>

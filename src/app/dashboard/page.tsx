@@ -61,8 +61,8 @@ export default async function DashboardPage() {
     (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
   );
 
-  // ライセンス済み動画を展開（組織別表示順を保持）
-  type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null };
+  // 割り当て済み動画を展開（組織別表示順を保持）
+  type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null; label: string | null };
   const videos: DashboardVideo[] = (licensesResult?.data || [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((l: any) => {
@@ -76,6 +76,7 @@ export default async function DashboardPage() {
         duration: v.duration,
         display_order: v.display_order,
         orgDisplayOrder: l.display_order as number | null,
+        label: (l.label as string | null) ?? null,
       };
     })
     .filter(Boolean) as DashboardVideo[];
@@ -126,7 +127,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link href="/settings" title="アカウント設定">
               {profile?.avatar_url ? (
-                <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 transition-opacity" />
+                <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 active:opacity-60 active:scale-[0.92] transition-all" />
               ) : (
                 <Logo size="sm" showText={false} />
               )}
@@ -139,7 +140,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/settings"
-              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white active:scale-[0.9] transition-all"
               title="設定"
             >
               <SettingsIcon className="w-5 h-5" />

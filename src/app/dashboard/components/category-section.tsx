@@ -10,6 +10,7 @@ interface Video {
   title: string;
   description: string | null;
   duration: number;
+  label?: string | null;
 }
 
 interface ViewLog {
@@ -44,7 +45,7 @@ export function CategorySection({ name, videos, viewLogs, progress, defaultOpen 
   return (
     <Card>
       <CardHeader
-        className="flex flex-row items-center justify-between cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+        className="flex flex-row items-center justify-between cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
@@ -88,6 +89,7 @@ export function CategorySection({ name, videos, viewLogs, progress, defaultOpen 
                 duration={video.duration}
                 status={status}
                 progress={videoProgress}
+                label={video.label}
               />
             );
           })}

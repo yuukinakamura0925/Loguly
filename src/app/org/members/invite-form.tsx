@@ -7,6 +7,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteUrl);
@@ -15,13 +16,18 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
   };
 
   async function handleSubmit(formData: FormData) {
+    setSubmitting(true);
     setError("");
     setInviteUrl("");
-    const result = await createInvitation(formData);
-    if (result.error) {
-      setError(result.error);
-    } else if (result.inviteUrl) {
-      setInviteUrl(result.inviteUrl);
+    try {
+      const result = await createInvitation(formData);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.inviteUrl) {
+        setInviteUrl(result.inviteUrl);
+      }
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -112,9 +118,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline text-sm"
+          disabled={submitting}
+          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+            submitting
+              ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+              : "bg-da-blue-900 text-white hover:bg-da-blue-1000"
+          }`}
         >
-          招待リンクを発行
+          {submitting ? "発行中..." : "招待リンクを発行"}
         </button>
         <button
           type="button"

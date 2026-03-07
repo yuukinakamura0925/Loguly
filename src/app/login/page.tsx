@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +15,16 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  // パスワードリセットリンクからのリダイレクトを検知
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        router.push("/reset-password/update");
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase.auth, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

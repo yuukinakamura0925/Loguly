@@ -81,6 +81,18 @@ export async function removeMember(userId: string) {
 
   const supabase = await createClient();
 
+  // org_adminは削除不可
+  const { data: member } = await supabase
+    .from("organization_members")
+    .select("role")
+    .eq("organization_id", org.id)
+    .eq("user_id", userId)
+    .single();
+
+  if (member?.role === "org_admin") {
+    return { error: "組織管理者は削除できません" };
+  }
+
   const { error } = await deleteOrgMember(supabase, org.id, userId);
 
   if (error) return { error: error.message };

@@ -661,6 +661,7 @@ function VideoForm({
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const getNextDisplayOrder = (categoryId: number) => {
     const categoryVideos = videos.filter((v) => v.category_id === categoryId);
@@ -777,7 +778,7 @@ function VideoForm({
   return (
     <Card className="mb-6">
       <CardContent>
-        <form action={onSubmit} className="space-y-4">
+        <form action={async (formData) => { setSaving(true); try { await onSubmit(formData); } finally { setSaving(false); } }} className="space-y-4">
           <input type="hidden" name="cf_video_id" value={uploadedVideoId} />
           <input type="hidden" name="duration" value={detectedDuration} />
 
@@ -907,8 +908,8 @@ function VideoForm({
           />
 
           <div className="flex gap-2 pt-2">
-            <Button type="submit" disabled={!video && !uploadedVideoId}>
-              {video ? "更新" : "追加"}
+            <Button type="submit" disabled={!video && !uploadedVideoId} isLoading={saving}>
+              {saving ? (video ? "更新中..." : "追加中...") : (video ? "更新" : "追加")}
             </Button>
             <Button type="button" variant="secondary" onClick={onCancel}>
               キャンセル
@@ -931,10 +932,12 @@ function CategoryForm({
   onSubmit: (formData: FormData) => Promise<void>;
   onCancel: () => void;
 }) {
+  const [saving, setSaving] = useState(false);
+
   return (
     <Card className="mb-6">
       <CardContent>
-        <form action={onSubmit} className="space-y-4">
+        <form action={async (formData) => { setSaving(true); try { await onSubmit(formData); } finally { setSaving(false); } }} className="space-y-4">
           <div className="flex items-center gap-3 mb-4">
             <FolderIcon className="w-5 h-5 text-da-gray-600" />
             <span className="font-medium text-slate-900 dark:text-white">
@@ -957,8 +960,8 @@ function CategoryForm({
             />
           </div>
           <div className="flex gap-2 pt-2">
-            <Button type="submit">
-              {category ? "更新" : "追加"}
+            <Button type="submit" isLoading={saving}>
+              {saving ? (category ? "更新中..." : "追加中...") : (category ? "更新" : "追加")}
             </Button>
             <Button type="button" variant="secondary" onClick={onCancel}>
               キャンセル

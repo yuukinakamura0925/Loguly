@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
@@ -13,6 +12,7 @@ import {
 } from "@/lib/db";
 import { ArrowLeftIcon, CheckCircleIcon } from "@/components/icons";
 import CategoryAccordion from "./category-accordion";
+import AvatarPreview from "@/components/avatar-preview";
 
 type VideoProgress = {
   id: number;
@@ -48,7 +48,7 @@ export default async function MemberProgressPage({
     notFound();
   }
 
-  // ライセンスされた動画 + 組織カテゴリ順を取得
+  // 割り当て済み動画 + 組織カテゴリ順を取得
   const [{ data: licenses }, { data: orgCatOrders }, { data: allCategories }, { data: viewLogs }] =
     await Promise.all([
       listLicensedVideosForOrg(supabase, org.id),
@@ -67,10 +67,9 @@ export default async function MemberProgressPage({
     (allCategories || []).map((c: { id: number; name: string; display_order: number }) => [c.name, { id: c.id, display_order: c.display_order }])
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const videos = (licenses || [])
-    .map((l: any) => {
-      const v = l.videos;
+    .map((l: Record<string, unknown>) => {
+      const v = l.videos as Record<string, unknown> | null;
       if (!v) return null;
       return {
         id: v.id as number,
@@ -153,7 +152,7 @@ export default async function MemberProgressPage({
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mb-6">
         <div className="flex items-center gap-4">
           {profile.avatar_url ? (
-            <Image src={profile.avatar_url} alt="" width={64} height={64} className="w-16 h-16 rounded-full object-cover" />
+            <AvatarPreview src={profile.avatar_url} size={64} className="w-16 h-16" />
           ) : (
             <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold ${
               completedCount === totalCount && totalCount > 0
@@ -221,7 +220,7 @@ export default async function MemberProgressPage({
 
       {videoProgress.length === 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500">
-          ライセンスのある動画がありません
+          割り当てられた動画がありません
         </div>
       )}
     </div>

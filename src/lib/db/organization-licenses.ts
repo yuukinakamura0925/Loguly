@@ -18,7 +18,7 @@ export function listActiveLicensesForOrg(client: TypedClient, organizationId: st
 export function listLicensedVideosForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id, display_order, videos(id, category_id, title, description, duration, display_order, categories(name, display_order))")
+    .select("video_id, display_order, label, videos(id, category_id, title, description, duration, display_order, categories(name, display_order))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }
@@ -94,6 +94,19 @@ export function deleteLicensesByOrgAndVideos(
     .delete()
     .eq("organization_id", organizationId)
     .in("video_id", videoIds);
+}
+
+export function updateLicenseLabel(
+  client: TypedClient,
+  organizationId: string,
+  videoId: number,
+  label: string | null
+) {
+  return client
+    .from("organization_licenses")
+    .update({ label })
+    .eq("organization_id", organizationId)
+    .eq("video_id", videoId);
 }
 
 export function insertLicensesBulk(

@@ -8,6 +8,7 @@ interface VideoItemProps {
   duration: number;
   status: "pending" | "in-progress" | "completed";
   progress: number;
+  label?: string | null;
 }
 
 function formatDuration(seconds: number): string {
@@ -16,14 +17,14 @@ function formatDuration(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-export function VideoItem({ id, title, description, duration, status, progress }: VideoItemProps) {
+export function VideoItem({ id, title, description, duration, status, progress, label }: VideoItemProps) {
   const isCompleted = status === "completed";
   const isInProgress = status === "in-progress";
 
   return (
     <Link
       href={`/watch/${id}`}
-      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 active:scale-[0.98] transition-all group"
     >
       <div className="flex gap-4">
         {/* サムネイルプレースホルダー */}
@@ -39,7 +40,7 @@ export function VideoItem({ id, title, description, duration, status, progress }
                 <CheckIcon className="w-5 h-5 text-white dark:text-slate-900" strokeWidth={2.5} />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 group-active:scale-95 transition-transform">
                 <PlayIcon className="w-5 h-5 text-slate-700 dark:text-white ml-0.5" fill="currentColor" />
               </div>
             )}
@@ -53,11 +54,18 @@ export function VideoItem({ id, title, description, duration, status, progress }
         {/* コンテンツ */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-start justify-between gap-2">
-            <h3 className={`font-medium leading-snug group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors ${
-              isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
-            }`}>
-              {title}
-            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className={`font-medium leading-snug group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors ${
+                isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
+              }`}>
+                {title}
+              </h3>
+              {label && (
+                <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded">
+                  {label}
+                </span>
+              )}
+            </div>
             {/* ステータスバッジ */}
             {isCompleted && (
               <span className="flex-shrink-0 px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded">

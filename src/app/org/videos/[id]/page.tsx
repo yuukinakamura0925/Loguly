@@ -22,7 +22,7 @@ export default async function OrgVideoPreviewPage({ params }: Props) {
 
   const supabase = await createClient();
 
-  // ライセンスがあるか確認
+  // 動画の割り当てがあるか確認
   const { data: licenseIds } = await listLicenseVideoIdsForOrg(supabase, org.id);
   const hasLicense = licenseIds?.some((l) => l.video_id === videoId);
   if (!hasLicense) notFound();
@@ -37,7 +37,7 @@ export default async function OrgVideoPreviewPage({ params }: Props) {
       <div className="mb-6">
         <Link
           href="/org/videos"
-          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
+          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:opacity-70 text-sm transition-colors"
         >
           <ArrowLeftIcon />
           動画一覧に戻る

@@ -7,6 +7,7 @@ import {
   resetLicenseDisplayOrders,
   upsertOrgCategoryOrder,
   deleteOrgCategoryOrders,
+  updateLicenseLabel,
 } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
@@ -63,6 +64,21 @@ export async function resetOrgDisplayOrder() {
 
   await resetLicenseDisplayOrders(supabase, org.id);
   await deleteOrgCategoryOrders(supabase, org.id);
+
+  revalidatePath("/org/videos");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function updateVideoLabel(videoId: number, label: string) {
+  await requireRole("org_admin");
+  const org = await getCurrentOrg();
+  if (!org) return { error: "組織が見つかりません" };
+
+  const supabase = await createClient();
+  const trimmed = label.trim();
+  const { error } = await updateLicenseLabel(supabase, org.id, videoId, trimmed || null);
+  if (error) return { error: error.message };
 
   revalidatePath("/org/videos");
   revalidatePath("/dashboard");

@@ -24,7 +24,7 @@ export default function VideoNavigation({ categoryName, prevVideo, nextVideo }: 
           {prevVideo ? (
             <Link
               href={`/watch/${prevVideo.id}`}
-              className="group flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="group flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 active:scale-[0.98] transition-all"
             >
               <ChevronLeftIcon className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 transition-colors flex-shrink-0" />
               <div className="min-w-0">
@@ -47,7 +47,7 @@ export default function VideoNavigation({ categoryName, prevVideo, nextVideo }: 
           {nextVideo ? (
             <Link
               href={`/watch/${nextVideo.id}`}
-              className="group flex items-center justify-end gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-right"
+              className="group flex items-center justify-end gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 active:scale-[0.98] transition-all text-right"
             >
               <div className="min-w-0">
                 <div className="text-xs text-slate-500 dark:text-slate-400">次の動画</div>

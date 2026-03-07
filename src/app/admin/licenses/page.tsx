@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   listOrganizations,
@@ -50,7 +50,7 @@ type Video = {
 };
 
 export default function LicensesPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [orgs, setOrgs] = useState<Org[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -172,20 +172,24 @@ export default function LicensesPage() {
     setError("");
     setSuccess("");
 
-    const result = await updateOrgLicenses(
-      selectedOrg.id,
-      Array.from(selectedVideoIds),
-      videos.map((v) => v.id),
-      expiresAt || null
-    );
+    try {
+      const result = await updateOrgLicenses(
+        selectedOrg.id,
+        Array.from(selectedVideoIds),
+        videos.map((v) => v.id),
+        expiresAt || null
+      );
 
-    setSaving(false);
-
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess("ライセンスを更新しました");
-      setOriginalVideoIds(new Set(selectedVideoIds));
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess("割り当てを更新しました");
+        setOriginalVideoIds(new Set(selectedVideoIds));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存中にエラーが発生しました");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -205,8 +209,8 @@ export default function LicensesPage() {
     return (
       <div>
         <PageHeader
-          title="ライセンス管理"
-          description="組織を選択して動画ライセンスを一括設定します"
+          title="動画割り当て"
+          description="組織を選択して動画を一括で割り当てます"
         />
 
         <div className="flex gap-3 items-end mb-6">
@@ -424,7 +428,7 @@ export default function LicensesPage() {
       </Card>
 
       <div className="flex gap-3">
-        <Button onClick={handleSave} disabled={!hasChanges || saving}>
+        <Button onClick={handleSave} disabled={saving}>
           {saving ? "保存中..." : "保存"}
         </Button>
         <Button

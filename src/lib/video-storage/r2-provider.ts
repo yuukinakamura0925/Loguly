@@ -35,8 +35,9 @@ export class R2Provider implements VideoStorageProvider {
    */
   async createUploadUrl(filename: string): Promise<UploadResult> {
     const client = getR2Client();
-    // UUID付きでファイルキーを生成（同名ファイルの衝突を防ぐ）
-    const key = `videos/${crypto.randomUUID()}-${filename}`;
+    // 拡張子だけ保持してUUIDベースのキーにする
+    const ext = filename.includes(".") ? filename.slice(filename.lastIndexOf(".")) : "";
+    const key = `videos/${crypto.randomUUID()}${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME!,

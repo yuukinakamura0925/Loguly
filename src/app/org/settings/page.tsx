@@ -30,6 +30,7 @@ export default function OrgSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -107,14 +108,19 @@ export default function OrgSettingsPage() {
   }
 
   async function handleSubmit(formData: FormData) {
+    setSaving(true);
     setError("");
     setSuccess(false);
-    const result = await updateOrgSettings(formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess(true);
-      reload();
+    try {
+      const result = await updateOrgSettings(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        reload();
+      }
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -169,15 +175,20 @@ export default function OrgSettingsPage() {
 
           <button
             type="submit"
-            className="px-6 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
+            disabled={saving}
+            className={`px-6 py-2 rounded-lg transition-colors ${
+              saving
+                ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+            }`}
           >
-            更新
+            {saving ? "更新中..." : "更新"}
           </button>
         </form>
 
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-            利用可能なライセンス
+            利用可能な動画
             <span className="ml-2 text-sm font-normal text-slate-500">
               ({totalVideos}本)
             </span>
@@ -185,7 +196,7 @@ export default function OrgSettingsPage() {
 
           {categories.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 text-center text-slate-500 text-sm">
-              ライセンスが割り当てられていません
+              動画が割り当てられていません
             </div>
           ) : (
             <div className="space-y-2">
