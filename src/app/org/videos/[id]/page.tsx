@@ -22,7 +22,7 @@ export default async function OrgVideoPreviewPage({ params }: Props) {
 
   const supabase = await createClient();
 
-  // ライセンスがあるか確認
+  // 動画の割り当てがあるか確認
   const { data: licenseIds } = await listLicenseVideoIdsForOrg(supabase, org.id);
   const hasLicense = licenseIds?.some((l) => l.video_id === videoId);
   if (!hasLicense) notFound();

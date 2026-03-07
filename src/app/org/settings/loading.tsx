@@ -21,7 +21,7 @@ export default function SettingsLoading() {
         </div>
       </div>
 
-      {/* ライセンス */}
+      {/* 利用可能な動画 */}
       <div className="h-6 w-36 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-4" />
       <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
         {[...Array(2)].map((_, i) => (

@@ -174,7 +174,7 @@ export default function LicensesPage() {
       if (result.error) {
         setError(result.error);
       } else {
-        setSuccess("ライセンスを更新しました");
+        setSuccess("割り当てを更新しました");
         setOriginalVideoIds(new Set(selectedVideoIds));
       }
     } catch (e) {
@@ -200,8 +200,8 @@ export default function LicensesPage() {
     return (
       <div>
         <PageHeader
-          title="ライセンス管理"
-          description="組織を選択して動画ライセンスを一括設定します"
+          title="動画割り当て"
+          description="組織を選択して動画を一括で割り当てます"
         />
 
         <div className="flex gap-3 items-end mb-6">

@@ -177,7 +177,7 @@ export default function OrgSettingsPage() {
 
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
-            利用可能なライセンス
+            利用可能な動画
             <span className="ml-2 text-sm font-normal text-slate-500">
               ({totalVideos}本)
             </span>
@@ -185,7 +185,7 @@ export default function OrgSettingsPage() {
 
           {categories.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 text-center text-slate-500 text-sm">
-              ライセンスが割り当てられていません
+              動画が割り当てられていません
             </div>
           ) : (
             <div className="space-y-2">

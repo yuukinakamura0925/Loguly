@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
 import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon } from "@/components/icons";
+import AvatarPreview from "@/components/avatar-preview";
 
 type Member = {
   user_id: string;
@@ -246,7 +246,7 @@ export default function MembersPage() {
                   {(() => {
                     const profile = m.profiles as unknown as { display_name: string; avatar_url?: string | null };
                     const avatar = profile?.avatar_url ? (
-                      <Image src={profile.avatar_url} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                      <AvatarPreview src={profile.avatar_url} size={28} className="w-7 h-7" />
                     ) : (
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
                         m.role === "org_admin" ? "bg-da-blue-900" : "bg-slate-500 dark:bg-slate-600"

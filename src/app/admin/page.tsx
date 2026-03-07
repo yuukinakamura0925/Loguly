@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
     { key: "organizations", label: "組織数", value: orgCount ?? 0, href: "/admin/organizations" },
     { key: "videos", label: "動画数", value: videoCount ?? 0, href: "/admin/videos" },
     { key: "categories", label: "カテゴリ数", value: categoryCount ?? 0, href: "/admin/categories" },
-    { key: "licenses", label: "ライセンス数", value: licenseCount ?? 0, href: "/admin/licenses" },
+    { key: "licenses", label: "割り当て数", value: licenseCount ?? 0, href: "/admin/licenses" },
   ];
 
   return (
@@ -166,7 +166,7 @@ export default async function AdminDashboardPage() {
               { href: "/admin/organizations", label: "組織を追加", icon: statIcons.organizations },
               { href: "/admin/videos", label: "動画を追加", icon: statIcons.videos },
               { href: "/admin/categories", label: "カテゴリを追加", icon: statIcons.categories },
-              { href: "/admin/licenses", label: "ライセンスを追加", icon: statIcons.licenses },
+              { href: "/admin/licenses", label: "動画を割り当て", icon: statIcons.licenses },
             ].map((action) => (
               <Link
                 key={action.href}

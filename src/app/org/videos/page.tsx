@@ -266,7 +266,7 @@ export default function OrgVideosPage() {
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500 text-center py-8">
-              ライセンスされた動画がありません
+              割り当てられた動画がありません
             </p>
           </CardContent>
         </Card>

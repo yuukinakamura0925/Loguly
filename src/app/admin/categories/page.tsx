@@ -31,6 +31,8 @@ export default function CategoriesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const [menuId, setMenuId] = useState<number | null>(null);
 
@@ -62,24 +64,34 @@ export default function CategoriesPage() {
   }
 
   async function handleCreate(formData: FormData) {
+    setCreating(true);
     setError("");
-    const result = await createCategory(formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setShowForm(false);
-      reload();
+    try {
+      const result = await createCategory(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setShowForm(false);
+        reload();
+      }
+    } finally {
+      setCreating(false);
     }
   }
 
   async function handleUpdate(id: number, formData: FormData) {
+    setUpdating(true);
     setError("");
-    const result = await updateCategory(id, formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setEditingId(null);
-      reload();
+    try {
+      const result = await updateCategory(id, formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setEditingId(null);
+        reload();
+      }
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -187,9 +199,8 @@ export default function CategoriesPage() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button type="submit">
-                  <CheckIcon />
-                  追加
+                <Button type="submit" isLoading={creating}>
+                  {creating ? "追加中..." : <><CheckIcon />追加</>}
                 </Button>
                 <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
                   キャンセル
@@ -228,9 +239,8 @@ export default function CategoriesPage() {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button type="submit">
-                      <CheckIcon />
-                      保存
+                    <Button type="submit" isLoading={updating}>
+                      {updating ? "保存中..." : <><CheckIcon />保存</>}
                     </Button>
                     <Button type="button" variant="secondary" onClick={() => setEditingId(null)}>
                       キャンセル

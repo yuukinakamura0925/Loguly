@@ -61,7 +61,7 @@ export default async function DashboardPage() {
     (orgCatOrders || []).map((o: { category_id: number; display_order: number }) => [o.category_id, o.display_order])
   );
 
-  // ライセンス済み動画を展開（組織別表示順を保持）
+  // 割り当て済み動画を展開（組織別表示順を保持）
   type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null };
   const videos: DashboardVideo[] = (licensesResult?.data || [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

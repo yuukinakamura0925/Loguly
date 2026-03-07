@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, getCurrentOrg } from "@/lib/auth";
 import {
@@ -8,6 +7,7 @@ import {
   getViewLogsByUsers,
 } from "@/lib/db";
 import { SearchInput } from "@/components/ui";
+import AvatarPreview from "@/components/avatar-preview";
 import { CheckCircleIcon, ChevronRightIcon, SortAscIcon, SortDescIcon, SortIcon } from "@/components/icons";
 
 type MemberProgress = {
@@ -188,7 +188,7 @@ export default async function ProgressPage({
 
       {videos.length === 0 ? (
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500">
-          ライセンスのある動画がありません
+          割り当てられた動画がありません
         </div>
       ) : (
         <>
@@ -245,7 +245,7 @@ export default async function ProgressPage({
                     <div className="flex items-center gap-3">
                       {/* Avatar */}
                       {member.avatar_url ? (
-                        <Image src={member.avatar_url} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                        <AvatarPreview src={member.avatar_url} size={40} className="w-10 h-10" />
                       ) : (
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0 ${
                           isFullyCompleted

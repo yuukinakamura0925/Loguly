@@ -9,7 +9,7 @@ export const adminNavItems = [
   { href: "/admin/organizations", label: "組織管理", icon: <BuildingIcon className="w-5 h-5" strokeWidth={1.5} /> },
   { href: "/admin/categories", label: "カテゴリ管理", icon: <TagIcon className="w-5 h-5" strokeWidth={1.5} /> },
   { href: "/admin/videos", label: "動画管理", icon: <VideoIcon className="w-5 h-5" strokeWidth={1.5} /> },
-  { href: "/admin/licenses", label: "ライセンス管理", icon: <KeyIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/admin/licenses", label: "動画割り当て", icon: <KeyIcon className="w-5 h-5" strokeWidth={1.5} /> },
 ];
 
 export default function AdminSidebar() {
