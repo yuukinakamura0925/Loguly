@@ -58,22 +58,22 @@ export default function UpdatePasswordPage() {
   };
 
   return (
-    <div className="dark min-h-screen flex items-center justify-center bg-da-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <Logo size="lg" showText={false} />
-          <h1 className="text-3xl font-bold text-white tracking-tight mt-4">Loguly</h1>
-          <p className="text-slate-400 mt-2">新しいパスワードを設定</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tighter mt-4">Loguly</h1>
+          <p className="text-slate-500 mt-2">新しいパスワードを設定</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8">
             {checking ? (
               <div className="text-center space-y-4">
                 <div className="flex justify-center">
-                  <LoaderIcon className="animate-spin h-8 w-8 text-da-blue-300" />
+                  <LoaderIcon className="animate-spin h-8 w-8 text-da-blue-900" />
                 </div>
-                <p className="text-sm text-slate-400">認証情報を確認中...</p>
+                <p className="text-sm text-slate-500">認証情報を確認中...</p>
               </div>
             ) : !ready ? (
               <div className="text-center space-y-4">
@@ -109,7 +109,7 @@ export default function UpdatePasswordPage() {
                 />
 
                 {error && (
-                  <div className="p-4 bg-red-900/30 border border-da-error/20 rounded-xl">
+                  <div className="p-4 bg-red-50 border border-da-error/20 rounded-xl">
                     <p className="text-sm text-da-error">{error}</p>
                   </div>
                 )}
@@ -127,7 +127,7 @@ export default function UpdatePasswordPage() {
         </div>
 
         <div className="text-center text-sm text-slate-500 mt-8">
-          <Link href="/login" className="hover:text-slate-300 transition-colors">
+          <Link href="/login" className="hover:text-slate-600 transition-colors">
             ← ログインに戻る
           </Link>
         </div>
