@@ -9,7 +9,11 @@ function env(key) {
 
 const c = createClient(env("NEXT_PUBLIC_SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 
-const email = "gimata01@gmail.com";
+const email = process.argv[2];
+if (!email) {
+  console.error("Usage: node scripts/delete-user.mjs <email>");
+  process.exit(1);
+}
 
 const { data: { users } } = await c.auth.admin.listUsers();
 const user = users.find((u) => u.email === email);
