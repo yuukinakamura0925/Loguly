@@ -318,21 +318,21 @@ export default function OrgVideosPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "up"); }}
                       disabled={categoryGroups.indexOf(group) === 0}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                     >
                       <ChevronUpIcon className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); moveCategory(group.id, "down"); }}
                       disabled={categoryGroups.indexOf(group) === categoryGroups.length - 1}
-                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                      className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                     >
                       <ChevronDownIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <button
                     onClick={() => toggleCategory(group.id)}
-                    className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 transition-colors min-w-0"
+                    className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-800/70 active:bg-slate-300 dark:active:bg-slate-700 transition-colors min-w-0"
                   >
                     {isExpanded ? (
                       <ChevronDownIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
@@ -370,14 +370,14 @@ export default function OrgVideosPage() {
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "up"); }}
                             disabled={group.videos.indexOf(video) === 0}
-                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                           >
                             <ChevronUpIcon className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(group.id, video.id, "down"); }}
                             disabled={group.videos.indexOf(video) === group.videos.length - 1}
-                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-30"
                           >
                             <ChevronDownIcon className="w-3.5 h-3.5" />
                           </button>
@@ -420,7 +420,7 @@ export default function OrgVideosPage() {
                             <button
                               type="button"
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditLabel(video.id, video.label); }}
-                              className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 transition-colors"
+                              className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 active:opacity-70 transition-colors"
                             >
                               {video.label ? (
                                 <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-300">
