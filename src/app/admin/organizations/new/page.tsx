@@ -10,14 +10,20 @@ import { ArrowLeftIcon } from "@/components/icons";
 export default function NewOrganizationPage() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function handleSubmit(formData: FormData) {
+    setSaving(true);
     setError("");
-    const result = await createOrganization(formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      router.push("/admin/organizations");
+    try {
+      const result = await createOrganization(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        router.push("/admin/organizations");
+      }
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -51,7 +57,9 @@ export default function NewOrganizationPage() {
             )}
 
             <div className="pt-2">
-              <Button type="submit">作成</Button>
+              <Button type="submit" isLoading={saving}>
+                {saving ? "作成中..." : "作成"}
+              </Button>
             </div>
           </form>
         </CardContent>
