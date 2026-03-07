@@ -8,6 +8,7 @@ interface VideoItemProps {
   duration: number;
   status: "pending" | "in-progress" | "completed";
   progress: number;
+  label?: string | null;
 }
 
 function formatDuration(seconds: number): string {
@@ -16,7 +17,7 @@ function formatDuration(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-export function VideoItem({ id, title, description, duration, status, progress }: VideoItemProps) {
+export function VideoItem({ id, title, description, duration, status, progress, label }: VideoItemProps) {
   const isCompleted = status === "completed";
   const isInProgress = status === "in-progress";
 
@@ -53,11 +54,18 @@ export function VideoItem({ id, title, description, duration, status, progress }
         {/* コンテンツ */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-start justify-between gap-2">
-            <h3 className={`font-medium leading-snug group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors ${
-              isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
-            }`}>
-              {title}
-            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className={`font-medium leading-snug group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors ${
+                isCompleted ? "text-slate-600 dark:text-slate-400" : "text-slate-900 dark:text-white"
+              }`}>
+                {title}
+              </h3>
+              {label && (
+                <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded">
+                  {label}
+                </span>
+              )}
+            </div>
             {/* ステータスバッジ */}
             {isCompleted && (
               <span className="flex-shrink-0 px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded">
