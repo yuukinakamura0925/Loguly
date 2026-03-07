@@ -127,7 +127,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link href="/settings" title="アカウント設定">
               {profile?.avatar_url ? (
-                <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 transition-opacity" />
+                <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 active:opacity-60 active:scale-[0.92] transition-all" />
               ) : (
                 <Logo size="sm" showText={false} />
               )}
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/settings"
-              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white active:scale-[0.9] transition-all"
               title="設定"
             >
               <SettingsIcon className="w-5 h-5" />

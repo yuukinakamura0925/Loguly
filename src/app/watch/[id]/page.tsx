@@ -63,7 +63,7 @@ export default async function WatchPage({ params }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link
             href="/dashboard"
-            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:opacity-70 transition-all"
           >
             &larr; 動画一覧に戻る
           </Link>

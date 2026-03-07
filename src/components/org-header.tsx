@@ -37,15 +37,15 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 active:scale-[0.9] transition-all"
           >
             <MenuIcon className="w-5 h-5" />
           </button>
           <Link href="/settings" title="アカウント設定">
             {avatarUrl ? (
-              <Image src={avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 transition-opacity" />
+              <Image src={avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 active:opacity-60 active:scale-[0.92] transition-all" />
             ) : (
-              <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 bg-da-blue-900 rounded-lg flex items-center justify-center text-white text-sm font-bold hover:opacity-80 active:opacity-60 active:scale-[0.92] transition-all">
                 {displayName?.charAt(0) || "U"}
               </div>
             )}
@@ -58,7 +58,7 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/settings"
-            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white active:scale-[0.9] transition-all"
             title="アカウント設定"
           >
             <SettingsIcon className="w-5 h-5" />
