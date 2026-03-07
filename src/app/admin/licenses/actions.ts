@@ -59,7 +59,7 @@ export async function updateOrgLicenses(
   organizationId: string,
   selectedVideoIds: number[],
   allVideoIds: number[],
-  expiresAt: string | null = null
+  videoExpiresMap: Record<string, string | null>
 ) {
   await requireRole("platform_admin");
   const supabase = await createClient();
@@ -75,13 +75,13 @@ export async function updateOrgLicenses(
     if (deleteError) return { error: deleteError.message };
   }
 
-  // Add licenses for checked videos
+  // Add licenses for checked videos with per-video expiry
   if (selectedVideoIds.length > 0) {
     const licenses = selectedVideoIds.map((videoId) => ({
       organization_id: organizationId,
       video_id: videoId,
       is_active: true,
-      expires_at: expiresAt,
+      expires_at: videoExpiresMap[String(videoId)] ?? null,
     }));
     const { error: insertError } = await insertLicensesBulk(supabase, licenses);
     if (insertError) return { error: insertError.message };
