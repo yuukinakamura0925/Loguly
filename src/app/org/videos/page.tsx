@@ -387,7 +387,7 @@ export default function OrgVideosPage() {
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <Link href={`/org/videos/${video.id}`} className="group">
+                          <Link href={`/org/videos/${video.id}`} className="group active:opacity-70 transition-opacity">
                             <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
                               {video.title}
                             </div>

@@ -24,7 +24,7 @@ export function VideoItem({ id, title, description, duration, status, progress, 
   return (
     <Link
       href={`/watch/${id}`}
-      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 transition-colors group"
+      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 active:scale-[0.98] transition-all group"
     >
       <div className="flex gap-4">
         {/* サムネイルプレースホルダー */}
@@ -40,7 +40,7 @@ export function VideoItem({ id, title, description, duration, status, progress, 
                 <CheckIcon className="w-5 h-5 text-white dark:text-slate-900" strokeWidth={2.5} />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 group-active:scale-95 transition-transform">
                 <PlayIcon className="w-5 h-5 text-slate-700 dark:text-white ml-0.5" fill="currentColor" />
               </div>
             )}
