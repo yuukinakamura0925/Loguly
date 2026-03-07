@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { acceptInvitation } from "./actions";
+import { CheckIcon } from "@/components/icons";
 
 export default function SignupForm({
   email,
@@ -82,19 +83,7 @@ export default function SignupForm({
     return (
       <div className="text-center space-y-4">
         <div className="w-16 h-16 bg-da-blue-50 rounded-full flex items-center justify-center mx-auto">
-          <svg
-            className="w-8 h-8 text-da-blue-900"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+          <CheckIcon className="w-8 h-8 text-da-blue-900" strokeWidth={2} />
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">
           登録完了

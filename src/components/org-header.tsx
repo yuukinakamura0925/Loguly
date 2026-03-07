@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
 import LogoutButton from "@/app/dashboard/logout-button";
-import { SettingsIcon } from "@/components/icons";
+import { SettingsIcon, MenuIcon, BuildingIcon } from "@/components/icons";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { orgNavItems } from "@/components/org-sidebar";
 
@@ -22,9 +22,7 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
   const sidebarHeader = (
     <div className="flex items-center gap-3">
       <div className="w-9 h-9 bg-da-blue-900 rounded-xl flex items-center justify-center">
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
+        <BuildingIcon className="w-5 h-5 text-white" strokeWidth={2} />
       </div>
       <div>
         <div className="text-lg font-bold text-slate-900 dark:text-white truncate max-w-[160px]">{orgName}</div>
@@ -41,9 +39,7 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <MenuIcon className="w-5 h-5" />
           </button>
           <Link href="/settings" title="アカウント設定">
             {avatarUrl ? (

@@ -32,6 +32,12 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
+  GripIcon,
+  ChevronUpIcon,
+  CirclePlayIcon,
+  MoreVerticalIcon,
+  PlayIcon,
+  CheckIcon,
 } from "@/components/icons";
 
 type Video = {
@@ -364,14 +370,7 @@ export default function VideosPage() {
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
               {/* Category drag handle - desktop */}
               <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="9" cy="6" r="1.5" />
-                  <circle cx="15" cy="6" r="1.5" />
-                  <circle cx="9" cy="12" r="1.5" />
-                  <circle cx="15" cy="12" r="1.5" />
-                  <circle cx="9" cy="18" r="1.5" />
-                  <circle cx="15" cy="18" r="1.5" />
-                </svg>
+                <GripIcon className="w-5 h-5" />
               </div>
               {/* Up/down buttons - mobile */}
               <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
@@ -380,14 +379,14 @@ export default function VideosPage() {
                   disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === 0}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                  <ChevronUpIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "down"); }}
                   disabled={videosByCategory.indexOf(videosByCategory.find(v => v.category.id === category.id)!) === videosByCategory.length - 1}
                   className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                 >
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                  <ChevronDownIcon className="w-3.5 h-3.5" />
                 </button>
               </div>
               <button
@@ -431,11 +430,7 @@ export default function VideosPage() {
                   onClick={(e) => { e.stopPropagation(); setMenuVideoId(null); setMenuCategoryId(menuCategoryId === category.id ? null : category.id); }}
                   className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <circle cx="10" cy="4" r="1.5" />
-                    <circle cx="10" cy="10" r="1.5" />
-                    <circle cx="10" cy="16" r="1.5" />
-                  </svg>
+                  <MoreVerticalIcon className="w-5 h-5" />
                 </button>
                 {menuCategoryId === category.id && (
                   <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
@@ -488,14 +483,7 @@ export default function VideosPage() {
                 >
                   {/* Drag handle - desktop */}
                   <div className="hidden lg:flex flex-shrink-0 text-slate-400 dark:text-slate-600">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="9" cy="6" r="1.5" />
-                      <circle cx="15" cy="6" r="1.5" />
-                      <circle cx="9" cy="12" r="1.5" />
-                      <circle cx="15" cy="12" r="1.5" />
-                      <circle cx="9" cy="18" r="1.5" />
-                      <circle cx="15" cy="18" r="1.5" />
-                    </svg>
+                    <GripIcon className="w-5 h-5" />
                   </div>
 
                   {/* Up/down buttons - mobile */}
@@ -505,14 +493,14 @@ export default function VideosPage() {
                       disabled={categoryVideos.indexOf(video) === 0}
                       className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6l-6 8h12l-6-8z" /></svg>
+                      <ChevronUpIcon className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(category.id, video.id, "down"); }}
                       disabled={categoryVideos.indexOf(video) === categoryVideos.length - 1}
                       className="p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-30"
                     >
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 14l-6-8h12l-6 8z" /></svg>
+                      <ChevronDownIcon className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
@@ -531,17 +519,12 @@ export default function VideosPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
-                          <svg className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
+                          <PlayIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="currentColor" />
                         </div>
                       </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-400">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <CirclePlayIcon className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                       </div>
                     )}
                   </button>
@@ -586,11 +569,7 @@ export default function VideosPage() {
                       onClick={(e) => { e.stopPropagation(); setMenuCategoryId(null); setMenuVideoId(menuVideoId === video.id ? null : video.id); }}
                       className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white"
                     >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <circle cx="10" cy="4" r="1.5" />
-                        <circle cx="10" cy="10" r="1.5" />
-                        <circle cx="10" cy="16" r="1.5" />
-                      </svg>
+                      <MoreVerticalIcon className="w-5 h-5" />
                     </button>
                     {menuVideoId === video.id && (
                       <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
@@ -842,9 +821,7 @@ function VideoForm({
 
             {hasVideo && !selectedFile ? (
               <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                <svg className="w-5 h-5 text-da-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckIcon className="w-5 h-5 text-da-success flex-shrink-0" strokeWidth={2} />
                 <span className="text-sm text-slate-700 dark:text-slate-300 truncate">
                   {video ? "アップロード済み" : "アップロード完了"}
                 </span>

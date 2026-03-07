@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 
 type VideoLink = {
   id: number;
@@ -25,14 +26,7 @@ export default function VideoNavigation({ categoryName, prevVideo, nextVideo }: 
               href={`/watch/${prevVideo.id}`}
               className="group flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <svg
-                className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 transition-colors flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+              <ChevronLeftIcon className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 transition-colors flex-shrink-0" />
               <div className="min-w-0">
                 <div className="text-xs text-slate-500 dark:text-slate-400">前の動画</div>
                 <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
@@ -61,14 +55,7 @@ export default function VideoNavigation({ categoryName, prevVideo, nextVideo }: 
                   {nextVideo.title}
                 </div>
               </div>
-              <svg
-                className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 transition-colors flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRightIcon className="w-5 h-5 text-slate-400 group-hover:text-da-blue-900 transition-colors flex-shrink-0" />
             </Link>
           ) : (
             <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700/30 opacity-50 text-right">

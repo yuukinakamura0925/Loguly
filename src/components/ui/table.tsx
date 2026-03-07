@@ -8,7 +8,7 @@ interface TableProps extends HTMLAttributes<HTMLTableElement> {
 
 export function Table({ className = "", children, ...props }: TableProps) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm overflow-hidden">
       <table className={`w-full ${className}`} {...props}>
         {children}
       </table>
@@ -22,7 +22,7 @@ interface TableHeaderProps extends HTMLAttributes<HTMLTableSectionElement> {
 
 export function TableHeader({ className = "", children, ...props }: TableHeaderProps) {
   return (
-    <thead className={`bg-slate-100 dark:bg-slate-800/50 ${className}`} {...props}>
+    <thead className={`bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-800/50 ${className}`} {...props}>
       {children}
     </thead>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
 import { Logo } from "@/components/logo";
+import { MailIcon } from "@/components/icons";
 import { requestPasswordReset } from "./actions";
 
 export default function ResetPasswordPage() {
@@ -43,9 +44,7 @@ export default function ResetPasswordPage() {
             {sent ? (
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 bg-da-blue-900/30 rounded-full flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6 text-da-blue-300" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                  </svg>
+                  <MailIcon className="w-6 h-6 text-da-blue-300" strokeWidth={2} />
                 </div>
                 <h2 className="text-lg font-semibold text-white">メールを送信しました</h2>
                 <p className="text-sm text-slate-400">

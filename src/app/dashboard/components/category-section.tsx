@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardHeader, Progress } from "@/components/ui";
 import { VideoItem } from "./video-item";
-import { ChevronDownIcon } from "@/components/icons";
+import { ChevronDownIcon, LayersIcon } from "@/components/icons";
 
 interface Video {
   id: number;
@@ -49,9 +49,7 @@ export function CategorySection({ name, videos, viewLogs, progress, defaultOpen 
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl flex items-center justify-center">
-            <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
+            <LayersIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" strokeWidth={1.5} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{name}</h2>

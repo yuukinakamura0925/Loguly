@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CheckIcon, PlayIcon, ChevronRightIcon } from "@/components/icons";
 
 interface VideoItemProps {
   id: number;
@@ -35,15 +36,11 @@ export function VideoItem({ id, title, description, duration, status, progress }
           <div className="absolute inset-0 flex items-center justify-center">
             {isCompleted ? (
               <div className="w-10 h-10 rounded-full bg-slate-900/90 dark:bg-slate-100/90 flex items-center justify-center">
-                <svg className="w-5 h-5 text-white dark:text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
+                <CheckIcon className="w-5 h-5 text-white dark:text-slate-900" strokeWidth={2.5} />
               </div>
             ) : (
               <div className="w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <svg className="w-5 h-5 text-slate-700 dark:text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                <PlayIcon className="w-5 h-5 text-slate-700 dark:text-white ml-0.5" fill="currentColor" />
               </div>
             )}
           </div>
@@ -97,14 +94,7 @@ export function VideoItem({ id, title, description, duration, status, progress }
 
         {/* 矢印 */}
         <div className="flex items-center flex-shrink-0">
-          <svg
-            className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 group-hover:translate-x-1 transition-all"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          <ChevronRightIcon className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 group-hover:translate-x-1 transition-all" />
         </div>
       </div>
     </Link>
