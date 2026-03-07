@@ -159,6 +159,12 @@ export default function SettingsPage() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
+  // Loading states
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   // Messages
   const [profileMessage, setProfileMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -190,17 +196,21 @@ export default function SettingsPage() {
 
   async function handleUpdateDisplayName(e: React.FormEvent) {
     e.preventDefault();
+    setSavingProfile(true);
     setProfileMessage(null);
+    try {
+      const formData = new FormData();
+      formData.set("displayName", displayName);
 
-    const formData = new FormData();
-    formData.set("displayName", displayName);
-
-    const result = await updateDisplayName(formData);
-    if (result.error) {
-      setProfileMessage({ type: "error", text: result.error });
-    } else {
-      setProfileMessage({ type: "success", text: "表示名を更新しました" });
-      setProfile((prev) => prev ? { ...prev, display_name: displayName } : null);
+      const result = await updateDisplayName(formData);
+      if (result.error) {
+        setProfileMessage({ type: "error", text: result.error });
+      } else {
+        setProfileMessage({ type: "success", text: "表示名を更新しました" });
+        setProfile((prev) => prev ? { ...prev, display_name: displayName } : null);
+      }
+    } finally {
+      setSavingProfile(false);
     }
   }
 
@@ -234,55 +244,67 @@ export default function SettingsPage() {
 
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault();
+    setSavingPassword(true);
     setPasswordMessage(null);
+    try {
+      const formData = new FormData();
+      formData.set("currentPassword", currentPassword);
+      formData.set("newPassword", newPassword);
+      formData.set("confirmPassword", confirmPassword);
 
-    const formData = new FormData();
-    formData.set("currentPassword", currentPassword);
-    formData.set("newPassword", newPassword);
-    formData.set("confirmPassword", confirmPassword);
-
-    const result = await updatePassword(formData);
-    if (result.error) {
-      setPasswordMessage({ type: "error", text: result.error });
-    } else {
-      setPasswordMessage({ type: "success", text: "パスワードを更新しました" });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      const result = await updatePassword(formData);
+      if (result.error) {
+        setPasswordMessage({ type: "error", text: result.error });
+      } else {
+        setPasswordMessage({ type: "success", text: "パスワードを更新しました" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } finally {
+      setSavingPassword(false);
     }
   }
 
   async function handleUpdateEmail(e: React.FormEvent) {
     e.preventDefault();
+    setSavingEmail(true);
     setEmailMessage(null);
+    try {
+      const formData = new FormData();
+      formData.set("newEmail", newEmail);
+      formData.set("password", emailPassword);
 
-    const formData = new FormData();
-    formData.set("newEmail", newEmail);
-    formData.set("password", emailPassword);
-
-    const result = await updateEmail(formData);
-    if (result.error) {
-      setEmailMessage({ type: "error", text: result.error });
-    } else {
-      setEmailMessage({ type: "success", text: result.message || "メールアドレスを更新しました" });
-      setNewEmail("");
-      setEmailPassword("");
+      const result = await updateEmail(formData);
+      if (result.error) {
+        setEmailMessage({ type: "error", text: result.error });
+      } else {
+        setEmailMessage({ type: "success", text: result.message || "メールアドレスを更新しました" });
+        setNewEmail("");
+        setEmailPassword("");
+      }
+    } finally {
+      setSavingEmail(false);
     }
   }
 
   async function handleDeleteAccount(e: React.FormEvent) {
     e.preventDefault();
+    setDeletingAccount(true);
     setDeleteMessage(null);
+    try {
+      const formData = new FormData();
+      formData.set("password", deletePassword);
+      formData.set("confirmation", deleteConfirmation);
 
-    const formData = new FormData();
-    formData.set("password", deletePassword);
-    formData.set("confirmation", deleteConfirmation);
-
-    const result = await deleteAccount(formData);
-    if (result.error) {
-      setDeleteMessage({ type: "error", text: result.error });
-    } else if (result.redirect) {
-      router.push(result.redirect);
+      const result = await deleteAccount(formData);
+      if (result.error) {
+        setDeleteMessage({ type: "error", text: result.error });
+      } else if (result.redirect) {
+        router.push(result.redirect);
+      }
+    } finally {
+      setDeletingAccount(false);
     }
   }
 
@@ -412,9 +434,14 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
+              disabled={savingProfile}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                savingProfile
+                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+              }`}
             >
-              更新
+              {savingProfile ? "更新中..." : "更新"}
             </button>
           </form>
         </section>
@@ -468,9 +495,14 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
+              disabled={savingPassword}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                savingPassword
+                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+              }`}
             >
-              パスワードを変更
+              {savingPassword ? "変更中..." : "パスワードを変更"}
             </button>
           </form>
         </section>
@@ -512,9 +544,14 @@ export default function SettingsPage() {
             )}
             <button
               type="submit"
-              className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
+              disabled={savingEmail}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                savingEmail
+                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+              }`}
             >
-              メールアドレスを変更
+              {savingEmail ? "変更中..." : "メールアドレスを変更"}
             </button>
           </form>
         </section>
@@ -561,9 +598,14 @@ export default function SettingsPage() {
               )}
               <button
                 type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                disabled={deletingAccount}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  deletingAccount
+                    ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
               >
-                アカウントを削除
+                {deletingAccount ? "削除中..." : "アカウントを削除"}
               </button>
             </form>
           </section>

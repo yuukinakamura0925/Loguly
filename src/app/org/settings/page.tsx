@@ -30,6 +30,7 @@ export default function OrgSettingsPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -107,14 +108,19 @@ export default function OrgSettingsPage() {
   }
 
   async function handleSubmit(formData: FormData) {
+    setSaving(true);
     setError("");
     setSuccess(false);
-    const result = await updateOrgSettings(formData);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setSuccess(true);
-      reload();
+    try {
+      const result = await updateOrgSettings(formData);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        reload();
+      }
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -169,9 +175,14 @@ export default function OrgSettingsPage() {
 
           <button
             type="submit"
-            className="px-6 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline transition-colors"
+            disabled={saving}
+            className={`px-6 py-2 rounded-lg transition-colors ${
+              saving
+                ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
+                : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+            }`}
           >
-            更新
+            {saving ? "更新中..." : "更新"}
           </button>
         </form>
 

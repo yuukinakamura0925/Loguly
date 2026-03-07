@@ -18,7 +18,8 @@ import {
   Pagination,
 } from "@/components/ui";
 import type { SortOrder } from "@/components/ui";
-import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from "@/components/icons";
+import { PlusIcon, PencilIcon, UsersIcon } from "@/components/icons";
+import DeleteButton from "./delete-button";
 
 const PER_PAGE = 10;
 
@@ -143,13 +144,7 @@ export default async function OrganizationsPage({
                         await deleteOrganization(org.id);
                       }}
                     >
-                      <button
-                        type="submit"
-                        className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
-                        title="削除"
-                      >
-                        <TrashIcon />
-                      </button>
+                      <DeleteButton />
                     </form>
                   </div>
                 </TableCell>
