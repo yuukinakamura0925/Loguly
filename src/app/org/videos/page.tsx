@@ -8,9 +8,9 @@ import {
   listCategories,
   listOrgCategoryOrder,
 } from "@/lib/db";
-import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder } from "./actions";
+import { reorderOrgVideos, reorderOrgCategories, resetOrgDisplayOrder, updateVideoLabel } from "./actions";
 import { Card, CardContent, Button } from "@/components/ui";
-import { GripIcon, ChevronUpIcon, ChevronDownIcon, CirclePlayIcon, ChevronRightIcon } from "@/components/icons";
+import { GripIcon, ChevronUpIcon, ChevronDownIcon, CirclePlayIcon, ChevronRightIcon, PencilIcon } from "@/components/icons";
 
 type Video = {
   id: number;
@@ -18,6 +18,7 @@ type Video = {
   duration: number;
   display_order: number;
   orgDisplayOrder: number | null;
+  label: string | null;
   categories: { name: string; display_order: number } | null;
 };
 
@@ -43,6 +44,10 @@ export default function OrgVideosPage() {
   const [hasCustomOrder, setHasCustomOrder] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Label editing state
+  const [editingLabelVideoId, setEditingLabelVideoId] = useState<number | null>(null);
+  const [editingLabelValue, setEditingLabelValue] = useState("");
 
   // Drag state
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
@@ -80,7 +85,7 @@ export default function OrgVideosPage() {
         .map((l: Record<string, unknown>) => {
           const v = l.videos as Record<string, unknown> | null;
           if (!v) return null;
-          return { ...v, orgDisplayOrder: l.display_order as number | null } as Video;
+          return { ...v, orgDisplayOrder: l.display_order as number | null, label: (l.label as string | null) ?? null } as Video;
         })
         .filter(Boolean) as Video[];
 
@@ -228,6 +233,19 @@ export default function OrgVideosPage() {
     else reload();
   }
 
+  function startEditLabel(videoId: number, currentLabel: string | null) {
+    setEditingLabelVideoId(videoId);
+    setEditingLabelValue(currentLabel || "");
+  }
+
+  async function saveLabel(videoId: number) {
+    setError("");
+    const result = await updateVideoLabel(videoId, editingLabelValue);
+    if (result.error) setError(result.error);
+    else reload();
+    setEditingLabelVideoId(null);
+  }
+
   const totalVideos = categoryGroups.reduce((sum, g) => sum + g.videos.length, 0);
 
   if (loading) {
@@ -369,14 +387,54 @@ export default function OrgVideosPage() {
                           <CirclePlayIcon className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
                         </div>
 
-                        <Link href={`/org/videos/${video.id}`} className="flex-1 min-w-0 group">
-                          <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
-                            {video.title}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {formatDuration(video.duration)}
-                          </div>
-                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <Link href={`/org/videos/${video.id}`} className="group">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate group-hover:text-da-blue-900 dark:group-hover:text-da-blue-300 transition-colors">
+                              {video.title}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {formatDuration(video.duration)}
+                            </div>
+                          </Link>
+                          {/* Label display / edit */}
+                          {editingLabelVideoId === video.id ? (
+                            <div className="mt-1">
+                              <input
+                                type="text"
+                                value={editingLabelValue}
+                                onChange={(e) => setEditingLabelValue(e.target.value)}
+                                onBlur={() => saveLabel(video.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") saveLabel(video.id);
+                                  if (e.key === "Escape") setEditingLabelVideoId(null);
+                                }}
+                                maxLength={50}
+                                autoFocus
+                                placeholder="ラベルを入力（50文字以内）"
+                                className="w-full max-w-xs px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white placeholder-slate-400"
+                                onClick={(e) => e.stopPropagation()}
+                                onDragStart={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditLabel(video.id, video.label); }}
+                              className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 transition-colors"
+                            >
+                              {video.label ? (
+                                <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-300">
+                                  {video.label}
+                                </span>
+                              ) : (
+                                <>
+                                  <PencilIcon className="w-3 h-3" />
+                                  ラベルを追加
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
 
                         <ChevronRightIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       </div>
