@@ -120,14 +120,14 @@ function AvatarCropModal({
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="flex-1 px-4 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 active:scale-[0.97] transition-all"
             >
               キャンセル
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              className="flex-1 px-4 py-2 text-sm bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 transition-colors"
+              className="flex-1 px-4 py-2 text-sm bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 active:bg-da-blue-1200 active:scale-[0.97] transition-all"
             >
               決定
             </button>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
                   ? "/org/members"
                   : "/dashboard"
             }
-            className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
+            className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:opacity-70 text-sm transition-all"
           >
             <ArrowLeftIcon />
             戻る
@@ -370,7 +370,7 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={avatarUploading}
-                    className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                    className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 active:bg-slate-300 dark:active:bg-slate-500 active:scale-[0.96] transition-all disabled:opacity-50"
                   >
                     画像を変更
                   </button>
@@ -436,7 +436,7 @@ export default function SettingsPage() {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 savingProfile
                   ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
               }`}
             >
               {savingProfile ? "更新中..." : "更新"}
@@ -497,7 +497,7 @@ export default function SettingsPage() {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 savingPassword
                   ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
               }`}
             >
               {savingPassword ? "変更中..." : "パスワードを変更"}
@@ -546,7 +546,7 @@ export default function SettingsPage() {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 savingEmail
                   ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
+                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
               }`}
             >
               {savingEmail ? "変更中..." : "メールアドレスを変更"}
@@ -600,7 +600,7 @@ export default function SettingsPage() {
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   deletingAccount
                     ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                    : "bg-red-600 text-white hover:bg-red-700"
+                    : "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 active:scale-[0.97]"
                 }`}
               >
                 {deletingAccount ? "削除中..." : "アカウントを削除"}
