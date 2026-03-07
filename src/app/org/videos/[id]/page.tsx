@@ -37,7 +37,7 @@ export default async function OrgVideoPreviewPage({ params }: Props) {
       <div className="mb-6">
         <Link
           href="/org/videos"
-          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
+          className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white active:opacity-70 text-sm transition-colors"
         >
           <ArrowLeftIcon />
           動画一覧に戻る
