@@ -60,7 +60,7 @@ export function MobileSidebar({
           {header}
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700"
           >
             <XIcon className="w-5 h-5" />
           </button>
@@ -73,7 +73,7 @@ export function MobileSidebar({
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive(item.href, pathname)
                   ? "bg-da-blue-50 dark:bg-da-blue-900/20 text-da-blue-900 dark:text-da-blue-200 font-semibold"
-                  : "text-da-gray-600 dark:text-slate-400 hover:bg-da-blue-50 dark:hover:bg-slate-800/50 hover:text-da-blue-900 dark:hover:text-white"
+                  : "text-da-gray-600 dark:text-slate-400 hover:bg-da-blue-50 dark:hover:bg-slate-800/50 hover:text-da-blue-900 dark:hover:text-white active:bg-slate-100 dark:active:bg-slate-700/50"
               }`}
             >
               {item.icon}

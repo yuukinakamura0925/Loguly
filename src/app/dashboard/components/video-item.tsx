@@ -24,7 +24,7 @@ export function VideoItem({ id, title, description, duration, status, progress, 
   return (
     <Link
       href={`/watch/${id}`}
-      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+      className="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 transition-colors group"
     >
       <div className="flex gap-4">
         {/* サムネイルプレースホルダー */}

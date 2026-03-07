@@ -37,7 +37,7 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
                   ? "bg-da-blue-50 dark:bg-da-blue-900/20 text-da-blue-900 dark:text-da-blue-200 font-semibold"
-                  : "text-da-gray-600 dark:text-slate-400 hover:bg-da-blue-50 dark:hover:bg-slate-800/50 hover:text-da-blue-900 dark:hover:text-white"
+                  : "text-da-gray-600 dark:text-slate-400 hover:bg-da-blue-50 dark:hover:bg-slate-800/50 hover:text-da-blue-900 dark:hover:text-white active:bg-slate-100 dark:active:bg-slate-700/50"
               }`}
             >
               {item.icon}
