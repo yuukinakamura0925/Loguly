@@ -40,6 +40,7 @@ export type OrganizationLicense = {
   video_id: number;
   display_order: number | null;
   label: string | null;
+  label_color: string | null;
   expires_at: string | null;
   is_active: boolean;
   created_at: string;

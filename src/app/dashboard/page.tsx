@@ -62,7 +62,7 @@ export default async function DashboardPage() {
   );
 
   // 割り当て済み動画を展開（組織別表示順を保持）
-  type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null; label: string | null };
+  type DashboardVideo = { id: number; category_id: number; title: string; description: string | null; duration: number; display_order: number; orgDisplayOrder: number | null; label: string | null; labelColor: string | null };
   const videos: DashboardVideo[] = (licensesResult?.data || [])
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((l: any) => {
@@ -77,6 +77,7 @@ export default async function DashboardPage() {
         display_order: v.display_order,
         orgDisplayOrder: l.display_order as number | null,
         label: (l.label as string | null) ?? null,
+        labelColor: (l.label_color as string | null) ?? null,
       };
     })
     .filter(Boolean) as DashboardVideo[];
