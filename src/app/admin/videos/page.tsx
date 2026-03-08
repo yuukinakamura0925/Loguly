@@ -778,7 +778,7 @@ function VideoForm({
   return (
     <Card className="mb-6">
       <CardContent>
-        <form action={async (formData) => { setSaving(true); try { await onSubmit(formData); } finally { setSaving(false); } }} className="space-y-4">
+        <form onSubmit={async (e) => { e.preventDefault(); setSaving(true); try { await onSubmit(new FormData(e.currentTarget)); } finally { setSaving(false); } }} className="space-y-4">
           <input type="hidden" name="cf_video_id" value={uploadedVideoId} />
           <input type="hidden" name="duration" value={detectedDuration} />
 
@@ -937,7 +937,7 @@ function CategoryForm({
   return (
     <Card className="mb-6">
       <CardContent>
-        <form action={async (formData) => { setSaving(true); try { await onSubmit(formData); } finally { setSaving(false); } }} className="space-y-4">
+        <form onSubmit={async (e) => { e.preventDefault(); setSaving(true); try { await onSubmit(new FormData(e.currentTarget)); } finally { setSaving(false); } }} className="space-y-4">
           <div className="flex items-center gap-3 mb-4">
             <FolderIcon className="w-5 h-5 text-da-gray-600" />
             <span className="font-medium text-slate-900 dark:text-white">

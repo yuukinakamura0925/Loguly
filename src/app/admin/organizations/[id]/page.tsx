@@ -110,10 +110,12 @@ export default function EditOrganizationPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setUpdating(true);
     setError("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await updateOrganization(id, formData);
       if (result.error) {
         setError(result.error);
@@ -125,10 +127,12 @@ export default function EditOrganizationPage() {
     }
   }
 
-  async function handleAddMember(formData: FormData) {
+  async function handleAddMember(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setAdding(true);
     setMemberError("");
     try {
+      const formData = new FormData(e.currentTarget);
       formData.set("organization_id", id);
       const result = await addOrgMember(formData);
       if (result.error) {
@@ -151,11 +155,13 @@ export default function EditOrganizationPage() {
     }
   }
 
-  async function handleCreateUser(formData: FormData) {
+  async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setCreating(true);
     setCreateError("");
     setCreateSuccess("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await createOrgUser(id, formData);
       if (result.error) {
         setCreateError(result.error);
@@ -195,7 +201,7 @@ export default function EditOrganizationPage() {
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">基本情報</h2>
           <Card>
             <CardContent>
-              <form action={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <Input
                   name="name"
                   label="組織名"
@@ -245,7 +251,7 @@ export default function EditOrganizationPage() {
           {/* ユーザー新規作成 */}
           <Card className="mb-4">
             <CardContent>
-              <form action={handleCreateUser} className="space-y-4">
+              <form onSubmit={handleCreateUser} className="space-y-4">
                 <div className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <PlusIcon className="w-4 h-4" />
                   ユーザーを作成して追加
@@ -300,7 +306,7 @@ export default function EditOrganizationPage() {
           {/* 既存ユーザー追加 */}
           <Card className="mb-4">
             <CardContent>
-              <form action={handleAddMember} className="space-y-4">
+              <form onSubmit={handleAddMember} className="space-y-4">
                 <div className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
                   <UsersIcon className="w-4 h-4" />
                   既存ユーザーを追加

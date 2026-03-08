@@ -63,10 +63,12 @@ export default function CategoriesPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  async function handleCreate(formData: FormData) {
+  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setCreating(true);
     setError("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await createCategory(formData);
       if (result.error) {
         setError(result.error);
@@ -79,10 +81,12 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleUpdate(id: number, formData: FormData) {
+  async function handleUpdate(id: number, e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setUpdating(true);
     setError("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await updateCategory(id, formData);
       if (result.error) {
         setError(result.error);
@@ -183,7 +187,7 @@ export default function CategoriesPage() {
               <FolderIcon className="w-5 h-5 text-da-gray-600" />
               <span className="font-medium text-slate-900 dark:text-white">新しいカテゴリ</span>
             </div>
-            <form action={handleCreate} className="space-y-4">
+            <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   name="name"
@@ -223,7 +227,7 @@ export default function CategoriesPage() {
               const cat = categories.find((c) => c.id === editingId);
               if (!cat) return null;
               return (
-                <form action={(formData) => handleUpdate(cat.id, formData)} className="space-y-4">
+                <form onSubmit={(e) => handleUpdate(cat.id, e)} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Input
                       name="name"

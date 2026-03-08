@@ -12,10 +12,12 @@ export default function NewOrganizationPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setSaving(true);
     setError("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await createOrganization(formData);
       if (result.error) {
         setError(result.error);
@@ -42,7 +44,7 @@ export default function NewOrganizationPage() {
 
       <Card>
         <CardContent>
-          <form action={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               name="name"
               label="組織名"
