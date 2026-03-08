@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfileByEmail } from "@/lib/db";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function requestPasswordReset(email: string) {
   const admin = createAdminClient();
@@ -19,7 +20,7 @@ export async function requestPasswordReset(email: string) {
 
   if (error) {
     console.error("resetPasswordForEmail error:", error.message);
-    return { error: `リセットメールの送信に失敗しました: ${error.message}` };
+    return { error: `リセットメールの送信に失敗しました: ${toJapaneseError(error.message)}` };
   }
 
   return { success: true };

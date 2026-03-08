@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { acceptInvitation } from "./actions";
 import { CheckIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export default function SignupForm({
   email,
@@ -60,7 +61,7 @@ export default function SignupForm({
           "このメールアドレスは既に登録されています。ログインページからログインしてください。"
         );
       } else {
-        setError(signUpError.message);
+        setError(toJapaneseError(signUpError.message));
       }
       setIsLoading(false);
       return;
