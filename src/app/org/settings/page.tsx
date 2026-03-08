@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, getOrganizationById, listActiveLicensesForOrg } from "@/lib/db";
 import { updateOrgSettings } from "./actions";
+import { Button } from "@/components/ui";
 import { ChevronDownIcon } from "@/components/icons";
 
 type License = {
@@ -173,17 +174,9 @@ export default function OrgSettingsPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className={`px-6 py-2 rounded-lg transition-colors ${
-              saving
-                ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
-            }`}
-          >
-            {saving ? "更新中..." : "更新"}
-          </button>
+          <Button type="submit" isLoading={saving}>
+            更新
+          </Button>
         </form>
 
         <div>

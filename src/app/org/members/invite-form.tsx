@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createInvitation } from "./actions";
+import { Button } from "@/components/ui";
 
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
@@ -57,24 +58,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
               className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm font-mono"
               onClick={(e) => (e.target as HTMLInputElement).select()}
             />
-            <button
-              onClick={handleCopy}
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                copied
-                  ? "bg-da-blue-1200 text-white"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline"
-              }`}
-            >
-              {copied ? "✓" : "コピー"}
-            </button>
+            <Button onClick={handleCopy} size="sm">
+              {copied ? "コピー済み" : "コピー"}
+            </Button>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm"
-        >
+        <Button variant="secondary" size="sm" onClick={onClose}>
           閉じる
-        </button>
+        </Button>
       </div>
     );
   }
@@ -116,24 +107,12 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
       )}
 
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={submitting}
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-            submitting
-              ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-              : "bg-da-blue-900 text-white hover:bg-da-blue-1000"
-          }`}
-        >
-          {submitting ? "発行中..." : "招待リンクを発行"}
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-white rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 text-sm"
-        >
+        <Button type="submit" size="sm" isLoading={submitting}>
+          招待リンクを発行
+        </Button>
+        <Button type="button" variant="secondary" size="sm" onClick={onClose}>
           キャンセル
-        </button>
+        </Button>
       </div>
     </form>
   );
