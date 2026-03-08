@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getValidInvitationByToken } from "@/lib/db";
 import SignupForm from "./signup-form";
 
@@ -9,7 +9,7 @@ type Props = {
 
 export default async function InvitePage({ params }: Props) {
   const { token } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: invitation } = await getValidInvitationByToken(supabase, token);
 
