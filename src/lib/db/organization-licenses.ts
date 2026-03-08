@@ -18,7 +18,7 @@ export function listActiveLicensesForOrg(client: TypedClient, organizationId: st
 export function listLicensedVideosForOrg(client: TypedClient, organizationId: string) {
   return client
     .from("organization_licenses")
-    .select("video_id, display_order, label, videos(id, category_id, title, description, duration, display_order, categories(name, display_order))")
+    .select("video_id, display_order, label, label_color, videos(id, category_id, title, description, duration, display_order, categories(name, display_order))")
     .eq("organization_id", organizationId)
     .eq("is_active", true);
 }
@@ -100,11 +100,12 @@ export function updateLicenseLabel(
   client: TypedClient,
   organizationId: string,
   videoId: number,
-  label: string | null
+  label: string | null,
+  labelColor: string | null = null
 ) {
   return client
     .from("organization_licenses")
-    .update({ label })
+    .update({ label, label_color: labelColor })
     .eq("organization_id", organizationId)
     .eq("video_id", videoId);
 }

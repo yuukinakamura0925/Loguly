@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { CheckIcon, PlayIcon, ChevronRightIcon } from "@/components/icons";
 
+const LABEL_COLORS: Record<string, { bg: string; text: string }> = {
+  gray: { bg: "bg-slate-200 dark:bg-slate-700", text: "text-slate-600 dark:text-slate-300" },
+  blue: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300" },
+  green: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300" },
+  yellow: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300" },
+  red: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300" },
+  purple: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300" },
+};
+
 interface VideoItemProps {
   id: number;
   title: string;
@@ -9,6 +18,7 @@ interface VideoItemProps {
   status: "pending" | "in-progress" | "completed";
   progress: number;
   label?: string | null;
+  labelColor?: string | null;
 }
 
 function formatDuration(seconds: number): string {
@@ -17,7 +27,7 @@ function formatDuration(seconds: number): string {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-export function VideoItem({ id, title, description, duration, status, progress, label }: VideoItemProps) {
+export function VideoItem({ id, title, description, duration, status, progress, label, labelColor }: VideoItemProps) {
   const isCompleted = status === "completed";
   const isInProgress = status === "in-progress";
 
@@ -60,11 +70,14 @@ export function VideoItem({ id, title, description, duration, status, progress, 
               }`}>
                 {title}
               </h3>
-              {label && (
-                <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded">
-                  {label}
-                </span>
-              )}
+              {label && (() => {
+                const style = LABEL_COLORS[labelColor || "gray"] || LABEL_COLORS.gray;
+                return (
+                  <span className={`px-1.5 py-0.5 ${style.bg} ${style.text} text-xs rounded`}>
+                    {label}
+                  </span>
+                );
+              })()}
             </div>
             {/* ステータスバッジ */}
             {isCompleted && (
