@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
+import { Button } from "@/components/ui";
 import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon } from "@/components/icons";
 import AvatarPreview from "@/components/avatar-preview";
 
@@ -73,6 +74,7 @@ export default function MembersPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey>("joined_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -121,22 +123,26 @@ export default function MembersPage() {
 
   async function handleRemove(userId: string) {
     setError("");
+    setProcessingId(userId);
     const result = await removeMember(userId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
+    setProcessingId(null);
   }
 
   async function handleCancelInvite(id: string) {
     setError("");
+    setProcessingId(id);
     const result = await cancelInvitation(id);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
+    setProcessingId(null);
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -177,12 +183,13 @@ export default function MembersPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">メンバー管理</h1>
-        <button
+        <Button
           onClick={() => setShowInvite(!showInvite)}
-          className="px-4 py-2 bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.98] transition-colors text-sm"
+          variant={showInvite ? "secondary" : "primary"}
+          size="sm"
         >
           {showInvite ? "キャンセル" : "メンバーを招待"}
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -290,12 +297,15 @@ export default function MembersPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   {m.role !== "org_admin" && (
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => handleRemove(m.user_id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:opacity-70 text-sm"
+                      isLoading={processingId === m.user_id}
+                      disabled={processingId !== null}
                     >
                       削除
-                    </button>
+                    </Button>
                   )}
                 </td>
               </tr>
@@ -345,12 +355,15 @@ export default function MembersPage() {
                     {new Date(inv.expires_at).toLocaleDateString("ja-JP")}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={() => handleCancelInvite(inv.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 active:opacity-70 text-sm"
+                      isLoading={processingId === inv.id}
+                      disabled={processingId !== null}
                     >
                       取消
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

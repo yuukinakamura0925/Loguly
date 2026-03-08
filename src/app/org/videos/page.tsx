@@ -63,6 +63,7 @@ export default function OrgVideosPage() {
   const [editingLabelVideoId, setEditingLabelVideoId] = useState<number | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
   const [editingLabelColor, setEditingLabelColor] = useState<string | null>(null);
+  const [savingLabel, setSavingLabel] = useState(false);
 
   // Drag state
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
@@ -255,10 +256,15 @@ export default function OrgVideosPage() {
 
   async function saveLabel(videoId: number) {
     setError("");
-    const result = await updateVideoLabel(videoId, editingLabelValue, editingLabelColor);
-    if (result.error) setError(result.error);
-    else reload();
-    setEditingLabelVideoId(null);
+    setSavingLabel(true);
+    try {
+      const result = await updateVideoLabel(videoId, editingLabelValue, editingLabelColor);
+      if (result.error) setError(result.error);
+      else reload();
+      setEditingLabelVideoId(null);
+    } finally {
+      setSavingLabel(false);
+    }
   }
 
   const totalVideos = categoryGroups.reduce((sum, g) => sum + g.videos.length, 0);
@@ -439,13 +445,14 @@ export default function OrgVideosPage() {
                                     title={c.key}
                                   />
                                 ))}
-                                <button
-                                  type="button"
+                                <Button
+                                  size="xs"
+                                  isLoading={savingLabel}
                                   onClick={(e) => { e.stopPropagation(); saveLabel(video.id); }}
-                                  className="ml-2 px-2 py-0.5 text-xs bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded hover:opacity-80"
+                                  className="ml-2"
                                 >
                                   保存
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           ) : (

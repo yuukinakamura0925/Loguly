@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getProfileById } from "@/lib/db";
 import { updateDisplayName, updatePassword, updateEmail, uploadAvatar, deleteAccount } from "./actions";
 import { ArrowLeftIcon } from "@/components/icons";
+import { Button } from "@/components/ui";
 
 function AvatarCropModal({
   file,
@@ -117,20 +118,12 @@ function AvatarCropModal({
 
         <div className="px-4 pt-3 pb-4">
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 px-4 py-2 text-sm border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 active:scale-[0.97] transition-all"
-            >
+            <Button variant="secondary" onClick={onCancel} className="flex-1">
               キャンセル
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirm}
-              className="flex-1 px-4 py-2 text-sm bg-da-blue-900 text-white rounded-lg hover:bg-da-blue-1000 active:bg-da-blue-1200 active:scale-[0.97] transition-all"
-            >
+            </Button>
+            <Button onClick={handleConfirm} className="flex-1">
               決定
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -366,14 +359,14 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={avatarUploading}
-                    className="px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 active:bg-slate-300 dark:active:bg-slate-500 active:scale-[0.96] transition-all disabled:opacity-50"
+                    isLoading={avatarUploading}
                   >
                     画像を変更
-                  </button>
+                  </Button>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -430,17 +423,9 @@ export default function SettingsPage() {
                 {profileMessage.text}
               </div>
             )}
-            <button
-              type="submit"
-              disabled={savingProfile}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                savingProfile
-                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
-              }`}
-            >
-              {savingProfile ? "更新中..." : "更新"}
-            </button>
+            <Button type="submit" isLoading={savingProfile}>
+              更新
+            </Button>
           </form>
         </section>
 
@@ -491,17 +476,9 @@ export default function SettingsPage() {
                 {passwordMessage.text}
               </div>
             )}
-            <button
-              type="submit"
-              disabled={savingPassword}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                savingPassword
-                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
-              }`}
-            >
-              {savingPassword ? "変更中..." : "パスワードを変更"}
-            </button>
+            <Button type="submit" isLoading={savingPassword}>
+              パスワードを変更
+            </Button>
           </form>
         </section>
 
@@ -540,17 +517,9 @@ export default function SettingsPage() {
                 {emailMessage.text}
               </div>
             )}
-            <button
-              type="submit"
-              disabled={savingEmail}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                savingEmail
-                  ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                  : "bg-da-blue-900 text-white hover:bg-da-blue-1000 hover:underline active:bg-da-blue-1200 active:scale-[0.97]"
-              }`}
-            >
-              {savingEmail ? "変更中..." : "メールアドレスを変更"}
-            </button>
+            <Button type="submit" isLoading={savingEmail}>
+              メールアドレスを変更
+            </Button>
           </form>
         </section>
 
@@ -594,17 +563,9 @@ export default function SettingsPage() {
                   {deleteMessage.text}
                 </div>
               )}
-              <button
-                type="submit"
-                disabled={deletingAccount}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  deletingAccount
-                    ? "bg-da-gray-300 text-da-gray-50 cursor-not-allowed"
-                    : "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 active:scale-[0.97]"
-                }`}
-              >
-                {deletingAccount ? "削除中..." : "アカウントを削除"}
-              </button>
+              <Button type="submit" variant="danger" isLoading={deletingAccount}>
+                アカウントを削除
+              </Button>
             </form>
           </section>
         )}

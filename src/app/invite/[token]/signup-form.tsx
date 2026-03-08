@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { acceptInvitation } from "./actions";
 import { CheckIcon } from "@/components/icons";
+import { Button } from "@/components/ui";
 
 export default function SignupForm({
   email,
@@ -181,13 +182,9 @@ export default function SignupForm({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full py-3 px-4 bg-da-blue-900 hover:bg-da-blue-1000 disabled:bg-da-gray-300 disabled:text-da-gray-50 text-white hover:underline font-medium rounded-lg transition-colors"
-      >
-        {isLoading ? "登録中..." : "アカウントを作成して参加"}
-      </button>
+      <Button type="submit" isLoading={isLoading} className="w-full">
+        アカウントを作成して参加
+      </Button>
     </form>
   );
 }

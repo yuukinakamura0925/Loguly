@@ -2,7 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { LoaderIcon } from "@/components/icons";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -18,6 +18,7 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
+  xs: "px-2 py-0.5 text-xs rounded",
   sm: "px-3 py-1.5 text-sm rounded-lg",
   md: "px-4 py-2.5 text-sm rounded-lg",
   lg: "px-6 py-3 text-base rounded-lg",
