@@ -16,11 +16,13 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setSubmitting(true);
     setError("");
     setInviteUrl("");
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await createInvitation(formData);
       if (result.error) {
         setError(result.error);
@@ -72,7 +74,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
 
   return (
     <form
-      action={handleSubmit}
+      onSubmit={handleSubmit}
       className="mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3"
     >
       <div className="grid grid-cols-2 gap-3">

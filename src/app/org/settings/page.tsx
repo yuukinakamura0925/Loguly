@@ -108,11 +108,13 @@ export default function OrgSettingsPage() {
     });
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setSaving(true);
     setError("");
     setSuccess(false);
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await updateOrgSettings(formData);
       if (result.error) {
         setError(result.error);
@@ -136,7 +138,7 @@ export default function OrgSettingsPage() {
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">組織設定</h1>
 
       <div className="max-w-lg space-y-6">
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
               組織名
