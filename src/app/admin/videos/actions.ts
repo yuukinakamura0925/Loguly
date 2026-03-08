@@ -16,6 +16,7 @@ import {
   deleteCategory as dbDeleteCategory,
 } from "@/lib/db";
 import { getVideoStorage } from "@/lib/video-storage";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function createVideo(formData: FormData) {
   await requireRole("platform_admin");
@@ -31,7 +32,7 @@ export async function createVideo(formData: FormData) {
     is_published: formData.get("is_published") === "true",
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -50,7 +51,7 @@ export async function updateVideo(id: number, formData: FormData) {
     is_published: formData.get("is_published") === "true",
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -73,7 +74,7 @@ export async function deleteVideo(id: number) {
 
   const { error } = await dbDeleteVideo(supabase, id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -109,10 +110,10 @@ export async function moveVideo(videoId: number, direction: "up" | "down") {
   const targetVideo = categoryVideos[targetIndex];
 
   const { error: err1 } = await updateVideoOrder(supabase, currentVideo.id, targetVideo.display_order);
-  if (err1) return { error: err1.message };
+  if (err1) return { error: toJapaneseError(err1.message) };
 
   const { error: err2 } = await updateVideoOrder(supabase, targetVideo.id, currentVideo.display_order);
-  if (err2) return { error: err2.message };
+  if (err2) return { error: toJapaneseError(err2.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -125,7 +126,7 @@ export async function reorderVideos(categoryId: number, orderedVideoIds: number[
   // 渡された順番通りに display_order を1から振り直す
   for (let i = 0; i < orderedVideoIds.length; i++) {
     const { error } = await updateVideoOrder(supabase, orderedVideoIds[i], i + 1);
-    if (error) return { error: error.message };
+    if (error) return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/admin/videos");
@@ -138,7 +139,7 @@ export async function reorderCategories(orderedCategoryIds: number[]) {
 
   for (let i = 0; i < orderedCategoryIds.length; i++) {
     const { error } = await updateCategoryOrder(supabase, orderedCategoryIds[i], i + 1);
-    if (error) return { error: error.message };
+    if (error) return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/admin/videos");
@@ -155,7 +156,7 @@ export async function createCategory(formData: FormData) {
 
   const { error } = await insertCategory(supabase, { name, display_order: displayOrder });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -170,7 +171,7 @@ export async function updateCategory(id: number, formData: FormData) {
 
   const { error } = await dbUpdateCategory(supabase, id, { name, display_order: displayOrder });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };
@@ -182,7 +183,7 @@ export async function deleteCategory(id: number) {
 
   const { error } = await dbDeleteCategory(supabase, id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/videos");
   return { success: true };

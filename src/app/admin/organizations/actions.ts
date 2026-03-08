@@ -16,6 +16,7 @@ import {
   insertOrgMember,
   deleteOrgMember,
 } from "@/lib/db";
+import { toJapaneseError } from "@/lib/error-messages";
 
 function generateSlug(name: string): string {
   return name
@@ -35,7 +36,7 @@ export async function createOrganization(formData: FormData) {
   const { error } = await insertOrganization(supabase, { name, slug });
 
   if (error) {
-    return { error: error.message };
+    return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/admin/organizations");
@@ -53,7 +54,7 @@ export async function updateOrganization(id: string, formData: FormData) {
   const { error } = await dbUpdateOrganization(supabase, id, { name, is_active: isActive, max_org_admins: maxOrgAdmins });
 
   if (error) {
-    return { error: error.message };
+    return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/admin/organizations");
@@ -92,7 +93,7 @@ export async function addOrgMember(formData: FormData) {
       existing.organization_id,
       profile.id
     );
-    if (removeError) return { error: removeError.message };
+    if (removeError) return { error: toJapaneseError(removeError.message) };
   }
 
   const { error: memberError } = await insertOrgMember(supabase, {
@@ -101,11 +102,11 @@ export async function addOrgMember(formData: FormData) {
     role,
   });
 
-  if (memberError) return { error: memberError.message };
+  if (memberError) return { error: toJapaneseError(memberError.message) };
 
   const { error: profileError } = await updateProfileRole(supabase, profile.id, role);
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: toJapaneseError(profileError.message) };
 
   revalidatePath(`/admin/organizations/${organizationId}`);
   return { success: true };
@@ -129,11 +130,11 @@ export async function removeOrgMember(organizationId: string, userId: string) {
 
   const { error: memberError } = await deleteOrgMember(supabase, organizationId, userId);
 
-  if (memberError) return { error: memberError.message };
+  if (memberError) return { error: toJapaneseError(memberError.message) };
 
   const { error: profileError } = await updateProfileRole(supabase, userId, "member");
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: toJapaneseError(profileError.message) };
 
   revalidatePath(`/admin/organizations/${organizationId}`);
   return { success: true };
@@ -169,7 +170,7 @@ export async function createOrgUser(organizationId: string, formData: FormData) 
     if (authError.message.includes("already been registered")) {
       return { error: "このメールアドレスは既に登録されています" };
     }
-    return { error: authError.message };
+    return { error: toJapaneseError(authError.message) };
   }
 
   const { error: memberError } = await insertOrgMember(supabase, {
@@ -178,11 +179,11 @@ export async function createOrgUser(organizationId: string, formData: FormData) 
     role,
   });
 
-  if (memberError) return { error: memberError.message };
+  if (memberError) return { error: toJapaneseError(memberError.message) };
 
   const { error: profileError } = await updateProfileRole(supabase, authData.user.id, role);
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: toJapaneseError(profileError.message) };
 
   revalidatePath(`/admin/organizations/${organizationId}`);
   return { success: true };
@@ -195,7 +196,7 @@ export async function deleteOrganization(id: string) {
   const { error } = await dbDeleteOrganization(supabase, id);
 
   if (error) {
-    return { error: error.message };
+    return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/admin/organizations");

@@ -10,6 +10,7 @@ import {
   updateLicenseLabel,
 } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function reorderOrgVideos(orderedVideoIds: number[]) {
   await requireRole("org_admin");
@@ -25,7 +26,7 @@ export async function reorderOrgVideos(orderedVideoIds: number[]) {
       orderedVideoIds[i],
       i + 1
     );
-    if (error) return { error: error.message };
+    if (error) return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/org/videos");
@@ -47,7 +48,7 @@ export async function reorderOrgCategories(orderedCategoryIds: number[]) {
       orderedCategoryIds[i],
       i + 1
     );
-    if (error) return { error: error.message };
+    if (error) return { error: toJapaneseError(error.message) };
   }
 
   revalidatePath("/org/videos");
@@ -78,7 +79,7 @@ export async function updateVideoLabel(videoId: number, label: string, color: st
   const supabase = await createClient();
   const trimmed = label.trim();
   const { error } = await updateLicenseLabel(supabase, org.id, videoId, trimmed || null, trimmed ? color : null);
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/org/videos");
   revalidatePath("/dashboard");

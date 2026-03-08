@@ -10,6 +10,7 @@ import {
   deleteLicensesByOrgAndVideos,
   insertLicensesBulk,
 } from "@/lib/db";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function assignLicense(formData: FormData) {
   await requireRole("platform_admin");
@@ -22,7 +23,7 @@ export async function assignLicense(formData: FormData) {
     is_active: true,
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/licenses");
   return { success: true };
@@ -37,7 +38,7 @@ export async function updateLicense(id: string, formData: FormData) {
     is_active: formData.get("is_active") === "true",
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/licenses");
   return { success: true };
@@ -49,7 +50,7 @@ export async function revokeLicense(id: string) {
 
   const { error } = await deleteLicense(supabase, id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/licenses");
   return { success: true };
@@ -72,7 +73,7 @@ export async function updateOrgLicenses(
       organizationId,
       uncheckedIds
     );
-    if (deleteError) return { error: deleteError.message };
+    if (deleteError) return { error: toJapaneseError(deleteError.message) };
   }
 
   // Add licenses for checked videos with per-video expiry
@@ -84,7 +85,7 @@ export async function updateOrgLicenses(
       expires_at: videoExpiresMap[String(videoId)] ?? null,
     }));
     const { error: insertError } = await insertLicensesBulk(supabase, licenses);
-    if (insertError) return { error: insertError.message };
+    if (insertError) return { error: toJapaneseError(insertError.message) };
   }
 
   revalidatePath("/admin/licenses");

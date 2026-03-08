@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getProfileRole } from "@/lib/db";
 import { Button, Input } from "@/components/ui";
 import { Logo } from "@/components/logo";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -37,9 +38,7 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message === "Invalid login credentials"
-        ? "メールアドレスまたはパスワードが正しくありません"
-        : error.message);
+      setError(toJapaneseError(error.message));
       setIsLoading(false);
       return;
     }

@@ -12,6 +12,7 @@ import {
   deleteOrgMember,
   deleteInvitation,
 } from "@/lib/db";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function createInvitation(formData: FormData) {
   await requireRole("org_admin");
@@ -59,7 +60,7 @@ export async function createInvitation(formData: FormData) {
     expires_at: expiresAt.toISOString(),
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   // TODO: Resend APIでメール送信
   // 現時点では招待リンクを返す
@@ -95,7 +96,7 @@ export async function removeMember(userId: string) {
 
   const { error } = await deleteOrgMember(supabase, org.id, userId);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/org/members");
   return { success: true };
@@ -107,7 +108,7 @@ export async function cancelInvitation(invitationId: string) {
 
   const { error } = await deleteInvitation(supabase, invitationId);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/org/members");
   return { success: true };

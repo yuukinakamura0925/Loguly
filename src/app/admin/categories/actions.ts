@@ -8,6 +8,7 @@ import {
   updateCategory as dbUpdateCategory,
   deleteCategory as dbDeleteCategory,
 } from "@/lib/db";
+import { toJapaneseError } from "@/lib/error-messages";
 
 export async function createCategory(formData: FormData) {
   await requireRole("platform_admin");
@@ -18,7 +19,7 @@ export async function createCategory(formData: FormData) {
 
   const { error } = await insertCategory(supabase, { name, display_order: displayOrder });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/categories");
   return { success: true };
@@ -33,7 +34,7 @@ export async function updateCategory(id: number, formData: FormData) {
 
   const { error } = await dbUpdateCategory(supabase, id, { name, display_order: displayOrder });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/categories");
   return { success: true };
@@ -45,7 +46,7 @@ export async function deleteCategory(id: number) {
 
   const { error } = await dbDeleteCategory(supabase, id);
 
-  if (error) return { error: error.message };
+  if (error) return { error: toJapaneseError(error.message) };
 
   revalidatePath("/admin/categories");
   return { success: true };
