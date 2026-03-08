@@ -11,6 +11,7 @@ interface Video {
   description: string | null;
   duration: number;
   label?: string | null;
+  labelColor?: string | null;
 }
 
 interface ViewLog {
@@ -90,6 +91,7 @@ export function CategorySection({ name, videos, viewLogs, progress, defaultOpen 
                 status={status}
                 progress={videoProgress}
                 label={video.label}
+                labelColor={video.labelColor}
               />
             );
           })}

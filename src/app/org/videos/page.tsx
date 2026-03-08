@@ -19,8 +19,22 @@ type Video = {
   display_order: number;
   orgDisplayOrder: number | null;
   label: string | null;
+  labelColor: string | null;
   categories: { name: string; display_order: number } | null;
 };
+
+const LABEL_COLORS = [
+  { key: "gray", bg: "bg-slate-200 dark:bg-slate-700", text: "text-slate-700 dark:text-slate-300", dot: "bg-slate-400" },
+  { key: "blue", bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
+  { key: "green", bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+  { key: "yellow", bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  { key: "red", bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
+  { key: "purple", bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300", dot: "bg-purple-500" },
+] as const;
+
+function getLabelColorStyle(colorKey: string | null) {
+  return LABEL_COLORS.find((c) => c.key === colorKey) || LABEL_COLORS[0];
+}
 
 type CategoryGroup = {
   id: number;
@@ -48,6 +62,7 @@ export default function OrgVideosPage() {
   // Label editing state
   const [editingLabelVideoId, setEditingLabelVideoId] = useState<number | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
+  const [editingLabelColor, setEditingLabelColor] = useState<string | null>(null);
 
   // Drag state
   const [dragVideoId, setDragVideoId] = useState<number | null>(null);
@@ -84,7 +99,7 @@ export default function OrgVideosPage() {
         .map((l: Record<string, unknown>) => {
           const v = l.videos as Record<string, unknown> | null;
           if (!v) return null;
-          return { ...v, orgDisplayOrder: l.display_order as number | null, label: (l.label as string | null) ?? null } as Video;
+          return { ...v, orgDisplayOrder: l.display_order as number | null, label: (l.label as string | null) ?? null, labelColor: (l.label_color as string | null) ?? null } as Video;
         })
         .filter(Boolean) as Video[];
 
@@ -232,14 +247,15 @@ export default function OrgVideosPage() {
     else reload();
   }
 
-  function startEditLabel(videoId: number, currentLabel: string | null) {
+  function startEditLabel(videoId: number, currentLabel: string | null, currentColor: string | null) {
     setEditingLabelVideoId(videoId);
     setEditingLabelValue(currentLabel || "");
+    setEditingLabelColor(currentColor || "gray");
   }
 
   async function saveLabel(videoId: number) {
     setError("");
-    const result = await updateVideoLabel(videoId, editingLabelValue);
+    const result = await updateVideoLabel(videoId, editingLabelValue, editingLabelColor);
     if (result.error) setError(result.error);
     else reload();
     setEditingLabelVideoId(null);
@@ -397,12 +413,11 @@ export default function OrgVideosPage() {
                           </Link>
                           {/* Label display / edit */}
                           {editingLabelVideoId === video.id ? (
-                            <div className="mt-1">
+                            <div className="mt-1 space-y-1.5">
                               <input
                                 type="text"
                                 value={editingLabelValue}
                                 onChange={(e) => setEditingLabelValue(e.target.value)}
-                                onBlur={() => saveLabel(video.id)}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") saveLabel(video.id);
                                   if (e.key === "Escape") setEditingLabelVideoId(null);
@@ -414,18 +429,39 @@ export default function OrgVideosPage() {
                                 onClick={(e) => e.stopPropagation()}
                                 onDragStart={(e) => e.stopPropagation()}
                               />
+                              <div className="flex items-center gap-1.5">
+                                {LABEL_COLORS.map((c) => (
+                                  <button
+                                    key={c.key}
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setEditingLabelColor(c.key); }}
+                                    className={`w-5 h-5 rounded-full ${c.dot} ${editingLabelColor === c.key ? "ring-2 ring-offset-1 ring-slate-900 dark:ring-white dark:ring-offset-slate-900" : ""}`}
+                                    title={c.key}
+                                  />
+                                ))}
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); saveLabel(video.id); }}
+                                  className="ml-2 px-2 py-0.5 text-xs bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded hover:opacity-80"
+                                >
+                                  保存
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <button
                               type="button"
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditLabel(video.id, video.label); }}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); startEditLabel(video.id, video.label, video.labelColor); }}
                               className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 active:opacity-70 transition-colors"
                             >
-                              {video.label ? (
-                                <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-300">
-                                  {video.label}
-                                </span>
-                              ) : (
+                              {video.label ? (() => {
+                                const style = getLabelColorStyle(video.labelColor);
+                                return (
+                                  <span className={`px-1.5 py-0.5 ${style.bg} ${style.text} rounded`}>
+                                    {video.label}
+                                  </span>
+                                );
+                              })() : (
                                 <>
                                   <PencilIcon className="w-3 h-3" />
                                   ラベルを追加

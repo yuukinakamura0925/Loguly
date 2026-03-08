@@ -70,14 +70,14 @@ export async function resetOrgDisplayOrder() {
   return { success: true };
 }
 
-export async function updateVideoLabel(videoId: number, label: string) {
+export async function updateVideoLabel(videoId: number, label: string, color: string | null = null) {
   await requireRole("org_admin");
   const org = await getCurrentOrg();
   if (!org) return { error: "組織が見つかりません" };
 
   const supabase = await createClient();
   const trimmed = label.trim();
-  const { error } = await updateLicenseLabel(supabase, org.id, videoId, trimmed || null);
+  const { error } = await updateLicenseLabel(supabase, org.id, videoId, trimmed || null, trimmed ? color : null);
   if (error) return { error: error.message };
 
   revalidatePath("/org/videos");
