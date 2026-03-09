@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { CirclePlayIcon, UsersIcon, BarChartIcon, SettingsIcon, BuildingIcon } from "@/components/icons";
 
 export const orgNavItems = [
-  { href: "/org/videos", label: "動画プレビュー", icon: <CirclePlayIcon className="w-5 h-5" strokeWidth={1.5} /> },
-  { href: "/org/members", label: "メンバー管理", icon: <UsersIcon className="w-5 h-5" strokeWidth={1.5} /> },
-  { href: "/org/progress", label: "視聴進捗", icon: <BarChartIcon className="w-5 h-5" strokeWidth={1.5} /> },
-  { href: "/org/settings", label: "設定", icon: <SettingsIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/org/videos", label: "動画プレビュー", id: "nav-videos", icon: <CirclePlayIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/org/members", label: "メンバー管理", id: "nav-members", icon: <UsersIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/org/progress", label: "視聴進捗", id: "nav-progress", icon: <BarChartIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/org/settings", label: "設定", id: "nav-settings", icon: <SettingsIcon className="w-5 h-5" strokeWidth={1.5} /> },
 ];
 
 export default function OrgSidebar({ orgName }: { orgName: string }) {
@@ -27,12 +27,13 @@ export default function OrgSidebar({ orgName }: { orgName: string }) {
           </div>
         </div>
       </div>
-      <nav className="p-3 space-y-1">
+      <nav id="sidebar-nav" className="p-3 space-y-1">
         {orgNavItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
+              id={item.id}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 isActive
