@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createInvitation, sendInviteEmail, getEmailQuota } from "./actions";
 import { Button } from "@/components/ui";
 import { MailIcon, CheckIcon } from "@/components/icons";
 
 export default function InviteForm({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
   const [invitationId, setInvitationId] = useState("");
@@ -131,7 +133,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <Button variant="secondary" size="sm" onClick={onClose}>
+        <Button variant="secondary" size="sm" onClick={() => { router.refresh(); onClose(); }}>
           閉じる
         </Button>
       </div>
