@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { createInvitation } from "./actions";
 import { Button } from "@/components/ui";
+import { MailIcon, CheckIcon } from "@/components/icons";
 
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -21,6 +23,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
     setSubmitting(true);
     setError("");
     setInviteUrl("");
+    setEmailSent(false);
     try {
       const formData = new FormData(e.currentTarget);
       const result = await createInvitation(formData);
@@ -28,6 +31,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
         setError(result.error);
       } else if (result.inviteUrl) {
         setInviteUrl(result.inviteUrl);
+        setEmailSent(result.emailSent ?? false);
       }
     } finally {
       setSubmitting(false);
@@ -43,12 +47,28 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
             コピーしました
           </div>
         )}
-        <div className="text-slate-900 dark:text-white text-sm font-medium">
-          招待リンクを発行しました
-        </div>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          以下のリンクをコピーして、メールやチャットなどで対象者に共有してください。リンクの有効期限は7日間です。
-        </p>
+
+        {emailSent ? (
+          <>
+            <div className="flex items-center gap-2 text-da-success dark:text-emerald-400 text-sm font-medium">
+              <CheckIcon className="w-4 h-4" />
+              招待メールを送信しました
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              メールが届かない場合は、以下のリンクを直接共有してください。
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="text-slate-900 dark:text-white text-sm font-medium">
+              招待リンクを発行しました
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              以下のリンクをコピーして、メールやチャットなどで対象者に共有してください。リンクの有効期限は7日間です。
+            </p>
+          </>
+        )}
+
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
             招待リンク
@@ -110,7 +130,8 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
 
       <div className="flex gap-2">
         <Button type="submit" size="sm" isLoading={submitting}>
-          招待リンクを発行
+          <MailIcon className="w-4 h-4" />
+          招待メールを送信
         </Button>
         <Button type="button" variant="secondary" size="sm" onClick={onClose}>
           キャンセル

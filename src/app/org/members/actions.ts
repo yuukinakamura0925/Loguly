@@ -13,6 +13,7 @@ import {
   deleteInvitation,
 } from "@/lib/db";
 import { toJapaneseError } from "@/lib/error-messages";
+import { sendInvitationEmail } from "@/lib/email";
 
 export async function createInvitation(formData: FormData) {
   await requireRole("org_admin");
@@ -62,12 +63,17 @@ export async function createInvitation(formData: FormData) {
 
   if (error) return { error: toJapaneseError(error.message) };
 
-  // TODO: Resend APIでメール送信
-  // 現時点では招待リンクを返す
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${token}`;
 
+  // メール送信（失敗してもリンクは返す）
+  let emailSent = false;
+  if (process.env.RESEND_API_KEY) {
+    const emailResult = await sendInvitationEmail(email, inviteUrl, org.name);
+    emailSent = !emailResult.error;
+  }
+
   revalidatePath("/org/members");
-  return { success: true, inviteUrl };
+  return { success: true, inviteUrl, emailSent };
 }
 
 export async function removeMember(userId: string) {
