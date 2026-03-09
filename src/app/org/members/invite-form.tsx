@@ -1,21 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { createInvitation } from "./actions";
+import { useState, useEffect } from "react";
+import { createInvitation, sendInviteEmail, getEmailQuota } from "./actions";
 import { Button } from "@/components/ui";
 import { MailIcon, CheckIcon } from "@/components/icons";
 
 export default function InviteForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("");
   const [inviteUrl, setInviteUrl] = useState("");
+  const [invitationId, setInvitationId] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailQuota, setEmailQuota] = useState<{ used: number; limit: number } | null>(null);
+
+  useEffect(() => {
+    getEmailQuota().then(setEmailQuota).catch(() => {});
+  }, []);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSendEmail = async () => {
+    setSendingEmail(true);
+    setError("");
+    try {
+      const result = await sendInviteEmail(invitationId);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setEmailSent(true);
+        if (emailQuota) {
+          setEmailQuota({ ...emailQuota, used: emailQuota.used + 1 });
+        }
+      }
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -31,12 +56,14 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
         setError(result.error);
       } else if (result.inviteUrl) {
         setInviteUrl(result.inviteUrl);
-        setEmailSent(result.emailSent ?? false);
+        setInvitationId(result.invitationId ?? "");
       }
     } finally {
       setSubmitting(false);
     }
   }
+
+  const emailRemaining = emailQuota ? emailQuota.limit - emailQuota.used : null;
 
   if (inviteUrl) {
     return (
@@ -48,26 +75,12 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {emailSent ? (
-          <>
-            <div className="flex items-center gap-2 text-da-success dark:text-emerald-400 text-sm font-medium">
-              <CheckIcon className="w-4 h-4" />
-              招待メールを送信しました
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              メールが届かない場合は、以下のリンクを直接共有してください。
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="text-slate-900 dark:text-white text-sm font-medium">
-              招待リンクを発行しました
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              以下のリンクをコピーして、メールやチャットなどで対象者に共有してください。リンクの有効期限は7日間です。
-            </p>
-          </>
-        )}
+        <div className="text-slate-900 dark:text-white text-sm font-medium">
+          招待リンクを発行しました
+        </div>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          以下のリンクをコピーして共有するか、メールで送信してください。リンクの有効期限は7日間です。
+        </p>
 
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
@@ -85,6 +98,39 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
             </Button>
           </div>
         </div>
+
+        {/* メール送信セクション */}
+        {emailSent ? (
+          <div className="flex items-center gap-2 text-da-success dark:text-emerald-400 text-sm font-medium">
+            <CheckIcon className="w-4 h-4" />
+            招待メールを送信しました
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSendEmail}
+              size="sm"
+              variant="secondary"
+              isLoading={sendingEmail}
+              disabled={emailRemaining !== null && emailRemaining <= 0}
+            >
+              <MailIcon className="w-4 h-4" />
+              メールで送信
+            </Button>
+            {emailRemaining !== null && (
+              <span className="text-xs text-slate-500">
+                ※ 今月の残り: {emailRemaining}/{emailQuota!.limit}通
+              </span>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        )}
+
         <Button variant="secondary" size="sm" onClick={onClose}>
           閉じる
         </Button>
@@ -130,8 +176,7 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
 
       <div className="flex gap-2">
         <Button type="submit" size="sm" isLoading={submitting}>
-          <MailIcon className="w-4 h-4" />
-          招待メールを送信
+          招待リンクを発行
         </Button>
         <Button type="button" variant="secondary" size="sm" onClick={onClose}>
           キャンセル

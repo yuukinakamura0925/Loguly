@@ -53,6 +53,23 @@ export function deleteInvitation(client: TypedClient, id: string) {
   return client.from("invitations").delete().eq("id", id);
 }
 
+export function updateInvitationEmailSent(client: TypedClient, id: string) {
+  return client
+    .from("invitations")
+    .update({ email_sent_at: new Date().toISOString() })
+    .eq("id", id);
+}
+
+export function countEmailsSentThisMonth(client: TypedClient) {
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  return client
+    .from("invitations")
+    .select("id", { count: "exact", head: true })
+    .not("email_sent_at", "is", null)
+    .gte("email_sent_at", firstOfMonth);
+}
+
 export function findPendingInvitationByEmail(client: TypedClient, email: string) {
   return client
     .from("invitations")
