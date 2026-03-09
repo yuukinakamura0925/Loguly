@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { acceptInvitation } from "./actions";
 import { CheckIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { toJapaneseError } from "@/lib/error-messages";
 
 export default function SignupForm({
@@ -132,34 +132,24 @@ export default function SignupForm({
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-          パスワード
-        </label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
-          placeholder="6文字以上"
-        />
-      </div>
+      <Input
+        type="password"
+        label="パスワード"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        minLength={6}
+        placeholder="6文字以上"
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-          パスワード（確認）
-        </label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full px-4 py-3 border border-da-gray-600 dark:border-slate-600 rounded-lg dark:bg-slate-700 dark:text-white"
-        />
-      </div>
+      <Input
+        type="password"
+        label="パスワード（確認）"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        required
+        minLength={6}
+      />
 
       <div className="flex items-start gap-3">
         <input

@@ -26,6 +26,7 @@ import {
   TableHead,
   TableCell,
   TableEmpty,
+  ConfirmModal,
 } from "@/components/ui";
 import { ArrowLeftIcon, TrashIcon, PlusIcon, UsersIcon } from "@/components/icons";
 
@@ -64,6 +65,7 @@ export default function EditOrganizationPage() {
   const [updating, setUpdating] = useState(false);
   const [creating, setCreating] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -145,14 +147,16 @@ export default function EditOrganizationPage() {
     }
   }
 
-  async function handleRemoveMember(userId: string) {
+  async function handleRemoveMember() {
+    if (!removeTargetId) return;
     setMemberError("");
-    const result = await removeOrgMember(id, userId);
+    const result = await removeOrgMember(id, removeTargetId);
     if (result.error) {
       setMemberError(result.error);
     } else {
       reload();
     }
+    setRemoveTargetId(null);
   }
 
   async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
@@ -387,7 +391,7 @@ export default function EditOrganizationPage() {
                   <TableCell className="text-right">
                     {m.role !== "org_admin" && (
                       <button
-                        onClick={() => handleRemoveMember(m.user_id)}
+                        onClick={() => setRemoveTargetId(m.user_id)}
                         className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                         title="削除"
                       >
@@ -404,6 +408,13 @@ export default function EditOrganizationPage() {
           </Table>
         </div>
       </div>
+      <ConfirmModal
+        open={removeTargetId !== null}
+        title="メンバーを削除"
+        message="このメンバーを組織から削除してもよろしいですか？"
+        onConfirm={handleRemoveMember}
+        onCancel={() => setRemoveTargetId(null)}
+      />
     </div>
   );
 }

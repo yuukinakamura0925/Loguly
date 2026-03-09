@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
-import { Button } from "@/components/ui";
+import { Button, ConfirmModal } from "@/components/ui";
 import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon } from "@/components/icons";
 import AvatarPreview from "@/components/avatar-preview";
 
@@ -75,6 +75,8 @@ export default function MembersPage() {
   const [sortKey, setSortKey] = useState<SortKey>("joined_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
+  const [cancelInviteTargetId, setCancelInviteTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -121,28 +123,32 @@ export default function MembersPage() {
     setSortOrder(order);
   }
 
-  async function handleRemove(userId: string) {
+  async function handleRemove() {
+    if (!removeTargetId) return;
     setError("");
-    setProcessingId(userId);
-    const result = await removeMember(userId);
+    setProcessingId(removeTargetId);
+    const result = await removeMember(removeTargetId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
     setProcessingId(null);
+    setRemoveTargetId(null);
   }
 
-  async function handleCancelInvite(id: string) {
+  async function handleCancelInvite() {
+    if (!cancelInviteTargetId) return;
     setError("");
-    setProcessingId(id);
-    const result = await cancelInvitation(id);
+    setProcessingId(cancelInviteTargetId);
+    const result = await cancelInvitation(cancelInviteTargetId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
     setProcessingId(null);
+    setCancelInviteTargetId(null);
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -300,7 +306,7 @@ export default function MembersPage() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => handleRemove(m.user_id)}
+                      onClick={() => setRemoveTargetId(m.user_id)}
                       isLoading={processingId === m.user_id}
                       disabled={processingId !== null}
                     >
@@ -358,7 +364,7 @@ export default function MembersPage() {
                     <Button
                       variant="danger"
                       size="sm"
-                      onClick={() => handleCancelInvite(inv.id)}
+                      onClick={() => setCancelInviteTargetId(inv.id)}
                       isLoading={processingId === inv.id}
                       disabled={processingId !== null}
                     >
@@ -372,6 +378,22 @@ export default function MembersPage() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        open={removeTargetId !== null}
+        title="メンバーを削除"
+        message="このメンバーを削除してもよろしいですか？"
+        onConfirm={handleRemove}
+        onCancel={() => setRemoveTargetId(null)}
+        isLoading={processingId !== null}
+      />
+      <ConfirmModal
+        open={cancelInviteTargetId !== null}
+        title="招待を取消"
+        message="この招待を取り消してもよろしいですか？"
+        onConfirm={handleCancelInvite}
+        onCancel={() => setCancelInviteTargetId(null)}
+        isLoading={processingId !== null}
+      />
     </div>
   );
 }

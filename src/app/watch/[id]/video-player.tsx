@@ -149,6 +149,21 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
     };
   }, [maxWatchedSeconds, completed, saveProgress]);
 
+  // 再生速度変更を無効化
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const enforcePlaybackRate = () => {
+      if (videoEl.playbackRate !== 1) {
+        videoEl.playbackRate = 1;
+      }
+    };
+
+    videoEl.addEventListener("ratechange", enforcePlaybackRate);
+    return () => videoEl.removeEventListener("ratechange", enforcePlaybackRate);
+  }, []);
+
   // 初期位置にシーク（モバイル対応: loadedmetadataを待つ）
   useEffect(() => {
     const videoEl = videoRef.current;
