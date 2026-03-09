@@ -104,7 +104,7 @@ export async function sendInviteEmail(invitationId: string) {
   const emailResult = await sendInvitationEmail(invitation.email, inviteUrl, org.name);
 
   if (emailResult.error) {
-    return { error: "メール送信に失敗しました" };
+    return { error: `メール送信に失敗しました: ${emailResult.error}` };
   }
 
   await updateInvitationEmailSent(supabase, invitation.id);

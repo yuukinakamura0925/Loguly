@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM_ADDRESS = process.env.RESEND_FROM_ADDRESS || "noreply@resend.dev";
+const FROM_ADDRESS = process.env.RESEND_FROM_ADDRESS || "onboarding@resend.dev";
 
 function getResendClient() {
   const apiKey = process.env.RESEND_API_KEY;
