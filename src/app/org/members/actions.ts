@@ -67,7 +67,6 @@ export async function createInvitation(formData: FormData) {
 
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${token}`;
 
-  revalidatePath("/org/members");
   return { success: true, inviteUrl, invitationId: token };
 }
 
