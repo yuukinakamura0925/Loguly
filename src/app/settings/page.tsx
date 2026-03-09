@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getProfileById } from "@/lib/db";
 import { updateDisplayName, updatePassword, updateEmail, uploadAvatar, deleteAccount } from "./actions";
 import { ArrowLeftIcon } from "@/components/icons";
-import { Button } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 
 function AvatarCropModal({
   file,
@@ -433,40 +433,27 @@ export default function SettingsPage() {
         <section className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">パスワード変更</h2>
           <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <Input
+              type="password"
+              label="現在のパスワード"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                現在のパスワード
-              </label>
-              <input
+              <Input
                 type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                新しいパスワード
-              </label>
-              <input
-                type="password"
+                label="新しいパスワード"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
               <p className="text-xs text-slate-500 mt-1">8文字以上</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                新しいパスワード（確認）
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
-              />
-            </div>
+            <Input
+              type="password"
+              label="新しいパスワード（確認）"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
             {passwordMessage && (
               <div className={`p-3 rounded-lg text-sm ${
                 passwordMessage.type === "success"
@@ -497,17 +484,12 @@ export default function SettingsPage() {
                 className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                パスワード（確認用）
-              </label>
-              <input
-                type="password"
-                value={emailPassword}
-                onChange={(e) => setEmailPassword(e.target.value)}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
-              />
-            </div>
+            <Input
+              type="password"
+              label="パスワード（確認用）"
+              value={emailPassword}
+              onChange={(e) => setEmailPassword(e.target.value)}
+            />
             {emailMessage && (
               <div className={`p-3 rounded-lg text-sm ${
                 emailMessage.type === "success"
@@ -531,17 +513,12 @@ export default function SettingsPage() {
               アカウントを削除すると、全てのデータが削除され、復元できません。
             </p>
             <form onSubmit={handleDeleteAccount} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  パスワード
-                </label>
-                <input
-                  type="password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
-                />
-              </div>
+              <Input
+                type="password"
+                label="パスワード"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+              />
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   確認のため「削除する」と入力

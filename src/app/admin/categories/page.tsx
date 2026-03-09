@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   PageHeader,
+  ConfirmModal,
 } from "@/components/ui";
 import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon, FolderIcon, GripIcon, ChevronUpIcon, ChevronDownIcon, MoreVerticalIcon } from "@/components/icons";
 
@@ -33,6 +34,8 @@ export default function CategoriesPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [creating, setCreating] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const [menuId, setMenuId] = useState<number | null>(null);
 
@@ -99,15 +102,18 @@ export default function CategoriesPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm("このカテゴリを削除してもよろしいですか？")) return;
+  async function handleDelete() {
+    if (deleteTargetId === null) return;
+    setDeleting(true);
     setError("");
-    const result = await deleteCategory(id);
+    const result = await deleteCategory(deleteTargetId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
+    setDeleting(false);
+    setDeleteTargetId(null);
   }
 
   async function handleDrop(targetId: number) {
@@ -318,7 +324,7 @@ export default function CategoriesPage() {
                   <PencilIcon />
                 </button>
                 <button
-                  onClick={() => handleDelete(cat.id)}
+                  onClick={() => setDeleteTargetId(cat.id)}
                   className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                   title="削除"
                 >
@@ -343,7 +349,7 @@ export default function CategoriesPage() {
                       編集
                     </button>
                     <button
-                      onClick={() => { handleDelete(cat.id); setMenuId(null); }}
+                      onClick={() => { setDeleteTargetId(cat.id); setMenuId(null); }}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <TrashIcon />
@@ -364,6 +370,14 @@ export default function CategoriesPage() {
           </Card>
         )}
       </div>
+      <ConfirmModal
+        open={deleteTargetId !== null}
+        title="カテゴリを削除"
+        message="このカテゴリを削除してもよろしいですか？"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTargetId(null)}
+        isLoading={deleting}
+      />
     </div>
   );
 }

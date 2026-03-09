@@ -39,4 +39,7 @@ export {
   Mail as MailIcon,
   MoreVertical as MoreVerticalIcon,
   GripVertical as GripVerticalIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  AlertTriangle as AlertTriangleIcon,
 } from "lucide-react";

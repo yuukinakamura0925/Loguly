@@ -23,6 +23,7 @@ import {
   CardContent,
   Badge,
   PageHeader,
+  ConfirmModal,
 } from "@/components/ui";
 import {
   PlusIcon,
@@ -75,6 +76,10 @@ export default function VideosPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [previewVideoId, setPreviewVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [deleteVideoId, setDeleteVideoId] = useState<number | null>(null);
+  const [deletingVideo, setDeletingVideo] = useState(false);
+  const [deleteCategoryTargetId, setDeleteCategoryTargetId] = useState<number | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -98,14 +103,18 @@ export default function VideosPage() {
     setRefreshKey((k) => k + 1);
   }
 
-  async function handleDelete(id: number) {
+  async function handleDeleteVideo() {
+    if (deleteVideoId === null) return;
+    setDeletingVideo(true);
     setError("");
-    const result = await deleteVideo(id);
+    const result = await deleteVideo(deleteVideoId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
+    setDeletingVideo(false);
+    setDeleteVideoId(null);
   }
 
   const [menuCategoryId, setMenuCategoryId] = useState<number | null>(null);
@@ -176,19 +185,24 @@ export default function VideosPage() {
     setDragOverCategoryId(null);
   }
 
-  async function handleDeleteCategory(id: number) {
-    const categoryVideos = videos.filter((v) => v.category_id === id);
-    if (categoryVideos.length > 0) {
+  async function handleDeleteCategory() {
+    if (deleteCategoryTargetId === null) return;
+    const catVideos = videos.filter((v) => v.category_id === deleteCategoryTargetId);
+    if (catVideos.length > 0) {
       setError("カテゴリに動画が含まれているため削除できません");
+      setDeleteCategoryTargetId(null);
       return;
     }
+    setDeletingCategory(true);
     setError("");
-    const result = await deleteCategory(id);
+    const result = await deleteCategory(deleteCategoryTargetId);
     if (result.error) {
       setError(result.error);
     } else {
       reload();
     }
+    setDeletingCategory(false);
+    setDeleteCategoryTargetId(null);
   }
 
   async function moveVideo(categoryId: number, videoId: number, direction: "up" | "down") {
@@ -417,7 +431,7 @@ export default function VideosPage() {
                   <PencilIcon />
                 </button>
                 <button
-                  onClick={() => handleDeleteCategory(category.id)}
+                  onClick={() => setDeleteCategoryTargetId(category.id)}
                   className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                   title="カテゴリを削除"
                 >
@@ -448,7 +462,7 @@ export default function VideosPage() {
                       編集
                     </button>
                     <button
-                      onClick={() => { handleDeleteCategory(category.id); setMenuCategoryId(null); }}
+                      onClick={() => { setDeleteCategoryTargetId(category.id); setMenuCategoryId(null); }}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <TrashIcon />
@@ -556,7 +570,7 @@ export default function VideosPage() {
                       <PencilIcon />
                     </button>
                     <button
-                      onClick={() => handleDelete(video.id)}
+                      onClick={() => setDeleteVideoId(video.id)}
                       className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-error dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all"
                       title="削除"
                     >
@@ -581,7 +595,7 @@ export default function VideosPage() {
                           編集
                         </button>
                         <button
-                          onClick={() => { handleDelete(video.id); setMenuVideoId(null); }}
+                          onClick={() => { setDeleteVideoId(video.id); setMenuVideoId(null); }}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                         >
                           <TrashIcon />
@@ -606,6 +620,23 @@ export default function VideosPage() {
           </Card>
         )}
       </div>
+
+      <ConfirmModal
+        open={deleteVideoId !== null}
+        title="動画を削除"
+        message="この動画を削除してもよろしいですか？"
+        onConfirm={handleDeleteVideo}
+        onCancel={() => setDeleteVideoId(null)}
+        isLoading={deletingVideo}
+      />
+      <ConfirmModal
+        open={deleteCategoryTargetId !== null}
+        title="カテゴリを削除"
+        message="このカテゴリを削除してもよろしいですか？"
+        onConfirm={handleDeleteCategory}
+        onCancel={() => setDeleteCategoryTargetId(null)}
+        isLoading={deletingCategory}
+      />
 
       {/* Preview modal */}
       {previewVideoId && process.env.NEXT_PUBLIC_VIDEO_BASE_URL && (

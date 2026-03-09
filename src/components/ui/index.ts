@@ -12,3 +12,4 @@ export type { SortOrder } from "./table";
 export { PageHeader } from "./page-header";
 export { SearchInput } from "./search-input";
 export { Pagination } from "./pagination";
+export { ConfirmModal } from "./confirm-modal";
