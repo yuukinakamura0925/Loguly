@@ -39,12 +39,12 @@ function getVideoStatus(video: Video, viewLog?: ViewLog) {
   return { status: "in-progress" as const, progress };
 }
 
-export function CategorySection({ name, videos, viewLogs, progress, defaultOpen = false }: CategorySectionProps) {
+export function CategorySection({ name, videos, viewLogs, progress, defaultOpen = false, id }: CategorySectionProps & { id?: string }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const completedCount = videos.filter(v => viewLogs.find(log => log.video_id === v.id && log.completed)).length;
 
   return (
-    <Card>
+    <Card id={id}>
       <CardHeader
         className="flex flex-row items-center justify-between cursor-pointer select-none hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-700/50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}

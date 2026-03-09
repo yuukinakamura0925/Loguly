@@ -16,6 +16,8 @@ import { SettingsIcon } from "@/components/icons";
 import LogoutButton from "./logout-button";
 import { ProgressOverview } from "./components/progress-overview";
 import { CategorySection } from "./components/category-section";
+import { OnboardingWrapper } from "@/components/onboarding-wrapper";
+import { completeOnboarding } from "@/app/onboarding-actions";
 
 type Category = {
   id: number;
@@ -138,8 +140,9 @@ export default async function DashboardPage() {
               <p className="text-xs text-slate-500">{profile?.display_name || user.email}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div id="dashboard-header-actions" className="flex items-center gap-3">
             <Link
+              id="dashboard-settings"
               href="/settings"
               className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white active:scale-[0.9] transition-all"
               title="設定"
@@ -154,7 +157,7 @@ export default async function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Progress Overview */}
-        <div className="mb-8">
+        <div id="progress-overview" className="mb-8">
           <ProgressOverview
             watchedSeconds={watchedSeconds}
             totalSeconds={totalSeconds}
@@ -165,7 +168,7 @@ export default async function DashboardPage() {
 
         {/* Categories */}
         <div className="space-y-6">
-          {sortedCategories.map((category: Category) => {
+          {sortedCategories.map((category: Category, index: number) => {
             const categoryVideos = videos
               .filter((v) => v.category_id === category.id)
               .sort((a, b) => {
@@ -177,6 +180,7 @@ export default async function DashboardPage() {
             return (
               <CategorySection
                 key={category.id}
+                id={index === 0 ? "category-section" : undefined}
                 name={category.name}
                 videos={categoryVideos}
                 viewLogs={viewLogs || []}
@@ -186,6 +190,9 @@ export default async function DashboardPage() {
           })}
         </div>
       </main>
+      {!profile?.onboarding_completed_at && (
+        <OnboardingWrapper role="member" showTour completeAction={completeOnboarding} />
+      )}
     </div>
   );
 }

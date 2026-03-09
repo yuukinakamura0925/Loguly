@@ -12,6 +12,7 @@ export type Profile = {
   role: Role;
   is_active: boolean;
   terms_accepted_at: string | null;
+  onboarding_completed_at: string | null;
   created_at: string;
   updated_at: string;
 };

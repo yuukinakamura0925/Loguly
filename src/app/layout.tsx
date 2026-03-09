@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loguly - 動画視聴ログ管理システム",
-  description: "スキップ不可の動画プレイヤーで確実な視聴完了を保証",
+  title: "Loguly",
+  description: "eラーニング動画管理プラットフォーム",
 };
 
 export default function RootLayout({

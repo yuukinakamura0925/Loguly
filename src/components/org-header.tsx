@@ -36,6 +36,7 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
       <header className="bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <button
+            id="mobile-menu-btn"
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 active:scale-[0.9] transition-all"
           >
@@ -55,8 +56,9 @@ export function OrgHeader({ displayName, orgName, avatarUrl }: OrgHeaderProps) {
             <div className="text-xs text-slate-500">組織管理者</div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div id="org-header-actions" className="flex items-center gap-3">
           <Link
+            id="org-settings-link"
             href="/settings"
             className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white active:scale-[0.9] transition-all"
             title="アカウント設定"

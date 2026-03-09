@@ -32,6 +32,13 @@ export function listAllProfiles(client: TypedClient) {
     .order("display_name");
 }
 
+export function markOnboardingCompleted(client: TypedClient, userId: string) {
+  return client
+    .from("profiles")
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq("id", userId);
+}
+
 export function listAllProfilesWithOrg(client: TypedClient) {
   return client
     .from("profiles")

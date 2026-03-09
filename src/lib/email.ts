@@ -40,7 +40,7 @@ export async function sendInvitationEmail(
             このメールに心当たりがない場合は無視してください。
           </p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
-          <p style="color: #bbb; font-size: 12px;">Loguly - 動画視聴ログ管理システム</p>
+          <p style="color: #bbb; font-size: 12px;">Loguly</p>
         </div>
       `,
     });
