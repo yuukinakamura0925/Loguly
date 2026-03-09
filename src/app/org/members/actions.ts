@@ -75,7 +75,7 @@ export async function sendInviteEmail(invitationId: string) {
   const org = await getCurrentOrg();
   if (!org) return { error: "認証エラー" };
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     return { error: "メール送信が設定されていません" };
   }
 
@@ -83,8 +83,8 @@ export async function sendInviteEmail(invitationId: string) {
 
   // 今月の送信数チェック
   const { count } = await countEmailsSentThisMonth(supabase);
-  if ((count ?? 0) >= 100) {
-    return { error: "今月のメール送信上限（100通）に達しています" };
+  if ((count ?? 0) >= 500) {
+    return { error: "今月のメール送信上限（500通）に達しています" };
   }
 
   // 招待情報を取得
@@ -115,7 +115,7 @@ export async function getEmailQuota() {
   await requireRole("org_admin");
   const supabase = await createClient();
   const { count } = await countEmailsSentThisMonth(supabase);
-  return { used: count ?? 0, limit: 100 };
+  return { used: count ?? 0, limit: 500 };
 }
 
 export async function removeMember(userId: string) {
