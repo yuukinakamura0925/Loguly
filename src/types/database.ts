@@ -94,6 +94,7 @@ export type Invitation = {
   token: string;
   invited_by: string;
   accepted_at: string | null;
+  email_sent_at: string | null;
   expires_at: string;
   created_at: string;
 };

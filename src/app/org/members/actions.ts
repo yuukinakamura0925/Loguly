@@ -11,6 +11,8 @@ import {
   insertInvitation,
   deleteOrgMember,
   deleteInvitation,
+  updateInvitationEmailSent,
+  countEmailsSentThisMonth,
 } from "@/lib/db";
 import { toJapaneseError } from "@/lib/error-messages";
 import { sendInvitationEmail } from "@/lib/email";
@@ -65,15 +67,56 @@ export async function createInvitation(formData: FormData) {
 
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${token}`;
 
-  // メール送信（失敗してもリンクは返す）
-  let emailSent = false;
-  if (process.env.RESEND_API_KEY) {
-    const emailResult = await sendInvitationEmail(email, inviteUrl, org.name);
-    emailSent = !emailResult.error;
+  revalidatePath("/org/members");
+  return { success: true, inviteUrl, invitationId: token };
+}
+
+export async function sendInviteEmail(invitationId: string) {
+  await requireRole("org_admin");
+  const org = await getCurrentOrg();
+  if (!org) return { error: "認証エラー" };
+
+  if (!process.env.RESEND_API_KEY) {
+    return { error: "メール送信が設定されていません" };
   }
 
-  revalidatePath("/org/members");
-  return { success: true, inviteUrl, emailSent };
+  const supabase = await createClient();
+
+  // 今月の送信数チェック
+  const { count } = await countEmailsSentThisMonth(supabase);
+  if ((count ?? 0) >= 100) {
+    return { error: "今月のメール送信上限（100通）に達しています" };
+  }
+
+  // 招待情報を取得
+  const { data: invitation } = await supabase
+    .from("invitations")
+    .select("id, email, token")
+    .eq("token", invitationId)
+    .eq("organization_id", org.id)
+    .is("accepted_at", null)
+    .single();
+
+  if (!invitation) {
+    return { error: "招待が見つかりません" };
+  }
+
+  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/invite/${invitation.token}`;
+  const emailResult = await sendInvitationEmail(invitation.email, inviteUrl, org.name);
+
+  if (emailResult.error) {
+    return { error: "メール送信に失敗しました" };
+  }
+
+  await updateInvitationEmailSent(supabase, invitation.id);
+  return { success: true };
+}
+
+export async function getEmailQuota() {
+  await requireRole("org_admin");
+  const supabase = await createClient();
+  const { count } = await countEmailsSentThisMonth(supabase);
+  return { used: count ?? 0, limit: 100 };
 }
 
 export async function removeMember(userId: string) {
