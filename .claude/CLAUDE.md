@@ -83,4 +83,5 @@ supabase/migrations/
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase プロジェクトURL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase 公開キー
 - `NEXT_PUBLIC_APP_URL` - アプリURL（招待リンク生成用）
-- `RESEND_API_KEY` - メール送信用（未設定、TODO）
+- `GMAIL_USER` - メール送信用Gmailアドレス
+- `GMAIL_APP_PASSWORD` - Gmailアプリパスワード

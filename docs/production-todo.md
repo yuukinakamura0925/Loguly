@@ -69,14 +69,12 @@
 
 ### 推奨（リリース後早期）
 
-- [ ] **メール送信設定**（Resend）
-  - [x] Resendアカウント作成済み
-  - [x] `RESEND_API_KEY` 設定済み（開発環境）
-  - [x] 招待メール送信機能 実装済み（月100通制限・残数表示付き）
-  - [ ] Vercelに `RESEND_API_KEY` 環境変数を追加
-  - [ ] Vercelに `RESEND_FROM_ADDRESS` 環境変数を追加（認証済みドメインのアドレス）
-  - [ ] Resendでカスタムドメイン認証（DNS: SPF/DKIM設定）
-  - [ ] 無料プラン: 月100通。有料プラン($20/月)で月5,000通
+- [x] **メール送信設定**（Gmail SMTP）
+  - [x] Nodemailer + Gmail SMTP に切り替え済み
+  - [x] 招待メール送信機能 実装済み（月500通制限・残数表示付き）
+  - [ ] Vercelに `GMAIL_USER` 環境変数を追加
+  - [ ] Vercelに `GMAIL_APP_PASSWORD` 環境変数を追加
+  - Gmail無料: 1日500通
 
 - [ ] **エラー監視**（Sentry等）
   - 本番エラーを検知・通知
