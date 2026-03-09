@@ -113,6 +113,9 @@ export async function sendInviteEmail(invitationId: string) {
 
 export async function getEmailQuota() {
   await requireRole("org_admin");
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    return null;
+  }
   const supabase = await createClient();
   const { count } = await countEmailsSentThisMonth(supabase);
   return { used: count ?? 0, limit: 500 };

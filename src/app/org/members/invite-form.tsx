@@ -81,7 +81,10 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           招待リンクを発行しました
         </div>
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          以下のリンクをコピーして共有するか、メールで送信してください。リンクの有効期限は7日間です。
+          {emailQuota
+            ? "以下のリンクをコピーして共有するか、メールで送信してください。"
+            : "以下のリンクをコピーして共有してください。"}
+          リンクの有効期限は7日間です。
         </p>
 
         <div>
@@ -101,8 +104,8 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* メール送信セクション */}
-        {emailSent ? (
+        {/* メール送信セクション（環境変数未設定時は非表示） */}
+        {emailQuota && (emailSent ? (
           <div className="flex items-center gap-2 text-da-success dark:text-emerald-400 text-sm font-medium">
             <CheckIcon className="w-4 h-4" />
             招待メールを送信しました
@@ -121,11 +124,11 @@ export default function InviteForm({ onClose }: { onClose: () => void }) {
             </Button>
             {emailRemaining !== null && (
               <span className="text-xs text-slate-500">
-                ※ 今月の残り: {emailRemaining}/{emailQuota!.limit}通
+                ※ 今月の残り: {emailRemaining}/{emailQuota.limit}通
               </span>
             )}
           </div>
-        )}
+        ))}
 
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg">
