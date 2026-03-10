@@ -1,11 +1,11 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/auth";
 import { markOnboardingCompleted } from "@/lib/db";
 
 export async function completeOnboarding() {
+  const profile = await requireAuth();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await markOnboardingCompleted(supabase, user.id);
+  await markOnboardingCompleted(supabase, profile.id);
 }
