@@ -16,7 +16,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-4">第1条（総則）</h2>
             <ol className="list-decimal list-inside space-y-2 ml-2">
-              <li>本利用規約（以下「本規約」）は、当社が提供する動画視聴ログ管理サービス「Loguly」（以下「本サービス」）の利用条件を定めるものです。</li>
+              <li>本利用規約（以下「本規約」）は、株式会社プロウイング（以下「当社」）が提供する動画視聴管理サービス「Loguly」（以下「本サービス」）の利用条件を定めるものです。</li>
               <li>ユーザーは、本規約に同意の上、本サービスを利用するものとします。</li>
               <li>本サービスを利用した時点で、ユーザーは本規約に同意したものとみなします。</li>
             </ol>
@@ -124,6 +124,18 @@ export default function TermsPage() {
               <li>本規約は日本法に準拠し、日本法に従って解釈されるものとします。</li>
               <li>本規約に関する紛争については、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</li>
             </ol>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4">運営会社</h2>
+            <div className="space-y-2 ml-2">
+              <p><span className="text-white font-medium">商号:</span> 株式会社プロウイング</p>
+              <p><span className="text-white font-medium">代表者:</span> 代表取締役社長 鎌田智一</p>
+              <p><span className="text-white font-medium">所在地:</span> 〒101-0045 東京都千代田区神田鍛冶町3-5-8 KDX神田北口ビル2F</p>
+              <p><span className="text-white font-medium">TEL:</span> 03-3254-7711</p>
+              <p><span className="text-white font-medium">FAX:</span> 03-3254-7712</p>
+              <p><span className="text-white font-medium">URL:</span> <a href="https://www.pro-wing.co.jp/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline transition-colors">https://www.pro-wing.co.jp/</a></p>
+            </div>
           </section>
         </div>
 
