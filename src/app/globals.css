@@ -135,11 +135,22 @@ html {
   }
 }
 
+/* Bottom sheet slide up */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-card-enter,
   .animate-fade-in,
-  .animate-slide-in {
+  .animate-slide-in,
+  .animate-slide-up {
     animation: none;
   }
 }

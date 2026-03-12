@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, BuildingIcon, TagIcon, VideoIcon, KeyIcon, CirclePlayIcon } from "@/components/icons";
+import { HomeIcon, BuildingIcon, TagIcon, VideoIcon, KeyIcon, CirclePlayIcon, ImageIcon } from "@/components/icons";
 
 export const adminNavItems = [
   { href: "/admin", label: "ダッシュボード", icon: <HomeIcon className="w-5 h-5" strokeWidth={1.5} /> },
@@ -10,6 +10,7 @@ export const adminNavItems = [
   { href: "/admin/categories", label: "カテゴリ管理", icon: <TagIcon className="w-5 h-5" strokeWidth={1.5} /> },
   { href: "/admin/videos", label: "動画管理", icon: <VideoIcon className="w-5 h-5" strokeWidth={1.5} /> },
   { href: "/admin/licenses", label: "動画割り当て", icon: <KeyIcon className="w-5 h-5" strokeWidth={1.5} /> },
+  { href: "/admin/gallery", label: "画像保管庫", icon: <ImageIcon className="w-5 h-5" strokeWidth={1.5} /> },
 ];
 
 export default function AdminSidebar() {
