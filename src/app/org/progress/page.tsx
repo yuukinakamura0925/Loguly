@@ -8,7 +8,7 @@ import {
 } from "@/lib/db";
 import { SearchInput } from "@/components/ui";
 import AvatarPreview from "@/components/avatar-preview";
-import { CheckCircleIcon, ChevronRightIcon, SortAscIcon, SortDescIcon, SortIcon } from "@/components/icons";
+import { ChevronRightIcon, SortAscIcon, SortDescIcon, SortIcon, CrownIcon } from "@/components/icons";
 
 type MemberProgress = {
   user_id: string;
@@ -263,7 +263,9 @@ export default async function ProgressPage({
                             {member.display_name}
                           </span>
                           {isFullyCompleted && (
-                            <CheckCircleIcon className="w-4 h-4 text-da-success flex-shrink-0" />
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 shadow-sm crown-badge">
+                              <CrownIcon className="w-3 h-3" strokeWidth={2.5} />
+                            </span>
                           )}
                         </div>
                         <div className="text-slate-500 text-sm truncate">{member.email}</div>

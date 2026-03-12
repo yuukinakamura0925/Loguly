@@ -52,4 +52,5 @@ export {
   LayoutGrid as LayoutGridIcon,
   List as ListIcon,
   FolderInput as FolderInputIcon,
+  Crown as CrownIcon,
 } from "lucide-react";

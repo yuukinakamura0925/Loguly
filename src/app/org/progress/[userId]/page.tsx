@@ -10,7 +10,7 @@ import {
   getProfileById,
   getMembershipByUserId,
 } from "@/lib/db";
-import { ArrowLeftIcon, CheckCircleIcon } from "@/components/icons";
+import { ArrowLeftIcon, CrownIcon } from "@/components/icons";
 import CategoryAccordion from "./category-accordion";
 import AvatarPreview from "@/components/avatar-preview";
 
@@ -166,7 +166,10 @@ export default async function MemberProgressPage({
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               {profile.display_name}
               {completedCount === totalCount && totalCount > 0 && (
-                <CheckCircleIcon className="w-6 h-6 text-da-success" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 shadow-sm crown-badge">
+                  <CrownIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  全完了
+                </span>
               )}
             </h1>
             <p className="text-slate-500">{profile.email}</p>

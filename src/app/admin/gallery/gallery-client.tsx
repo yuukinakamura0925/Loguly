@@ -25,6 +25,7 @@ import {
   ChevronRightIcon,
   FolderInputIcon,
 } from "@/components/icons";
+import { checkEasterEgg } from "./use-emoji-rain";
 import {
   uploadGalleryImage,
   deleteGalleryImage,
@@ -260,6 +261,8 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
       if (result.folder) {
         setFolders((prev) => [...prev, result.folder!]);
         navigateToFolder(result.folder.id);
+        // 🌸 イースターエッグ
+        checkEasterEgg(newFolderName);
       }
       setNewFolderName("");
       setCreatingFolder(false);
