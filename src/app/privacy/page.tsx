@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-4">はじめに</h2>
             <p>
-              当社は、動画視聴ログ管理サービス「Loguly」（以下「本サービス」）におけるユーザーの個人情報の保護に努めています。
+              株式会社プロウイング（以下「当社」）は、動画視聴管理サービス「Loguly」（以下「本サービス」）におけるユーザーの個人情報の保護に努めています。
               本プライバシーポリシーは、本サービスの全ユーザーに適用され、個人情報の取り扱いについて定めるものです。
             </p>
           </section>
@@ -144,6 +144,18 @@ export default function PrivacyPage() {
               変更後のポリシーは本ページに掲載した時点で効力を生じます。
               重要な変更がある場合には、本サービス上で通知いたします。
             </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-white mb-4">10. お問い合わせ</h2>
+            <p className="mb-3">個人情報の取り扱いに関するお問い合わせは、以下までご連絡ください。</p>
+            <div className="space-y-2 ml-2">
+              <p><span className="text-white font-medium">株式会社プロウイング</span></p>
+              <p>〒101-0045 東京都千代田区神田鍛冶町3-5-8 KDX神田北口ビル2F</p>
+              <p>TEL: 03-3254-7711</p>
+              <p>FAX: 03-3254-7712</p>
+              <p>URL: <a href="https://www.pro-wing.co.jp/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline transition-colors">https://www.pro-wing.co.jp/</a></p>
+            </div>
           </section>
 
         </div>
