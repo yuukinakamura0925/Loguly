@@ -87,6 +87,26 @@ export type OrgCategoryOrder = {
   display_order: number;
 };
 
+export type GalleryFolder = {
+  id: number;
+  name: string;
+  parent_id: number | null;
+  created_at: string;
+};
+
+export type GalleryImage = {
+  id: number;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  content_type: string;
+  width: number | null;
+  height: number | null;
+  uploaded_by: string;
+  folder_id: number | null;
+  created_at: string;
+};
+
 export type Invitation = {
   id: string;
   organization_id: string;
