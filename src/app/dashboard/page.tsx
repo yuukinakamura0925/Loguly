@@ -12,7 +12,7 @@ import {
 } from "@/lib/db";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SettingsIcon } from "@/components/icons";
+import { SettingsIcon, CrownIcon } from "@/components/icons";
 import LogoutButton from "./logout-button";
 import { ProgressOverview } from "./components/progress-overview";
 import { CategorySection } from "./components/category-section";
@@ -112,6 +112,7 @@ export default async function DashboardPage() {
 
   const totalVideos = videos.length;
   const completedVideos = viewLogs?.filter((log) => log.completed).length || 0;
+  const isFullyCompleted = completedVideos === totalVideos && totalVideos > 0;
 
   // カテゴリをソート（組織順 → グローバル順）
   const sortedCategories = (categories || [])
@@ -128,11 +129,16 @@ export default async function DashboardPage() {
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Link href="/settings" title="アカウント設定">
+            <Link href="/settings" title="アカウント設定" className="relative">
               {profile?.avatar_url ? (
                 <Image src={profile.avatar_url} alt="" width={32} height={32} className="w-8 h-8 rounded-lg object-cover hover:opacity-80 active:opacity-60 active:scale-[0.92] transition-all" />
               ) : (
                 <Logo size="sm" showText={false} />
+              )}
+              {isFullyCompleted && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center shadow-sm crown-badge">
+                  <CrownIcon className="w-3 h-3 text-amber-950" strokeWidth={2.5} />
+                </span>
               )}
             </Link>
             <div>

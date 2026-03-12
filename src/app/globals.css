@@ -145,12 +145,29 @@ html {
   animation: slide-up 0.25s ease-out;
 }
 
+/* Crown badge shimmer */
+@keyframes crown-shimmer {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.15); }
+}
+
+.crown-badge {
+  animation: crown-shimmer 3s ease-in-out infinite;
+}
+
+/* 🌸 紙吹雪アニメーション（イースターエッグ） */
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-card-enter,
   .animate-fade-in,
   .animate-slide-in,
-  .animate-slide-up {
+  .animate-slide-up,
+  .crown-badge {
     animation: none;
   }
 }
