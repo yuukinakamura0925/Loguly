@@ -12,7 +12,7 @@ type License = {
   videos: {
     title: string;
     display_order: number;
-    categories: { name: string; display_order: number };
+    categories: { name: string; display_order: number } | null;
   };
 };
 
@@ -61,6 +61,7 @@ export default function OrgSettingsPage() {
       const categoryMap = new Map<string, CategoryGroup>();
 
       for (const lic of licenses) {
+        if (!lic.videos?.categories) continue;
         const catName = lic.videos.categories.name;
         const catOrder = lic.videos.categories.display_order;
 
