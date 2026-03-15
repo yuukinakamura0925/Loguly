@@ -27,6 +27,9 @@ import {
   ChevronRightIcon,
   SortAscIcon,
   SortDescIcon,
+  KeyIcon,
+  AlertTriangleIcon,
+  CheckCircleIcon,
 } from "@/components/icons";
 
 type Org = {
@@ -67,6 +70,12 @@ export default function LicensesPage() {
   const [expiresAt, setExpiresAt] = useState("");
   const [videoExpiresMap, setVideoExpiresMap] = useState<Map<number, string>>(new Map());
 
+  // サマリー統計
+  const [totalLicenses, setTotalLicenses] = useState(0);
+  const [orgsWithLicenses, setOrgsWithLicenses] = useState(0);
+  const [expiringCount, setExpiringCount] = useState(0);
+  const [orgLicenseCounts, setOrgLicenseCounts] = useState<Map<string, number>>(new Map());
+
   function handleBulkExpiresChange(date: string) {
     setExpiresAt(date);
     setVideoExpiresMap((prev) => {
@@ -102,11 +111,33 @@ export default function LicensesPage() {
         listCategories(supabase),
         listVideosWithCategory(supabase),
       ]);
-      if (active) {
-        setOrgs((orgData as Org[]) || []);
-        setCategories((cats as Category[]) || []);
-        setVideos((vids as Video[]) || []);
+      if (!active) return;
+      setOrgs((orgData as Org[]) || []);
+      setCategories((cats as Category[]) || []);
+      setVideos((vids as Video[]) || []);
+
+      // ライセンス統計を取得
+      const { data: licenseData } = await supabase
+        .from("organization_licenses")
+        .select("organization_id, expires_at")
+        .eq("is_active", true);
+      if (!active) return;
+      const licenses = licenseData || [];
+      setTotalLicenses(licenses.length);
+      setOrgsWithLicenses(new Set(licenses.map(l => l.organization_id)).size);
+      // 30日以内に期限切れのライセンス
+      const now = new Date();
+      const thirtyDays = new Date();
+      thirtyDays.setDate(thirtyDays.getDate() + 30);
+      setExpiringCount(
+        licenses.filter(l => l.expires_at && new Date(l.expires_at) <= thirtyDays && new Date(l.expires_at) >= now).length
+      );
+      // 組織ごとのライセンス数
+      const orgCountMap = new Map<string, number>();
+      for (const l of licenses) {
+        orgCountMap.set(l.organization_id, (orgCountMap.get(l.organization_id) || 0) + 1);
       }
+      setOrgLicenseCounts(orgCountMap);
     }
     fetchData();
     return () => { active = false; };
@@ -253,6 +284,64 @@ export default function LicensesPage() {
           description="組織を選択して動画を一括で割り当てます"
         />
 
+        {/* サマリーカード */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <BuildingIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">動画を割当済みの組織</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{orgsWithLicenses} / {orgs.length}</p>
+                  <p className="text-xs text-slate-500">{orgs.length - orgsWithLicenses}組織が未割当</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <KeyIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">有効な割り当て数</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{totalLicenses}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <VideoIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">登録済みの動画数</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{videos.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                  <AlertTriangleIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">30日以内に期限切れ</p>
+                  <p className="text-lg font-bold text-slate-900 dark:text-white">{expiringCount}</p>
+                  <p className="text-xs text-slate-500">件</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="flex gap-3 items-end mb-6">
           <div className="flex-1 max-w-sm">
             <Input
@@ -292,7 +381,9 @@ export default function LicensesPage() {
                       </div>
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">{org.name}</div>
-                        <div className="text-sm text-slate-500">{memberCount} メンバー</div>
+                        <div className="text-sm text-slate-500">
+                          {memberCount} メンバー · {orgLicenseCounts.get(org.id) || 0}本割当
+                        </div>
                       </div>
                     </div>
                     <Badge variant={org.is_active ? "success" : "danger"}>

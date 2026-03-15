@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { listVideosWithCategory, listCategories } from "@/lib/db";
+import { getVideoCompletionCounts } from "@/lib/db/dashboard-stats";
 import {
   createVideo,
   updateVideo,
@@ -39,6 +40,11 @@ import {
   MoreVerticalIcon,
   PlayIcon,
   CheckIcon,
+  VideoIcon,
+  CheckCircleIcon,
+  BuildingIcon,
+  SearchIcon,
+  BarChartIcon,
 } from "@/components/icons";
 
 type Video = {
@@ -66,7 +72,7 @@ function formatDuration(seconds: number): string {
 }
 
 export default function VideosPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [videos, setVideos] = useState<Video[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -80,6 +86,10 @@ export default function VideosPage() {
   const [deletingVideo, setDeletingVideo] = useState(false);
   const [deleteCategoryTargetId, setDeleteCategoryTargetId] = useState<number | null>(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterPublished, setFilterPublished] = useState<"all" | "published" | "unpublished">("all");
+  const [completionCounts, setCompletionCounts] = useState<Map<number, number>>(new Map());
+  const [licenseCounts, setLicenseCounts] = useState<Map<number, number>>(new Map());
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -90,10 +100,26 @@ export default function VideosPage() {
         listVideosWithCategory(supabase),
         listCategories(supabase),
       ]);
-      if (active) {
-        setVideos((vids as Video[]) || []);
-        setCategories((cats as Category[]) || []);
+      if (!active) return;
+      setVideos((vids as Video[]) || []);
+      setCategories((cats as Category[]) || []);
+
+      // 統計: 動画ごとの完了数・ライセンス数
+      const [completionMap, { data: licenseData }] = await Promise.all([
+        getVideoCompletionCounts(supabase),
+        supabase
+          .from("organization_licenses")
+          .select("video_id, organization_id")
+          .eq("is_active", true),
+      ]);
+      if (!active) return;
+      setCompletionCounts(completionMap);
+
+      const licMap = new Map<number, number>();
+      for (const lic of licenseData || []) {
+        licMap.set(lic.video_id, (licMap.get(lic.video_id) || 0) + 1);
       }
+      setLicenseCounts(licMap);
     }
     fetchData();
     return () => { active = false; };
@@ -102,6 +128,21 @@ export default function VideosPage() {
   function reload() {
     setRefreshKey((k) => k + 1);
   }
+
+  // サマリー統計
+  const publishedCount = videos.filter((v) => v.is_published).length;
+  const totalDuration = videos.reduce((sum, v) => sum + v.duration, 0);
+  const assignedVideoCount = [...licenseCounts.entries()].filter(([, c]) => c > 0).length;
+
+  // 動画フィルター
+  const filteredVideos = useMemo(() => {
+    return videos.filter((v) => {
+      if (search && !v.title.toLowerCase().includes(search.toLowerCase())) return false;
+      if (filterPublished === "published" && !v.is_published) return false;
+      if (filterPublished === "unpublished" && v.is_published) return false;
+      return true;
+    });
+  }, [videos, search, filterPublished]);
 
   async function handleDeleteVideo() {
     if (deleteVideoId === null) return;
@@ -252,10 +293,10 @@ export default function VideosPage() {
     });
   }
 
-  // Group videos by category (show all categories including empty ones for management)
+  // カテゴリごとに動画をグループ化（空カテゴリも管理用に表示）
   const videosByCategory = categories.map((cat) => ({
     category: cat,
-    videos: videos.filter((v) => v.category_id === cat.id),
+    videos: filteredVideos.filter((v) => v.category_id === cat.id),
   }));
 
   return (
@@ -304,6 +345,97 @@ export default function VideosPage() {
           </div>
         }
       />
+
+      {/* サマリーカード */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <VideoIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">動画数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{videos.length}</p>
+                <p className="text-xs text-slate-500">公開 {publishedCount} / 非公開 {videos.length - publishedCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <FolderIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">カテゴリ数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{categories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <ClockIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">全動画の合計時間</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{formatDuration(totalDuration)}</p>
+                <p className="text-xs text-slate-500">{videos.length}本分</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <BuildingIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">組織に割当済みの動画</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{assignedVideoCount} / {videos.length}</p>
+                <p className="text-xs text-slate-500">{videos.length - assignedVideoCount}本が未割当</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 検索・フィルター */}
+      <div className="flex gap-3 items-end mb-6">
+        <div className="flex-1 max-w-sm relative">
+          <SearchIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="動画を検索..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-da-blue-900/20 focus:border-da-blue-900"
+          />
+        </div>
+        <div className="flex gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-0.5">
+          {([["all", "すべて"], ["published", "公開"], ["unpublished", "非公開"]] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilterPublished(key)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                filterPublished === key
+                  ? "bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {(search || filterPublished !== "all") && (
+          <span className="text-sm text-slate-500 pb-2">{filteredVideos.length}件</span>
+        )}
+      </div>
 
       {error && (
         <Card className="mb-6 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
@@ -382,11 +514,11 @@ export default function VideosPage() {
             }`}
           >
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50">
-              {/* Category drag handle - desktop */}
+              {/* カテゴリ並替ハンドル - PC */}
               <div className="hidden lg:flex flex-shrink-0 pl-3 text-slate-400 dark:text-slate-600 cursor-grab active:cursor-grabbing">
                 <GripIcon className="w-5 h-5" />
               </div>
-              {/* Up/down buttons - mobile */}
+              {/* 上下ボタン - モバイル */}
               <div className="flex lg:hidden flex-shrink-0 pl-2 flex-col gap-0.5">
                 <button
                   onClick={(e) => { e.stopPropagation(); moveAdminCategory(category.id, "up"); }}
@@ -416,7 +548,7 @@ export default function VideosPage() {
                 <span className="font-medium text-slate-900 dark:text-white truncate">{category.name}</span>
                 <span className="text-sm text-slate-500 flex-shrink-0">{categoryVideos.length}本</span>
               </button>
-              {/* Edit/Delete - desktop */}
+              {/* 編集・削除 - PC */}
               <div className="hidden sm:flex gap-1 pr-4">
                 <button
                   onClick={() => {
@@ -438,7 +570,7 @@ export default function VideosPage() {
                   <TrashIcon />
                 </button>
               </div>
-              {/* ... menu - mobile */}
+              {/* メニュー - モバイル */}
               <div className="relative sm:hidden pr-2">
                 <button
                   onClick={(e) => { e.stopPropagation(); setMenuVideoId(null); setMenuCategoryId(menuCategoryId === category.id ? null : category.id); }}
@@ -495,12 +627,12 @@ export default function VideosPage() {
                         : "hover:bg-slate-50 dark:hover:bg-slate-800/30"
                   }`}
                 >
-                  {/* Drag handle - desktop */}
+                  {/* 並替ハンドル - PC */}
                   <div className="hidden lg:flex flex-shrink-0 text-slate-400 dark:text-slate-600">
                     <GripIcon className="w-5 h-5" />
                   </div>
 
-                  {/* Up/down buttons - mobile */}
+                  {/* 上下ボタン - モバイル */}
                   <div className="flex lg:hidden flex-shrink-0 flex-col gap-0.5">
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveVideo(category.id, video.id, "up"); }}
@@ -518,7 +650,7 @@ export default function VideosPage() {
                     </button>
                   </div>
 
-                  {/* Video thumbnail - desktop only */}
+                  {/* サムネイル - PCのみ */}
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); if (video.cf_video_id) setPreviewVideoId(video.cf_video_id); }}
@@ -543,10 +675,10 @@ export default function VideosPage() {
                     )}
                   </button>
 
-                  {/* Video info */}
+                  {/* 動画情報 */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-slate-900 dark:text-white font-medium truncate text-sm sm:text-base">{video.title}</div>
-                    <div className="flex items-center gap-3 mt-1">
+                    <a href={`/admin/videos/${video.id}`} className="text-slate-900 dark:text-white font-medium truncate text-sm sm:text-base hover:text-da-blue-900 dark:hover:text-da-blue-300 transition-colors block">{video.title}</a>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
                       <div className="flex items-center gap-1.5 text-slate-500 text-xs sm:text-sm">
                         <ClockIcon className="w-3.5 h-3.5" />
                         {formatDuration(video.duration)}
@@ -554,11 +686,30 @@ export default function VideosPage() {
                       <Badge variant={video.is_published ? "success" : "default"} className="text-xs">
                         {video.is_published ? "公開" : "非公開"}
                       </Badge>
+                      {(completionCounts.get(video.id) ?? 0) > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                          <CheckCircleIcon className="w-3.5 h-3.5" />
+                          {completionCounts.get(video.id)}人完了
+                        </div>
+                      )}
+                      {(licenseCounts.get(video.id) ?? 0) > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <BuildingIcon className="w-3.5 h-3.5" />
+                          {licenseCounts.get(video.id)}組織
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Actions - desktop */}
+                  {/* 操作 - PC */}
                   <div className="hidden sm:flex items-center gap-1">
+                    <a
+                      href={`/admin/videos/${video.id}`}
+                      className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-da-blue-900 dark:hover:text-da-blue-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                      title="詳細"
+                    >
+                      <BarChartIcon />
+                    </a>
                     <button
                       onClick={() => {
                         setEditingId(video.id);
@@ -577,7 +728,7 @@ export default function VideosPage() {
                       <TrashIcon />
                     </button>
                   </div>
-                  {/* ... menu - mobile */}
+                  {/* メニュー - モバイル */}
                   <div className="relative sm:hidden">
                     <button
                       onClick={(e) => { e.stopPropagation(); setMenuCategoryId(null); setMenuVideoId(menuVideoId === video.id ? null : video.id); }}
@@ -587,6 +738,13 @@ export default function VideosPage() {
                     </button>
                     {menuVideoId === video.id && (
                       <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 min-w-[120px]">
+                        <a
+                          href={`/admin/videos/${video.id}`}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        >
+                          <BarChartIcon />
+                          詳細
+                        </a>
                         <button
                           onClick={() => { setEditingId(video.id); setShowForm(false); setMenuVideoId(null); }}
                           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -638,7 +796,7 @@ export default function VideosPage() {
         isLoading={deletingCategory}
       />
 
-      {/* Preview modal */}
+      {/* プレビューモーダル */}
       {previewVideoId && process.env.NEXT_PUBLIC_VIDEO_BASE_URL && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
@@ -760,7 +918,7 @@ function VideoForm({
     setUploadProgress(0);
 
     try {
-      // Step 1: サーバーから署名付きURLを取得
+      // ステップ1: サーバーから署名付きURLを取得
       const urlRes = await fetch("/api/videos/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -773,7 +931,7 @@ function VideoForm({
 
       const { videoId, uploadUrl } = await urlRes.json();
 
-      // Step 2: 署名付きURLに動画ファイルを直接PUT
+      // ステップ2: 署名付きURLに動画ファイルを直接PUT
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.onprogress = (e) => {

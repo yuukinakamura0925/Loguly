@@ -53,4 +53,7 @@ export {
   List as ListIcon,
   FolderInput as FolderInputIcon,
   Crown as CrownIcon,
+  TrendingUp as TrendingUpIcon,
+  HardDrive as HardDriveIcon,
+  Trophy as TrophyIcon,
 } from "lucide-react";

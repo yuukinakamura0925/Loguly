@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
 import { removeMember, cancelInvitation } from "./actions";
-import { Button, ConfirmModal } from "@/components/ui";
-import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon } from "@/components/icons";
+import { Button, Card, CardContent, ConfirmModal } from "@/components/ui";
+import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon, UsersIcon, CrownIcon, MailIcon, ClockIcon } from "@/components/icons";
 import AvatarPreview from "@/components/avatar-preview";
 
 type Member = {
@@ -196,6 +196,68 @@ export default function MembersPage() {
         >
           {showInvite ? "キャンセル" : "メンバーを招待"}
         </Button>
+      </div>
+
+      {/* サマリーカード */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <UsersIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">メンバー数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{members.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <CrownIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">管理者</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{members.filter(m => m.role === "org_admin").length}人</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <MailIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">保留中の招待</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{invites.length}件</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <ClockIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">最新の参加</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  {members.length > 0
+                    ? new Date(
+                        Math.max(...members.map(m => new Date(m.joined_at).getTime()))
+                      ).toLocaleDateString("ja-JP")
+                    : "—"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {error && (

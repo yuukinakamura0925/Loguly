@@ -42,7 +42,7 @@ export function markOnboardingCompleted(client: TypedClient, userId: string) {
 export function listAllProfilesWithOrg(client: TypedClient) {
   return client
     .from("profiles")
-    .select("id, email, display_name, role, organization_members(organization_id, organizations(name))")
+    .select("id, email, display_name, role, organization_members(organization_id, role, organizations(name))")
     .neq("role", "platform_admin")
     .order("display_name");
 }

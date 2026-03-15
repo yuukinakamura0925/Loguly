@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { listCategories } from "@/lib/db";
+import { listCategories, listVideosWithCategory } from "@/lib/db";
 import {
   createCategory,
   updateCategory,
@@ -17,7 +17,7 @@ import {
   PageHeader,
   ConfirmModal,
 } from "@/components/ui";
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon, FolderIcon, GripIcon, ChevronUpIcon, ChevronDownIcon, MoreVerticalIcon } from "@/components/icons";
+import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XIcon, FolderIcon, GripIcon, ChevronUpIcon, ChevronDownIcon, MoreVerticalIcon, VideoIcon, AlertTriangleIcon } from "@/components/icons";
 
 type Category = {
   id: number;
@@ -26,8 +26,10 @@ type Category = {
 };
 
 export default function CategoriesPage() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [videoCounts, setVideoCounts] = useState<Map<number, number>>(new Map());
+  const [totalVideoCount, setTotalVideoCount] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -55,8 +57,20 @@ export default function CategoriesPage() {
   useEffect(() => {
     let active = true;
     async function fetchData() {
-      const { data } = await listCategories(supabase);
-      if (active) setCategories((data as Category[]) || []);
+      const [{ data }, { data: vids }] = await Promise.all([
+        listCategories(supabase),
+        listVideosWithCategory(supabase),
+      ]);
+      if (!active) return;
+      setCategories((data as Category[]) || []);
+
+      // カテゴリ別の動画数を集計
+      const countMap = new Map<number, number>();
+      for (const v of (vids || []) as { category_id: number }[]) {
+        countMap.set(v.category_id, (countMap.get(v.category_id) || 0) + 1);
+      }
+      setVideoCounts(countMap);
+      setTotalVideoCount((vids || []).length);
     }
     fetchData();
     return () => { active = false; };
@@ -177,6 +191,51 @@ export default function CategoriesPage() {
           </Button>
         }
       />
+
+      {/* サマリーカード */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <FolderIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">カテゴリ数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{categories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <VideoIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">全カテゴリの動画数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{totalVideoCount}</p>
+                <p className="text-xs text-slate-500">平均 {categories.length > 0 ? (totalVideoCount / categories.length).toFixed(1) : 0}本/カテゴリ</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <AlertTriangleIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">動画が未登録のカテゴリ</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{categories.filter(c => !videoCounts.get(c.id)).length}</p>
+                <p className="text-xs text-slate-500">{categories.length}カテゴリ中</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {error && (
         <Card className="mb-6 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
@@ -308,6 +367,7 @@ export default function CategoriesPage() {
               <div className="flex-1 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 min-w-0">
                 <FolderIcon className="w-5 h-5 text-da-gray-600 hidden sm:block flex-shrink-0" />
                 <span className="font-medium text-slate-900 dark:text-white truncate">{cat.name}</span>
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex-shrink-0">{videoCounts.get(cat.id) || 0}本</span>
                 <span className="text-sm text-slate-500 font-mono flex-shrink-0">#{cat.display_order}</span>
               </div>
 
