@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { searchOrganizations, countOrganizations } from "@/lib/db";
+import { searchOrganizations, countOrganizations, countLicenses } from "@/lib/db";
 import { deleteOrganization } from "./actions";
 import {
   Button,
   Badge,
+  Card,
+  CardContent,
   PageHeader,
   Table,
   TableHeader,
@@ -18,7 +20,7 @@ import {
   Pagination,
 } from "@/components/ui";
 import type { SortOrder } from "@/components/ui";
-import { PlusIcon, PencilIcon, UsersIcon } from "@/components/icons";
+import { PlusIcon, PencilIcon, UsersIcon, BuildingIcon, KeyIcon, CheckCircleIcon } from "@/components/icons";
 import DeleteButton from "./delete-button";
 
 const PER_PAGE = 10;
@@ -36,10 +38,19 @@ export default async function OrganizationsPage({
 
   const supabase = await createClient();
 
-  const [{ data: organizations }, { count }] = await Promise.all([
+  const [{ data: organizations }, { count }, { count: totalCount }, { count: totalMembers }, { count: totalLicenses }] = await Promise.all([
     searchOrganizations(supabase, { search, page, perPage: PER_PAGE, sort, order }),
     countOrganizations(supabase, search),
+    countOrganizations(supabase),
+    supabase.from("organization_members").select("id", { count: "exact", head: true }),
+    countLicenses(supabase),
   ]);
+
+  // 有効・無効の組織数
+  const { count: activeCount } = await supabase
+    .from("organizations")
+    .select("id", { count: "exact", head: true })
+    .eq("is_active", true);
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE);
 
@@ -67,6 +78,63 @@ export default async function OrganizationsPage({
           </Link>
         }
       />
+
+      {/* サマリーカード */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <BuildingIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">組織数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{totalCount ?? 0}</p>
+                <p className="text-xs text-slate-500">有効 {activeCount ?? 0} / 無効 {(totalCount ?? 0) - (activeCount ?? 0)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <UsersIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">全組織のメンバー数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{totalMembers ?? 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <KeyIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">有効な割り当て数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{totalLicenses ?? 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <CheckCircleIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">平均メンバー数/組織</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{(totalCount ?? 0) > 0 ? ((totalMembers ?? 0) / (totalCount ?? 0)).toFixed(1) : 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="mb-6">
         <SearchInput placeholder="組織名で検索..." paramName="q" className="max-w-sm" />

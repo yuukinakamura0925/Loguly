@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, getOrganizationById, listActiveLicensesForOrg } from "@/lib/db";
 import { updateOrgSettings } from "./actions";
-import { Button } from "@/components/ui";
-import { ChevronDownIcon } from "@/components/icons";
+import { Button, Card, CardContent } from "@/components/ui";
+import { ChevronDownIcon, VideoIcon, FolderIcon, AlertTriangleIcon } from "@/components/icons";
 
 type License = {
   expires_at: string | null;
@@ -25,7 +25,8 @@ type CategoryGroup = {
 export default function OrgSettingsPage() {
   const supabase = createClient();
   const [orgName, setOrgName] = useState("");
-  const [slug, setSlug] = useState("");
+  const [orgSlug, setOrgSlug] = useState("");
+  const [copied, setCopied] = useState(false);
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
@@ -54,7 +55,7 @@ export default function OrgSettingsPage() {
 
       if (org) {
         setOrgName(org.name);
-        setSlug(org.slug);
+        setOrgSlug(org.slug);
       }
 
       const licenses = (lics as unknown as License[]) || [];
@@ -134,9 +135,60 @@ export default function OrgSettingsPage() {
 
   const totalVideos = categories.reduce((acc, cat) => acc + cat.videos.length, 0);
 
+  // 期限切れ間近の動画数（30日以内）
+  const now = new Date();
+  const thirtyDays = new Date();
+  thirtyDays.setDate(thirtyDays.getDate() + 30);
+  const expiringVideos = categories.reduce((acc, cat) =>
+    acc + cat.videos.filter(v => v.expires_at && new Date(v.expires_at) >= now && new Date(v.expires_at) <= thirtyDays).length, 0
+  );
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">組織設定</h1>
+
+      {/* サマリーカード */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <VideoIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">利用可能な動画</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{totalVideos}本</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <FolderIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">カテゴリ数</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{categories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
+                <AlertTriangleIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">30日以内に期限切れ</p>
+                <p className="text-lg font-bold text-slate-900 dark:text-white">{expiringVideos}件</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="max-w-lg space-y-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -152,18 +204,30 @@ export default function OrgSettingsPage() {
               className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              スラッグ
+              組織ID
+              <span className="ml-2 text-xs font-normal text-slate-400">お問い合わせ時にお伝えください</span>
             </label>
-            <input
-              value={slug}
-              disabled
-              className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400 font-mono"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              スラッグは変更できません
-            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={orgSlug}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-400 cursor-default"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(orgSlug);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap"
+              >
+                {copied ? "コピー済み" : "コピー"}
+              </button>
+            </div>
           </div>
 
           {error && (
