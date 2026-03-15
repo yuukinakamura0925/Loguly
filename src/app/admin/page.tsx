@@ -346,7 +346,7 @@ export default async function AdminDashboardPage() {
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {videoRanking.length > 0 ? (
               videoRanking.map((video, i) => (
-                <Link key={video.id} href="/admin/videos" className="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <Link key={video.id} href={`/admin/videos/${video.id}`} className="flex items-center gap-3 px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                     i === 0
                       ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
@@ -456,7 +456,7 @@ export default async function AdminDashboardPage() {
                 return (
                   <Link
                     key={video.id}
-                    href="/admin/videos"
+                    href={`/admin/videos/${video.id}`}
                     className="flex items-center justify-between px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     <div className="min-w-0 flex-1 mr-3">
