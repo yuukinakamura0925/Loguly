@@ -3,6 +3,7 @@
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireRole, getCurrentOrg, getCurrentUser } from "@/lib/auth";
 import {
   findMemberByEmail,
@@ -148,6 +149,10 @@ export async function removeMember(userId: string) {
   const { error } = await deleteOrgMember(supabase, org.id, userId);
 
   if (error) return { error: toJapaneseError(error.message) };
+
+  // アカウントごと削除（profiles, view_logs は CASCADE で消える）
+  const admin = createAdminClient();
+  await admin.auth.admin.deleteUser(userId);
 
   revalidatePath("/org/members");
   return { success: true };

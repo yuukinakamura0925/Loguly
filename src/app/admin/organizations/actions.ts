@@ -132,9 +132,9 @@ export async function removeOrgMember(organizationId: string, userId: string) {
 
   if (memberError) return { error: toJapaneseError(memberError.message) };
 
-  const { error: profileError } = await updateProfileRole(supabase, userId, "member");
-
-  if (profileError) return { error: toJapaneseError(profileError.message) };
+  // アカウントごと削除（profiles, view_logs は CASCADE で消える）
+  const admin = createAdminClient();
+  await admin.auth.admin.deleteUser(userId);
 
   revalidatePath(`/admin/organizations/${organizationId}`);
   return { success: true };
