@@ -238,6 +238,10 @@ export async function deleteAccount(formData: FormData) {
     return { error: "プラットフォーム管理者は削除できません" };
   }
 
+  if (profile?.role === "org_admin") {
+    return { error: "組織管理者は削除できません。先に管理者権限を他のメンバーに移譲してください" };
+  }
+
   const password = formData.get("password") as string;
   const confirmation = formData.get("confirmation") as string;
 

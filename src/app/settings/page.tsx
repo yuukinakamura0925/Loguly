@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getProfileById } from "@/lib/db";
-import { updateDisplayName, updatePassword, updateEmail, uploadAvatar, deleteAccount } from "./actions";
+import { updateDisplayName, updatePassword, updateEmail, uploadAvatar } from "./actions";
 import { ArrowLeftIcon } from "@/components/icons";
 import { Button, Input } from "@/components/ui";
 
@@ -147,20 +147,16 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [emailPassword, setEmailPassword] = useState("");
-  const [deletePassword, setDeletePassword] = useState("");
-  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   // Loading states
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
 
   // Messages
   const [profileMessage, setProfileMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [emailMessage, setEmailMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [deleteMessage, setDeleteMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -279,25 +275,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleDeleteAccount(e: React.FormEvent) {
-    e.preventDefault();
-    setDeletingAccount(true);
-    setDeleteMessage(null);
-    try {
-      const formData = new FormData();
-      formData.set("password", deletePassword);
-      formData.set("confirmation", deleteConfirmation);
-
-      const result = await deleteAccount(formData);
-      if (result.error) {
-        setDeleteMessage({ type: "error", text: result.error });
-      } else if (result.redirect) {
-        router.push(result.redirect);
-      }
-    } finally {
-      setDeletingAccount(false);
-    }
-  }
 
   if (loading) {
     return (
@@ -505,47 +482,6 @@ export default function SettingsPage() {
           </form>
         </section>
 
-        {/* アカウント削除（プラットフォーム管理者以外のみ） */}
-        {profile?.role !== "platform_admin" && (
-          <section className="bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900 p-6">
-            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-4">アカウント削除</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-              アカウントを削除すると、全てのデータが削除され、復元できません。
-            </p>
-            <form onSubmit={handleDeleteAccount} className="space-y-4">
-              <Input
-                type="password"
-                label="パスワード"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-              />
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  確認のため「削除する」と入力
-                </label>
-                <input
-                  type="text"
-                  value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value)}
-                  placeholder="削除する"
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-900 border border-da-gray-600 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
-                />
-              </div>
-              {deleteMessage && (
-                <div className={`p-3 rounded-lg text-sm ${
-                  deleteMessage.type === "success"
-                    ? "bg-emerald-50 dark:bg-emerald-900/30 text-da-success dark:text-emerald-400"
-                    : "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                }`}>
-                  {deleteMessage.text}
-                </div>
-              )}
-              <Button type="submit" variant="danger" isLoading={deletingAccount}>
-                アカウントを削除
-              </Button>
-            </form>
-          </section>
-        )}
       </main>
     </div>
   );
