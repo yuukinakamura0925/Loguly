@@ -193,10 +193,23 @@ export async function deleteOrganization(id: string) {
   await requireRole("platform_admin");
   const supabase = await createClient();
 
+  // 削除前にメンバー一覧を取得（CASCADE で消える前にroleをリセットするため）
+  const { data: members } = await supabase
+    .from("organization_members")
+    .select("user_id")
+    .eq("organization_id", id);
+
   const { error } = await dbDeleteOrganization(supabase, id);
 
   if (error) {
     return { error: toJapaneseError(error.message) };
+  }
+
+  // 元メンバーのroleをmemberにリセット（組織なしのorg_adminが残らないように）
+  if (members && members.length > 0) {
+    for (const m of members) {
+      await updateProfileRole(supabase, m.user_id, "member");
+    }
   }
 
   revalidatePath("/admin/organizations");
