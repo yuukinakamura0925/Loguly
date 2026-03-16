@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { getMembershipByUserId, listOrgMembersWithJoinDate, listPendingInvitations } from "@/lib/db";
 import InviteForm from "./invite-form";
-import { removeMember, cancelInvitation } from "./actions";
+import { removeMember, cancelInvitation, changeMemberRole } from "./actions";
 import { Button, Card, CardContent, ConfirmModal } from "@/components/ui";
 import { ChevronRightIcon, SortIcon, SortAscIcon, SortDescIcon, SearchIcon, UsersIcon, CrownIcon, MailIcon, ClockIcon } from "@/components/icons";
 import AvatarPreview from "@/components/avatar-preview";
@@ -135,6 +135,13 @@ export default function MembersPage() {
     }
     setProcessingId(null);
     setRemoveTargetId(null);
+  }
+
+  async function handleChangeRole(userId: string, newRole: string) {
+    setError("");
+    const result = await changeMemberRole(userId, newRole);
+    if (result.error) setError(result.error);
+    else reload();
   }
 
   async function handleCancelInvite() {
@@ -350,15 +357,14 @@ export default function MembersPage() {
                   {(m.profiles as unknown as { email: string })?.email}
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      m.role === "org_admin"
-                        ? "bg-da-blue-50 dark:bg-da-blue-900/30 text-da-blue-900 dark:text-da-blue-300"
-                        : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                    }`}
+                  <select
+                    value={m.role}
+                    onChange={(e) => handleChangeRole(m.user_id, e.target.value)}
+                    className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                   >
-                    {m.role === "org_admin" ? "管理者" : "メンバー"}
-                  </span>
+                    <option value="org_admin">管理者</option>
+                    <option value="member">メンバー</option>
+                  </select>
                 </td>
                 <td className="hidden md:table-cell px-4 py-3 text-slate-600 dark:text-slate-400 text-sm">
                   {new Date(m.joined_at).toLocaleDateString("ja-JP")}

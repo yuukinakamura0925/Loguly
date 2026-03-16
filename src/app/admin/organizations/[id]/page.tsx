@@ -17,6 +17,7 @@ import {
   addOrgMember,
   removeOrgMember,
   createOrgUser,
+  changeOrgMemberRole,
 } from "../actions";
 import { updateOrgLicenses } from "../../licenses/actions";
 import {
@@ -296,6 +297,13 @@ export default function OrgDetailPage() {
     setRemoveTargetId(null);
   }
 
+  async function handleChangeRole(userId: string, newRole: string) {
+    setMemberError("");
+    const result = await changeOrgMemberRole(id, userId, newRole);
+    if (result.error) setMemberError(result.error);
+    else reload();
+  }
+
   async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setCreating(true);
@@ -538,6 +546,7 @@ export default function OrgDetailPage() {
           handleCreateUser={handleCreateUser}
           handleAddMember={handleAddMember}
           handleRemoveMember={handleRemoveMember}
+          handleChangeRole={handleChangeRole}
           setRemoveTargetId={setRemoveTargetId}
         />
       )}
@@ -862,6 +871,7 @@ function MembersTab({
   handleCreateUser,
   handleAddMember,
   handleRemoveMember,
+  handleChangeRole,
   setRemoveTargetId,
 }: {
   members: Member[];
@@ -876,6 +886,7 @@ function MembersTab({
   handleCreateUser: (e: React.FormEvent<HTMLFormElement>) => void;
   handleAddMember: (e: React.FormEvent<HTMLFormElement>) => void;
   handleRemoveMember: () => void;
+  handleChangeRole: (userId: string, newRole: string) => void;
   setRemoveTargetId: (id: string | null) => void;
 }) {
   return (
@@ -988,9 +999,14 @@ function MembersTab({
                 <div className="text-slate-500 text-xs">{m.profiles?.email}</div>
               </TableCell>
               <TableCell>
-                <Badge variant={m.role === "org_admin" ? "info" : "default"}>
-                  {m.role === "org_admin" ? "管理者" : "メンバー"}
-                </Badge>
+                <select
+                  value={m.role}
+                  onChange={(e) => handleChangeRole(m.user_id, e.target.value)}
+                  className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                >
+                  <option value="org_admin">管理者</option>
+                  <option value="member">メンバー</option>
+                </select>
               </TableCell>
               <TableCell className="text-right">
                 {m.role !== "org_admin" && (

@@ -14,6 +14,9 @@ import {
   deleteInvitation,
   updateInvitationEmailSent,
   countEmailsSentThisMonth,
+  updateOrgMemberRole,
+  updateProfileRole,
+  getOrganizationById,
 } from "@/lib/db";
 import { toJapaneseError } from "@/lib/error-messages";
 import { sendInvitationEmail } from "@/lib/email";
@@ -153,6 +156,46 @@ export async function removeMember(userId: string) {
   // アカウントごと削除（profiles, view_logs は CASCADE で消える）
   const admin = createAdminClient();
   await admin.auth.admin.deleteUser(userId);
+
+  revalidatePath("/org/members");
+  return { success: true };
+}
+
+export async function changeMemberRole(userId: string, newRole: string) {
+  await requireRole("org_admin");
+  const org = await getCurrentOrg();
+  const user = await getCurrentUser();
+  if (!org || !user) return { error: "認証エラー" };
+
+  if (userId === user.id) {
+    return { error: "自分自身のロールは変更できません" };
+  }
+
+  const supabase = await createClient();
+
+  // org_admin → member の場合、最後の1人は降格不可
+  if (newRole === "member") {
+    const { count } = await countOrgAdmins(supabase, org.id);
+    if ((count ?? 0) <= 1) {
+      return { error: "最後の組織管理者は降格できません" };
+    }
+  }
+
+  // member → org_admin の場合、上限チェック
+  if (newRole === "org_admin") {
+    const { data: orgData } = await getOrganizationById(supabase, org.id);
+    const { count } = await countOrgAdmins(supabase, org.id);
+    const max = orgData?.max_org_admins ?? 1;
+    if ((count ?? 0) >= max) {
+      return { error: `組織管理者の上限（${max}人）に達しています` };
+    }
+  }
+
+  const { error: memberError } = await updateOrgMemberRole(supabase, org.id, userId, newRole);
+  if (memberError) return { error: toJapaneseError(memberError.message) };
+
+  const { error: profileError } = await updateProfileRole(supabase, userId, newRole);
+  if (profileError) return { error: toJapaneseError(profileError.message) };
 
   revalidatePath("/org/members");
   return { success: true };
