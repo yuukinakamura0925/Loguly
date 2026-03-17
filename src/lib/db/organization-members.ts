@@ -88,6 +88,19 @@ export function insertOrgMember(
   return client.from("organization_members").insert(data);
 }
 
+export function updateOrgMemberRole(
+  client: TypedClient,
+  organizationId: string,
+  userId: string,
+  role: string
+) {
+  return client
+    .from("organization_members")
+    .update({ role })
+    .eq("organization_id", organizationId)
+    .eq("user_id", userId);
+}
+
 export function deleteOrgMember(
   client: TypedClient,
   organizationId: string,
