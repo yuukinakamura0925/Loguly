@@ -39,6 +39,7 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
   const [maxWatchedSeconds, setMaxWatchedSeconds] = useState(initialProgress.maxWatchedSeconds);
   const [completed, setCompleted] = useState(initialProgress.completed);
   const [showSkipWarning, setShowSkipWarning] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const supabase = createClient();
   const lastSavedRef = useRef(initialProgress.maxWatchedSeconds);
   const maxWatchedRef = useRef(initialProgress.maxWatchedSeconds);
@@ -278,15 +279,45 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <a
-            href={`/api/videos/${video.id}/download`}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+          <button
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true);
+              try {
+                const res = await fetch(`/api/videos/${video.id}/download`);
+                if (!res.ok) throw new Error("Download failed");
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${video.title}.mp4`;
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch {
+                alert("ダウンロードに失敗しました");
+              } finally {
+                setDownloading(false);
+              }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors disabled:opacity-50"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 18h16" />
-            </svg>
-            ダウンロード
-          </a>
+            {downloading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                ダウンロード中...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 18h16" />
+                </svg>
+                ダウンロード
+              </>
+            )}
+          </button>
         </div>
       </div>
 
