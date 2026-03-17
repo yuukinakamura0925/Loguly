@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getGalleryImages, getGalleryStorageUsage, getGalleryFolders } from "./actions";
+import { getGalleryImages, getGalleryFolders } from "./actions";
 import { GalleryClient } from "./gallery-client";
 
 export const metadata: Metadata = {
@@ -7,16 +7,14 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const [images, storageUsage, folders] = await Promise.all([
+  const [images, folders] = await Promise.all([
     getGalleryImages(),
-    getGalleryStorageUsage(),
     getGalleryFolders(),
   ]);
 
   return (
     <GalleryClient
       initialImages={images}
-      initialStorageUsage={storageUsage}
       initialFolders={folders}
     />
   );

@@ -18,7 +18,6 @@ import {
   FolderOpenIcon,
   PencilIcon,
   PlusIcon,
-  AlertTriangleIcon,
   SearchIcon,
   LayoutGridIcon,
   ListIcon,
@@ -39,7 +38,6 @@ import {
 import type { GalleryImage, GalleryFolder } from "@/types/database";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const STORAGE_LIMIT_GB = 100;
 const WARN_FILE_SIZE_MB = 10;
 
 function getPublicUrl(filePath: string) {
@@ -64,19 +62,16 @@ type ViewMode = "grid" | "list";
 
 type Props = {
   initialImages: GalleryImage[];
-  initialStorageUsage: { totalBytes: number; imageCount: number };
   initialFolders: GalleryFolder[];
 };
 
-export function GalleryClient({ initialImages, initialStorageUsage, initialFolders }: Props) {
+export function GalleryClient({ initialImages, initialFolders }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState(initialImages);
-  const [storageUsage, setStorageUsage] = useState(initialStorageUsage);
   const [folders, setFolders] = useState(initialFolders);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [deleting, setDeleting] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -107,10 +102,6 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggerRef = useRef(false);
 
-  const storageLimitBytes = STORAGE_LIMIT_GB * 1024 * 1024 * 1024;
-  const storagePercent = Math.min(100, (storageUsage.totalBytes / storageLimitBytes) * 100);
-  const isStorageWarning = storagePercent >= 80;
-  const isStorageDanger = storagePercent >= 95;
 
   // ── ツリーヘルパー ──
 
@@ -199,10 +190,9 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
         }
       }
       router.refresh();
-      const { getGalleryImages, getGalleryStorageUsage } = await import("./actions");
-      const [updated, usage] = await Promise.all([getGalleryImages(), getGalleryStorageUsage()]);
+      const { getGalleryImages } = await import("./actions");
+      const updated = await getGalleryImages();
       setImages(updated);
-      setStorageUsage(usage);
     } finally {
       setUploading(false);
     }
@@ -220,22 +210,15 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
 
   const handleDelete = async (id: number) => {
     if (!confirm("この画像を削除しますか？")) return;
-    setDeleting(id);
+    // オプティミスティック: 即座にUIから消す
+    const prev = images;
+    setImages((imgs) => imgs.filter((img) => img.id !== id));
+    if (lightbox?.id === id) setLightbox(null);
     const result = await deleteGalleryImage(id);
     if (result.error) {
       alert(result.error);
-    } else {
-      const deleted = images.find((img) => img.id === id);
-      setImages((prev) => prev.filter((img) => img.id !== id));
-      if (deleted) {
-        setStorageUsage((prev) => ({
-          totalBytes: Math.max(0, prev.totalBytes - deleted.file_size),
-          imageCount: Math.max(0, prev.imageCount - 1),
-        }));
-      }
-      if (lightbox?.id === id) setLightbox(null);
+      setImages(prev); // 失敗時は戻す
     }
-    setDeleting(null);
   };
 
   // ── URLコピー ──
@@ -732,20 +715,6 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
                   </button>
                 )}
               </div>
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 shrink-0">
-                <div className="w-24 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${
-                      isStorageDanger ? "bg-red-500" : isStorageWarning ? "bg-amber-500" : "bg-emerald-500"
-                    }`}
-                    style={{ width: `${storagePercent}%` }}
-                  />
-                </div>
-                <span className={isStorageDanger ? "text-red-500" : isStorageWarning ? "text-amber-500" : ""}>
-                  {formatFileSize(storageUsage.totalBytes)} / {STORAGE_LIMIT_GB} GB
-                </span>
-                {isStorageWarning && <AlertTriangleIcon className="w-3.5 h-3.5" strokeWidth={2} />}
-              </div>
             </div>
           </div>
 
@@ -920,15 +889,10 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(image.id); }}
-                          disabled={deleting === image.id}
-                          className="w-7 h-7 bg-red-500/80 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors disabled:opacity-50"
+                          className="w-7 h-7 bg-red-500/80 backdrop-blur-sm rounded-lg flex items-center justify-center hover:bg-red-500 transition-colors"
                           title="削除"
                         >
-                          {deleting === image.id ? (
-                            <LoaderIcon className="w-3.5 h-3.5 text-white animate-spin" />
-                          ) : (
-                            <TrashIcon className="w-3.5 h-3.5 text-white" strokeWidth={2} />
-                          )}
+                          <TrashIcon className="w-3.5 h-3.5 text-white" strokeWidth={2} />
                         </button>
                       </div>
                     </div>
@@ -1062,15 +1026,10 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(image.id); }}
-                        disabled={deleting === image.id}
-                        className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700"
                         title="削除"
                       >
-                        {deleting === image.id ? (
-                          <LoaderIcon className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <TrashIcon className="w-3.5 h-3.5" strokeWidth={2} />
-                        )}
+                        <TrashIcon className="w-3.5 h-3.5" strokeWidth={2} />
                       </button>
                     </div>
                   </div>
@@ -1230,13 +1189,8 @@ export function GalleryClient({ initialImages, initialStorageUsage, initialFolde
                   variant="danger"
                   size="sm"
                   onClick={() => handleDelete(lightbox.id)}
-                  disabled={deleting === lightbox.id}
                 >
-                  {deleting === lightbox.id ? (
-                    <LoaderIcon className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <TrashIcon className="w-4 h-4" strokeWidth={1.5} />
-                  )}
+                  <TrashIcon className="w-4 h-4" strokeWidth={1.5} />
                   削除
                 </Button>
               </div>
