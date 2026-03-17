@@ -167,6 +167,21 @@ export function GalleryClient({ initialImages, initialFolders }: Props) {
     ? folders.find((f) => f.id === currentFolderId)?.name ?? ""
     : "画像保管庫";
 
+  // ── HEIC → JPEG 変換 ──
+
+  async function convertHeicToJpeg(file: File): Promise<File> {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const isHeic = ["heic", "heif"].includes(ext || "") ||
+      file.type === "image/heic" || file.type === "image/heif";
+    if (!isHeic) return file;
+
+    const heic2any = (await import("heic2any")).default;
+    const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 });
+    const converted = Array.isArray(blob) ? blob[0] : blob;
+    const newName = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg");
+    return new File([converted], newName, { type: "image/jpeg" });
+  }
+
   // ── アップロード ──
 
   const handleUpload = useCallback(async (files: FileList | File[]) => {
@@ -180,13 +195,14 @@ export function GalleryClient({ initialImages, initialFolders }: Props) {
 
     setUploading(true);
     try {
-      for (const file of Array.from(files)) {
+      for (const rawFile of Array.from(files)) {
+        const file = await convertHeicToJpeg(rawFile);
         const formData = new FormData();
         formData.append("file", file);
         if (currentFolderId !== null) formData.append("folderId", String(currentFolderId));
         const result = await uploadGalleryImage(formData);
         if (result.error) {
-          alert(`${file.name}: ${result.error}`);
+          alert(`${rawFile.name}: ${result.error}`);
         }
       }
       router.refresh();
