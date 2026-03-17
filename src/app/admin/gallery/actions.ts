@@ -170,44 +170,17 @@ export async function uploadGalleryImage(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "認証エラー" };
 
-  // HEIC/HEIF はブラウザで表示できないため WebP に変換
-  const originalExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const isHeic = ["heic", "heif"].includes(originalExt) ||
-    file.type === "image/heic" || file.type === "image/heif";
-
-  let uploadBuffer: Buffer;
-  let uploadContentType: string;
-  let uploadExt: string;
-  let uploadSize: number;
-
-  if (isHeic) {
-    const sharp = (await import("sharp")).default;
-    const arrayBuffer = await file.arrayBuffer();
-    uploadBuffer = await sharp(Buffer.from(arrayBuffer))
-      .rotate() // EXIF回転を適用
-      .webp({ quality: 85 })
-      .toBuffer();
-    uploadContentType = "image/webp";
-    uploadExt = "webp";
-    uploadSize = uploadBuffer.length;
-  } else {
-    const arrayBuffer = await file.arrayBuffer();
-    uploadBuffer = Buffer.from(arrayBuffer);
-    uploadContentType = file.type;
-    uploadExt = originalExt;
-    uploadSize = file.size;
-  }
-
   // ユニークなパス生成
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const timestamp = Date.now();
   const randomId = Math.random().toString(36).substring(2, 8);
-  const filePath = `${timestamp}-${randomId}.${uploadExt}`;
+  const filePath = `${timestamp}-${randomId}.${ext}`;
 
   // Storageにアップロード
   const { error: uploadError } = await supabase.storage
     .from("gallery")
-    .upload(filePath, uploadBuffer, {
-      contentType: uploadContentType,
+    .upload(filePath, file, {
+      contentType: file.type,
       upsert: false,
     });
 
@@ -217,10 +190,10 @@ export async function uploadGalleryImage(formData: FormData) {
   const { error: dbError } = await supabase
     .from("gallery_images")
     .insert({
-      file_name: isHeic ? file.name.replace(/\.heic$/i, ".webp").replace(/\.heif$/i, ".webp") : file.name,
+      file_name: file.name,
       file_path: filePath,
-      file_size: uploadSize,
-      content_type: uploadContentType,
+      file_size: file.size,
+      content_type: file.type,
       uploaded_by: user.id,
       folder_id: parsedFolderId,
     });
