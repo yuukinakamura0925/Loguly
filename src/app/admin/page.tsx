@@ -12,7 +12,6 @@ import {
   getVideoCompletionRanking,
   getVideoCompletionCounts,
   getDailyViewActivity,
-  getGalleryStats,
   countAllMembers,
   getThisMonthGrowth,
   getOverallCompletionAndActivity,
@@ -23,14 +22,11 @@ import {
   VideoIcon,
   TagIcon,
   KeyIcon,
-  ChevronRightIcon,
   UsersIcon,
   AlertTriangleIcon,
   TrendingUpIcon,
   TrophyIcon,
   ImageIcon,
-  FolderIcon,
-  HardDriveIcon,
   CheckCircleIcon,
 } from "@/components/icons";
 
@@ -75,7 +71,6 @@ export default async function AdminDashboardPage() {
     videoRanking,
     completionCounts,
     dailyActivity,
-    galleryStats,
     memberCount,
     growth,
     completionActivity,
@@ -93,7 +88,6 @@ export default async function AdminDashboardPage() {
     getVideoCompletionRanking(supabase),
     getVideoCompletionCounts(supabase),
     getDailyViewActivity(supabase),
-    getGalleryStats(supabase),
     countAllMembers(supabase),
     getThisMonthGrowth(supabase),
     getOverallCompletionAndActivity(supabase),
@@ -367,37 +361,6 @@ export default async function AdminDashboardPage() {
             )}
           </div>
         </div>
-
-        {/* ── 画像保管庫 ── */}
-        <Link
-          href="/admin/gallery"
-          className={`${cardBase} ${cardHover} overflow-hidden animate-card-enter`}
-          style={{ animationDelay: "640ms" }}
-        >
-          <div className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2">
-            <HardDriveIcon className="w-5 h-5 text-slate-500" strokeWidth={1.5} />
-            <h2 className="font-semibold text-slate-900 dark:text-white">画像保管庫</h2>
-            <ChevronRightIcon className="w-4 h-4 text-slate-400 ml-auto group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
-          </div>
-          <div className="px-6 py-5 space-y-4">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
-                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{galleryStats.imageCount}</span>
-                <span>画像</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <VideoIcon className="w-4 h-4" strokeWidth={1.5} />
-                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{videoCount}</span>
-                <span>動画</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <FolderIcon className="w-4 h-4" strokeWidth={1.5} />
-              <span>{galleryStats.folderCount} フォルダ</span>
-            </div>
-          </div>
-        </Link>
 
         {/* ── 最近の組織 ── */}
         <div className={`sm:col-span-2 ${cardBase} overflow-hidden animate-card-enter`} style={{ animationDelay: "720ms" }}>
