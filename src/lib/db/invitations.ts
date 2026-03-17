@@ -1,5 +1,13 @@
 import type { TypedClient } from "./types";
 
+export function getInvitationByToken(client: TypedClient, token: string) {
+  return client
+    .from("invitations")
+    .select("*, organizations(name)")
+    .eq("token", token)
+    .maybeSingle();
+}
+
 export function getValidInvitationByToken(client: TypedClient, token: string) {
   return client
     .from("invitations")
