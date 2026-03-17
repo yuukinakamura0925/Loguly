@@ -211,6 +211,7 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           controls
+          controlsList="noplaybackrate"
           playsInline
           preload="metadata"
         >
@@ -273,6 +274,18 @@ export default function VideoPlayer({ video, videoUrl, initialProgress, userId }
             </div>
             <div className="text-sm text-slate-600 dark:text-slate-400">視聴進捗</div>
           </div>
+        </div>
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <a
+            href={videoUrl}
+            download={`${video.title}.mp4`}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 18h16" />
+            </svg>
+            ダウンロード
+          </a>
         </div>
       </div>
 
