@@ -42,12 +42,6 @@ function formatDate(dateStr: string) {
   });
 }
 
-function formatBytes(bytes: number) {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(i > 1 ? 1 : 0)} ${units[i]}`;
-}
 
 /** SVG スパークライン */
 function Sparkline({ data, color = "#3b82f6" }: { data: number[]; color?: string }) {
@@ -386,18 +380,21 @@ export default async function AdminDashboardPage() {
             <ChevronRightIcon className="w-4 h-4 text-slate-400 ml-auto group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
           </div>
           <div className="px-6 py-5 space-y-4">
-            <div className="text-3xl font-extrabold tracking-tighter text-slate-900 dark:text-white">
-              {formatBytes(galleryStats.totalBytes)}
-            </div>
-            <div className="space-y-2">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                 <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
-                <span>{galleryStats.imageCount} 画像</span>
+                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{galleryStats.imageCount}</span>
+                <span>画像</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <FolderIcon className="w-4 h-4" strokeWidth={1.5} />
-                <span>{galleryStats.folderCount} フォルダ</span>
+                <VideoIcon className="w-4 h-4" strokeWidth={1.5} />
+                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{videoCount}</span>
+                <span>動画</span>
               </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <FolderIcon className="w-4 h-4" strokeWidth={1.5} />
+              <span>{galleryStats.folderCount} フォルダ</span>
             </div>
           </div>
         </Link>
