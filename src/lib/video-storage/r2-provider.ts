@@ -55,6 +55,11 @@ export class R2Provider implements VideoStorageProvider {
     return `${process.env.R2_PUBLIC_URL}/${videoId}`;
   }
 
+  /** R2は再生URLと同じ（直接MP4） */
+  getDownloadUrl(videoId: string): string {
+    return this.getPlaybackUrl(videoId);
+  }
+
   async deleteVideo(videoId: string): Promise<void> {
     const client = getR2Client();
 

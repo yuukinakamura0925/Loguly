@@ -59,6 +59,11 @@ export class StreamProvider implements VideoStorageProvider {
     return `https://customer-${process.env.CLOUDFLARE_STREAM_CUSTOMER_CODE}.cloudflarestream.com/${videoId}/manifest/video.m3u8`;
   }
 
+  /** Stream のMP4ダウンロードURL（要: Dashboardでダウンロード有効化） */
+  getDownloadUrl(videoId: string): string {
+    return `https://customer-${process.env.CLOUDFLARE_STREAM_CUSTOMER_CODE}.cloudflarestream.com/${videoId}/downloads/default.mp4`;
+  }
+
   async deleteVideo(videoId: string): Promise<void> {
     const res = await fetch(`${getAccountUrl()}/${videoId}`, {
       method: "DELETE",

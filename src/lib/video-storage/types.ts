@@ -10,6 +10,8 @@ export interface VideoStorageProvider {
   createUploadUrl(filename: string): Promise<UploadResult>;
   /** 動画IDから再生用URLを生成 */
   getPlaybackUrl(videoId: string): string;
+  /** 動画IDからダウンロード元URLを生成（サーバー側プロキシ用） */
+  getDownloadUrl(videoId: string): string;
   /** ストレージから動画ファイルを削除 */
   deleteVideo(videoId: string): Promise<void>;
 }
