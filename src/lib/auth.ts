@@ -77,7 +77,10 @@ export async function getCurrentOrg(): Promise<Organization | null> {
 
 export async function requireAuth(): Promise<Profile> {
   const profile = await getCurrentProfile();
-  if (!profile) redirect("/login");
+  if (!profile) {
+    const user = await getCurrentUser();
+    redirect(user ? "/account-unavailable" : "/login");
+  }
   return profile;
 }
 

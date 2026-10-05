@@ -36,6 +36,19 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // リダイレクト時も更新・削除された認証Cookieをブラウザへ返す。
+  function redirectTo(path: string) {
+    const url = request.nextUrl.clone();
+    url.pathname = path;
+    const response = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+    for (const header of ["cache-control", "expires", "pragma"]) {
+      const value = supabaseResponse.headers.get(header);
+      if (value) response.headers.set(header, value);
+    }
+    return response;
+  }
+
   // 認証コールバック・パスワードリセットはそのまま通す
   if (pathname.startsWith("/auth/callback") || pathname.startsWith("/reset-password")) {
     return supabaseResponse;
@@ -50,9 +63,7 @@ export async function updateSession(request: NextRequest) {
 
   // 未認証ユーザーを保護されたルートからリダイレクト
   if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return redirectTo("/login");
   }
 
   if (user && isProtectedRoute) {
@@ -60,19 +71,16 @@ export async function updateSession(request: NextRequest) {
     const { data: profile } = await getProfileRole(supabase, user.id);
 
     const role = profile?.role;
+    if (!role) return redirectTo("/account-unavailable");
 
     // /admin/* は platform_admin のみ
     if (pathname.startsWith("/admin") && role !== "platform_admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+      return redirectTo("/dashboard");
     }
 
     // /org/* は org_admin のみ
     if (pathname.startsWith("/org") && role !== "org_admin") {
-      const url = request.nextUrl.clone();
-      url.pathname = role === "platform_admin" ? "/admin" : "/dashboard";
-      return NextResponse.redirect(url);
+      return redirectTo(role === "platform_admin" ? "/admin" : "/dashboard");
     }
 
     // /dashboard, /watch は org_admin または member
@@ -80,9 +88,7 @@ export async function updateSession(request: NextRequest) {
       (pathname.startsWith("/dashboard") || pathname.startsWith("/watch")) &&
       role === "platform_admin"
     ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin";
-      return NextResponse.redirect(url);
+      return redirectTo("/admin");
     }
   }
 
@@ -90,15 +96,14 @@ export async function updateSession(request: NextRequest) {
   if (user && (pathname === "/login" || pathname === "/admin-login")) {
     const { data: profile } = await getProfileRole(supabase, user.id);
 
-    const url = request.nextUrl.clone();
+    if (!profile?.role) return redirectTo("/account-unavailable");
     if (profile?.role === "platform_admin") {
-      url.pathname = "/admin";
+      return redirectTo("/admin");
     } else if (profile?.role === "org_admin") {
-      url.pathname = "/org/members";
+      return redirectTo("/org/members");
     } else {
-      url.pathname = "/dashboard";
+      return redirectTo("/dashboard");
     }
-    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
