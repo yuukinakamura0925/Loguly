@@ -15,7 +15,7 @@ export default async function OrgLayout({
   const org = await getCurrentOrg();
 
   if (!org) {
-    redirect("/login");
+    redirect("/account-unavailable");
   }
 
   const showTour = !profile.onboarding_completed_at;
